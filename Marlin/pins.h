@@ -2410,13 +2410,49 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define E1_MS1_PIN 63
 #define E1_MS2_PIN 64
 
+//TMC2130
+#undef X_STEP_PIN
+#undef X_DIR_PIN
+#undef Y_STEP_PIN
+#undef Y_DIR_PIN
+#undef Z_STEP_PIN
+#undef Z_DIR_PIN
+#undef E0_STEP_PIN
+#undef E0_DIR_PIN
+#define X_STEP_PIN 44 //MX1-5
+#define X_DIR_PIN 32 //MX1-4
+#define Y_STEP_PIN 45 //MX2-5
+#define Y_DIR_PIN 31 //MX2-4
+#define Z_STEP_PIN 46 //MX3-5
+
+//#define Z_DIR_PIN 30 //D30 MX3-4 CONFLICT
+#define Z_DIR_PIN 13 //Digital pin 13 (PWM)  LED, PWM-Ext 3
+
+#define E0_STEP_PIN 59 // PF5
+#define E0_DIR_PIN 58 // PF4
+#define X_TMC2130_CS 22 // MX1-3 //XSTEP-36 XMIN-12
+
+//#define Y_TMC2130_CS 23 // D23 MX2-3 CONFLICT
+#define Y_TMC2130_CS 4    //Digital pin 4 (PWM)   PWM-Ext 6
+//#define Z_TMC2130_CS 24 // D24 MX3-3 CONFLICT
+#define Z_TMC2130_CS 5 //Digital pin 5 (PWM)   PWM-Ext 5 
+
+
+//Digital pin 4 (PWM)   PWM-Ext 6
+//Digital pin 5 (PWM)   PWM-Ext 5 
+//Digital pin 13 (PWM)  LED, PWM-Ext 3
+
+#define E_TMC2130_CS 60 //PF6
+
 #define DIGIPOTSS_PIN 38
 #define DIGIPOT_CHANNELS {4,5,3,0,1} // X Y Z E0 E1 digipot channels to stepper driver mapping
 
 #define SDPOWER            -1
 #define SDSS               53
-#define LED_PIN            13
+#define LED_PIN            -1 //13
 #define FAN_PIN            8
+#define FAN1_PIN           -1
+#define FAN2_PIN           6
 #define PS_ON_PIN          4
 #define KILL_PIN           -1 //80 with Smart Controller LCD
 #define SUICIDE_PIN        -1  //PIN that has to be turned on right after start, to keep power flowing.
