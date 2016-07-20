@@ -51,6 +51,10 @@
 #include <SPI.h>
 #endif
 
+#if defined(BOARD_EINY)
+#include <SPI.h>
+#endif
+
 #if defined(DIGIPOT_I2C)
   #include <Wire.h>
 #endif

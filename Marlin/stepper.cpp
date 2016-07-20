@@ -32,6 +32,9 @@
 #if defined(DIGIPOTSS_PIN) && DIGIPOTSS_PIN > -1
 #include <SPI.h>
 #endif
+#if defined(BOARD_EINY)
+#include <SPI.h>
+#endif
 
 
 //===========================================================================
