@@ -164,6 +164,7 @@
     #define  DEFAULT_Ki 1.91
     #define  DEFAULT_Kd 108.51
 
+
 // Ultimaker
 //    #define  DEFAULT_Kp 22.2
 //    #define  DEFAULT_Ki 1.08
@@ -327,10 +328,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define DISABLE_E false // For all extruders
 #define DISABLE_INACTIVE_EXTRUDER false //disable only inactive extruders and keep active extruder enabled
 
-#define INVERT_X_DIR false    // for LulzBot set to false
-#define INVERT_Y_DIR true    // for LulzBot set to true
-#define INVERT_Z_DIR false     // for LulzBot set to false
-#define INVERT_E0_DIR true   // for standard LulzBot hotends set to true
+#define INVERT_X_DIR true    // for LulzBot set to false
+#define INVERT_Y_DIR false    // for LulzBot set to true
+#define INVERT_Z_DIR true     // for LulzBot set to false
+#define INVERT_E0_DIR false   // for standard LulzBot hotends set to true
 #define INVERT_E1_DIR true    // for standard LulzBot hotends set to true
 #define INVERT_E2_DIR true   // for standard LulzBot hotends set to true
 
@@ -490,7 +491,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 // default settings
 
 #define DEFAULT_AXIS_STEPS_PER_UNIT   {100.5,100.5,1600,833}  // default steps per unit for the LulzBot Mini
-#define DEFAULT_MAX_FEEDRATE          {800, 800, 8, 40}    // (mm/sec)
+#define DEFAULT_MAX_FEEDRATE          {800, 800, 6, 40}    // (mm/sec)
 #define DEFAULT_MAX_ACCELERATION      {9000,9000,100,1000}    // X, Y, Z, E maximum start speed for accelerated moves.
 
 #define DEFAULT_ACCELERATION          2000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
