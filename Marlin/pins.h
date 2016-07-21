@@ -125,6 +125,8 @@
   #include "pins_RAMBO.h"
 #elif MB(MINIRAMBO)
   #include "pins_MINIRAMBO.h"
+#elif MB(EINYRAMBO)
+  #include "pins_EINYRAMBO.h"
 #elif MB(ELEFU_3)
   #include "pins_ELEFU_3.h"
 #elif MB(5DPRINT)

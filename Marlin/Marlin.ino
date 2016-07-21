@@ -72,3 +72,7 @@
   #include <SPI.h>
   #include <L6470.h>
 #endif
+
+#if ENABLED(HAVE_TMC2130_DRIVERS)
+  #include <SPI.h>
+#endif

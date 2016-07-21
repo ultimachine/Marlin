@@ -54,7 +54,7 @@
 #define X_STEP_PIN 37
 #define X_DIR_PIN 48
 #define X_MIN_PIN 12
-#define X_MAX_PIN 24
+#define X_MAX_PIN -1 //24
 #define X_ENABLE_PIN 29
 #define X_MS1_PIN 40
 #define X_MS2_PIN 41
@@ -62,7 +62,7 @@
 #define Y_STEP_PIN 36
 #define Y_DIR_PIN 49
 #define Y_MIN_PIN 11
-#define Y_MAX_PIN 23
+#define Y_MAX_PIN -1 //23
 #define Y_ENABLE_PIN 28
 #define Y_MS1_PIN 69
 #define Y_MS2_PIN 39
@@ -70,7 +70,7 @@
 #define Z_STEP_PIN 35
 #define Z_DIR_PIN 47
 #define Z_MIN_PIN 10
-#define Z_MAX_PIN 30
+#define Z_MAX_PIN -1 //30
 #define Z_ENABLE_PIN 27
 #define Z_MS1_PIN 68
 #define Z_MS2_PIN 67
@@ -103,6 +103,29 @@
 #define E1_ENABLE_PIN       25
 #define E1_MS1_PIN 63
 #define E1_MS2_PIN 64
+
+
+//TMC2130
+#undef X_STEP_PIN
+#undef X_DIR_PIN
+#undef Y_STEP_PIN
+#undef Y_DIR_PIN
+#undef Z_STEP_PIN
+#undef Z_DIR_PIN
+#undef E0_STEP_PIN
+#undef E0_DIR_PIN
+#define X_STEP_PIN 44 //MX1-5
+#define X_DIR_PIN 32 //MX1-4
+#define Y_STEP_PIN 45 //MX2-5
+#define Y_DIR_PIN 31 //MX2-4
+#define Z_STEP_PIN 46 //MX3-5
+#define Z_DIR_PIN 30 //MX3-4
+#define E0_STEP_PIN 59 // PF5
+#define E0_DIR_PIN 58 // PF4
+#define X_TMC2130_CS 22 // MX1-3 //XSTEP-36 XMIN-12
+#define Y_TMC2130_CS 23 // MX2-3
+#define Z_TMC2130_CS 24 // MX3-3
+#define E_TMC2130_CS 60 //PF6
 
 #define DIGIPOTSS_PIN 38
 #define DIGIPOT_CHANNELS {4,5,3,0,1} // X Y Z E0 E1 digipot channels to stepper driver mapping
