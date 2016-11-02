@@ -2769,6 +2769,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #if defined(NEWPANEL)
 
     #define BEEPER_PIN      84  // Beeper on AUX-4
+    #define BEEPER BEEPER_PIN
     #define LCD_PINS_RS     82
     #define LCD_PINS_ENABLE 18
     #define LCD_PINS_D4     19
