@@ -1300,7 +1300,7 @@ void finishAndDisableSteppers()
   disable_e0();
   disable_e1();
   disable_e2();
-  tmc2130_motors_disable();
+  //tmc2130_motors_disable();
 }
 
 void quickStop()
