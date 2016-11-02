@@ -327,10 +327,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define DISABLE_E false // For all extruders
 #define DISABLE_INACTIVE_EXTRUDER false //disable only inactive extruders and keep active extruder enabled
 
-#define INVERT_X_DIR false    // for LulzBot set to false
-#define INVERT_Y_DIR true    // for LulzBot set to true
-#define INVERT_Z_DIR false     // for LulzBot set to false
-#define INVERT_E0_DIR true   // for standard LulzBot hotends set to true
+#define INVERT_X_DIR true    // for LulzBot set to false
+#define INVERT_Y_DIR false    // for LulzBot set to true
+#define INVERT_Z_DIR true     // for LulzBot set to false
+#define INVERT_E0_DIR false   // for standard LulzBot hotends set to true
 #define INVERT_E1_DIR true    // for standard LulzBot hotends set to true
 #define INVERT_E2_DIR true   // for standard LulzBot hotends set to true
 
