@@ -3745,6 +3745,7 @@ inline void gcode_G4() {
  *
  */
 inline void gcode_G28(const bool always_home_all) {
+  LULZBOT_ENABLE_PROBE_PINS(true);
 
   #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) {
@@ -3926,6 +3927,22 @@ inline void gcode_G28(const bool always_home_all) {
     tool_change(old_tool_index, 0, true);
   #endif
 
+  #ifdef LULZBOT_RAISE_AFTER_HOME
+      if (home_all || homeZ) {
+        // Raise Z after homing Z if z is not already high enough (never lower z)
+        destination[Z_AXIS] = LOGICAL_Z_POSITION(Z_HOMING_HEIGHT);
+        if (destination[Z_AXIS] > current_position[Z_AXIS]) {
+
+          #if ENABLED(DEBUG_LEVELING_FEATURE)
+            if (DEBUGGING(LEVELING))
+              SERIAL_ECHOLNPAIR("Raise Z (after homing) to ", destination[Z_AXIS]);
+          #endif
+
+          do_blocking_move_to_z(destination[Z_AXIS]);
+        }
+      }
+  #endif
+
   lcd_refresh();
 
   report_current_position();
@@ -3933,6 +3950,8 @@ inline void gcode_G28(const bool always_home_all) {
   #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("<<< gcode_G28");
   #endif
+
+  LULZBOT_ENABLE_PROBE_PINS(false);
 } // G28
 
 void home_all_axes() { gcode_G28(true); }
@@ -5280,7 +5299,7 @@ void home_all_axes() { gcode_G28(true); }
       #if DISABLED(PROBE_MANUALLY)
         home_offset[Z_AXIS] -= probe_pt(dx, dy, stow_after_each, 1, false); // 1st probe to set height
       #endif
-      
+
       do {
 
         float z_at_pt[13] = { 0.0 };
@@ -5380,7 +5399,7 @@ void home_all_axes() { gcode_G28(true); }
           #if ENABLED(PROBE_MANUALLY)
             test_precision = 0.00; // forced end
           #endif
-          
+
           switch (probe_points) {
             case 1:
               test_precision = 0.00; // forced end
@@ -10486,7 +10505,9 @@ void process_next_command() {
       #if HAS_LEVELING
         case 29: // G29 Detailed Z probe, probes the bed at 3 or more points,
                  // or provides access to the UBL System if enabled.
+          LULZBOT_ENABLE_PROBE_PINS(true);
           gcode_G29();
+          LULZBOT_ENABLE_PROBE_PINS(false);
           break;
       #endif // HAS_LEVELING
 
@@ -10795,7 +10816,9 @@ void process_next_command() {
         gcode_M118();
         break;
       case 119: // M119: Report endstop states
+        LULZBOT_ENABLE_PROBE_PINS(true);
         gcode_M119();
+        LULZBOT_ENABLE_PROBE_PINS(false);
         break;
       case 120: // M120: Enable endstops
         gcode_M120();
@@ -12861,7 +12884,7 @@ void kill(const char* lcd_msg) {
   #if defined(ACTION_ON_KILL)
     SERIAL_ECHOLNPGM("//action:" ACTION_ON_KILL);
   #endif
-  
+
   #if HAS_POWER_SWITCH
     SET_INPUT(PS_ON_PIN);
   #endif

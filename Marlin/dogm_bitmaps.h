@@ -34,6 +34,8 @@
 
 //#define START_BMPHIGH
 
+#include "dogm_bitmaps_LulzBot.h"
+
 #if ENABLED(SHOW_BOOTSCREEN)
   #if ENABLED(START_BMPHIGH)
     #define START_BMPWIDTH      112

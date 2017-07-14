@@ -56,12 +56,12 @@
 #
 
 # This defines the board to compile for (see boards.h for your board's ID)
-HARDWARE_MOTHERBOARD ?= 11
+HARDWARE_MOTHERBOARD ?= 301
 
 # Arduino source install directory, and version number
 # On most linuxes this will be /usr/share/arduino
-ARDUINO_INSTALL_DIR  ?= ${HOME}/Arduino
-ARDUINO_VERSION      ?= 106
+ARDUINO_INSTALL_DIR  ?= ${HOME}/devel/arduino-1.8.3
+ARDUINO_VERSION      ?= 183
 
 # You can optionally set a path to the avr-gcc tools. Requires a trailing slash. (ex: /usr/local/avr-gcc/bin)
 AVR_TOOLS_PATH ?=
@@ -81,6 +81,9 @@ LIQUID_TWI2        ?= 0
 
 # this defines if Wire is needed
 WIRE               ?= 0
+
+# this defines if U8GLIB is needed
+U8GLIB             ?= 1
 
 ############################################################################
 # Below here nothing should be changed...
@@ -270,6 +273,10 @@ ifeq ($(WIRE), 1)
 VPATH += $(ARDUINO_INSTALL_DIR)/libraries/Wire
 VPATH += $(ARDUINO_INSTALL_DIR)/libraries/Wire/utility
 endif
+ifeq ($(U8GLIB), 1)
+VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib
+VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib/utility
+endif
 
 ifeq ($(HARDWARE_VARIANT), arduino)
 HARDWARE_SUB_VARIANT ?= mega
@@ -296,7 +303,7 @@ CXXSRC = WMath.cpp WString.cpp Print.cpp Marlin_main.cpp \
 	temperature.cpp cardreader.cpp configuration_store.cpp \
 	watchdog.cpp SPI.cpp servo.cpp Tone.cpp ultralcd.cpp digipot_mcp4451.cpp \
 	dac_mcp4728.cpp vector_3.cpp qr_solve.cpp endstops.cpp stopwatch.cpp utility.cpp \
-	printcounter.cpp nozzle.cpp serial.cpp
+	printcounter.cpp nozzle.cpp serial.cpp gcode.cpp
 ifeq ($(LIQUID_TWI2), 0)
 CXXSRC += LiquidCrystal.cpp
 else
@@ -307,6 +314,10 @@ endif
 ifeq ($(WIRE), 1)
 SRC += twi.c
 CXXSRC += Wire.cpp
+endif
+
+ifeq ($(U8GLIB), 1)
+SRC += u8g_ll_api.c u8g_bitmap.c u8g_clip.c u8g_com_null.c u8g_delay.c u8g_page.c u8g_pb.c u8g_pb16h1.c u8g_rect.c u8g_state.c u8g_font.c u8g_font_data.c
 endif
 
 #Check for Arduino 1.0.0 or higher and use the correct source files for that version

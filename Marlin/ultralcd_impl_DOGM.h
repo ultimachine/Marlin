@@ -264,13 +264,17 @@ void lcd_printPGM_utf(const char *str, uint8_t n=LCD_WIDTH) {
   #if ENABLED(SHOW_CUSTOM_BOOTSCREEN)
 
     void lcd_custom_bootscreen() {
-      u8g.firstPage();
-      do {
-        u8g.drawBitmapP(
-          (128 - (CUSTOM_BOOTSCREEN_BMPWIDTH))  /2,
-          ( 64 - (CUSTOM_BOOTSCREEN_BMPHEIGHT)) /2,
-          CEILING(CUSTOM_BOOTSCREEN_BMPWIDTH, 8), CUSTOM_BOOTSCREEN_BMPHEIGHT, custom_start_bmp);
-      } while (u8g.nextPage());
+      #ifdef LULZBOT_CUSTOM_BOOTSCREEN
+        LULZBOT_CUSTOM_BOOTSCREEN();
+      #else
+        u8g.firstPage();
+        do {
+          u8g.drawBitmapP(
+            (128 - (CUSTOM_BOOTSCREEN_BMPWIDTH))  /2,
+            ( 64 - (CUSTOM_BOOTSCREEN_BMPHEIGHT)) /2,
+            CEILING(CUSTOM_BOOTSCREEN_BMPWIDTH, 8), CUSTOM_BOOTSCREEN_BMPHEIGHT, custom_start_bmp);
+        } while (u8g.nextPage());
+      #endif
     }
 
   #endif // SHOW_CUSTOM_BOOTSCREEN

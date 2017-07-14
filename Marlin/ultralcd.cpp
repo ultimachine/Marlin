@@ -31,6 +31,8 @@
 #include "configuration_store.h"
 #include "utility.h"
 
+#include "Configuration_LulzBot.h"
+
 #if HAS_BUZZER && DISABLED(LCD_USE_I2C_BUZZER)
   #include "buzzer.h"
 #endif
@@ -1011,6 +1013,7 @@ void kill_screen(const char* lcd_msg) {
         }
         if (lcdDrawUpdate)
           lcd_implementation_drawedit(PSTR(MSG_ZPROBE_ZOFFSET), ftostr43sign(zprobe_zoffset));
+          LULZBOT_ZOFFSET_OVERLAY(zprobe_zoffset);
       }
 
     #else // !BABYSTEP_ZPROBE_OFFSET
@@ -2385,7 +2388,7 @@ void kill_screen(const char* lcd_msg) {
       #endif
       MENU_ITEM(submenu, MSG_BED_LEVELING, lcd_bed_leveling);
     #elif PLANNER_LEVELING
-      MENU_ITEM(gcode, MSG_BED_LEVELING, PSTR("G28\nG29"));
+      MENU_ITEM(gcode, MSG_BED_LEVELING, PSTR(LULZBOT_MENU_BED_LEVELING_GCODE));
     #endif
 
     #if HAS_M206_COMMAND
