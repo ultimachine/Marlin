@@ -128,16 +128,17 @@
 
 #if defined(LULZBOT_IS_MINI)
     #define LULZBOT_MOTHERBOARD                   BOARD_MINIRAMBO
-    #define LULZBOT_CONTROLLER_FAN_PIN            FAN_1_PIN  // Digital pin 6
+    #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN  // Digital pin 6
     #define LULZBOT_Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
 
 #elif defined(LULZBOT_IS_TAZ)
     #define LULZBOT_MOTHERBOARD                   BOARD_RAMBO
-    #define LULZBOT_CONTROLLER_FAN_PIN            FAN_2_PIN  // Digital pin 2
+    #define LULZBOT_CONTROLLER_FAN_PIN            FAN2_PIN  // Digital pin 2
     #define LULZBOT_Z_MIN_PROBE_ENDSTOP
     #define LULZBOT_Z_MIN_PROBE_PIN               SERVO0_PIN // Digital pin 22
 #endif
 
+#define LULZBOT_USE_CONTROLLER_FAN
 #define LULZBOT_USE_XMIN_PLUG
 #define LULZBOT_USE_YMIN_PLUG
 #define LULZBOT_USE_ZMIN_PLUG
