@@ -63,7 +63,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".1"
+#define LULZBOT_FW_VERSION ".2"
 
 // Select options based on printer model
 
@@ -98,6 +98,7 @@
 // Shared values
 #define LULZBOT_STRING_CONFIG_H_AUTHOR        "(Aleph Objects Inc., LulzBot Default)"
 #define LULZBOT_BUFSIZE                       10
+#define LULZBOT_EEPROM_SETTINGS
 
 // Temperature settings
 
