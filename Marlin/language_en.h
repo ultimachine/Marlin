@@ -156,6 +156,12 @@
 #ifndef MSG_LEVEL_BED
   #define MSG_LEVEL_BED                       _UxGT("Level bed")
 #endif
+#ifndef MSG_REWIPE
+  #define MSG_REWIPE                          _UxGT("Rewiping")
+#endif
+#ifndef MSG_LEVEL_FAIL
+  #define MSG_LEVEL_FAIL                      _UxGT("Please clean nozzle")
+#endif
 #ifndef MSG_EDITING_STOPPED
   #define MSG_EDITING_STOPPED                 _UxGT("Mesh Editing Stopped")
 #endif

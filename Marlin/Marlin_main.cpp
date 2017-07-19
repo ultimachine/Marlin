@@ -2243,7 +2243,11 @@ static void clean_up_after_endstop_or_probe_move() {
     #if ENABLED(PROBE_DOUBLE_TOUCH)
 
       // Do a first probe at the fast speed
+      #if defined(LULZBOT_PROBE_Z_WITH_REWIPE)
+      LULZBOT_PROBE_Z_WITH_REWIPE(Z_PROBE_SPEED_FAST);
+      #else
       do_probe_move(-(Z_MAX_LENGTH) - 10, Z_PROBE_SPEED_FAST);
+      #endif
 
       #if ENABLED(DEBUG_LEVELING_FEATURE)
         float first_probe_z = current_position[Z_AXIS];
@@ -2270,7 +2274,11 @@ static void clean_up_after_endstop_or_probe_move() {
     #endif
 
     // move down slowly to find bed
+    #if defined(LULZBOT_PROBE_Z_WITH_REWIPE)
+    LULZBOT_PROBE_Z_WITH_REWIPE(Z_PROBE_SPEED_SLOW);
+    #else
     do_probe_move(-(Z_MAX_LENGTH) - 10, Z_PROBE_SPEED_SLOW);
+    #endif
 
     #if ENABLED(DEBUG_LEVELING_FEATURE)
       if (DEBUGGING(LEVELING)) DEBUG_POS("<<< run_z_probe", current_position);

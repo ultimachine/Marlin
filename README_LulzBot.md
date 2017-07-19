@@ -12,8 +12,10 @@ The source on this branch can compile firmware for the TAZ 6 and Mini, as well a
 
 To select what firmware to build, modify lines 6 and 7 of "Configuration_LulzBot.h" according to the instructions on line 39.
 
-# Known Limitations:
+# Known Issues:
 
-1. There is no way to tune the FlexyDually properly right now, as Marlin 1.1.4 does not support separate ESTEPs per extruder.
-2. The probe fail and rewipe/reprobe functionality is currently not implemented.
-3. The Makefile does not work. Building must be done via the Arduino IDE (internal builds are being done with 1.8.3)
+1. The Makefile does not work. Building must be done via the Arduino IDE (internal builds are being done with 1.8.3)
+2. There is no way to tune the FlexyDually properly right now, as Marlin 1.1.4 does not support separate ESTEPs per extruder.
+3. Printer needs to be power cycled to clear "clean nozzle" state.
+4. M114 not reporting complete version string.
+5. LCD display will show "Heating" when cooling.

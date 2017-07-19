@@ -63,7 +63,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".2"
+#define LULZBOT_FW_VERSION ".3"
 
 // Select options based on printer model
 
@@ -644,4 +644,34 @@
         u8g.drawStr(67,62,SHORT_BUILD_VERSION LULZBOT_FW_VERSION); \
     } while( u8g.nextPage() );
 
+// Z Probe w/ Rewipe
+#define LULZBOT_NUM_REWIPES 1
+
+#define LULZBOT_PROBE_Z_WITH_REWIPE(speed) \
+    do_probe_move(0, speed);                          /* probe; if we reach Z=0, the probe failed */ \
+    for(int rewipes = 1; current_position[Z_AXIS] == 0; rewipes++) { \
+        SERIAL_ERRORLNPGM(MSG_REWIPE); \
+        LCD_MESSAGEPGM(MSG_REWIPE); \
+        do_blocking_move_to_z(10, MMM_TO_MMS(speed)); /* raise nozzle */ \
+        Nozzle::clean(0, 2, 0, 0);                    /* wipe nozzle */ \
+        do_probe_move(0, speed);                      /* reprobe */ \
+        if(rewipes >= LULZBOT_NUM_REWIPES) {          /* max of tries */ \
+            SERIAL_ERRORLNPGM("PROBE FAIL CLEAN NOZZLE"); /* cura listens for this message specifically */ \
+            LCD_MESSAGEPGM(MSG_LEVEL_FAIL);           /* use a more friendly message on the LCD */ \
+            BUZZ(25, 880); BUZZ(50, 0);               /* play tone */ \
+            BUZZ(25, 880); BUZZ(50, 0); \
+            BUZZ(25, 880); BUZZ(50, 0); \
+            BUZZ(75, 880); BUZZ(50, 0); \
+            BUZZ(75, 880); BUZZ(50, 0); \
+            BUZZ(75, 880); BUZZ(50, 0); \
+            BUZZ(25, 880); BUZZ(50, 0); \
+            BUZZ(25, 880); BUZZ(50, 0); \
+            BUZZ(25, 880); BUZZ(50, 0); \
+            do_blocking_move_to_z(100, MMM_TO_MMS(Z_PROBE_SPEED_FAST)); /* raise head */ \
+            card.stopSDPrint();                       /* stop print job */ \
+            clear_command_queue(); \
+            print_job_timer.stop(); \
+            return NAN;                               /* abort the leveling in progress */ \
+        } \
+    }
 #endif /* CONFIGURATION_LULZBOT */
