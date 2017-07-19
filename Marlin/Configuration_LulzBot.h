@@ -647,6 +647,12 @@
 // Z Probe w/ Rewipe
 #define LULZBOT_NUM_REWIPES 1
 
+#if defined(LULZBOT_USE_LCD_DISPLAY)
+    #define LULZBOT_STOP_JOB_CMD card.stopSDPrint();
+#else
+    #define LULZBOT_STOP_JOB_CMD
+#endif
+
 #define LULZBOT_PROBE_Z_WITH_REWIPE(speed) \
     do_probe_move(0, speed);                          /* probe; if we reach Z=0, the probe failed */ \
     for(int rewipes = 1; current_position[Z_AXIS] == 0; rewipes++) { \
@@ -668,7 +674,7 @@
             BUZZ(25, 880); BUZZ(50, 0); \
             BUZZ(25, 880); BUZZ(50, 0); \
             do_blocking_move_to_z(100, MMM_TO_MMS(Z_PROBE_SPEED_FAST)); /* raise head */ \
-            card.stopSDPrint();                       /* stop print job */ \
+            LULZBOT_STOP_JOB_CMD;                     /* stop print job */ \
             clear_command_queue(); \
             print_job_timer.stop(); \
             return NAN;                               /* abort the leveling in progress */ \
