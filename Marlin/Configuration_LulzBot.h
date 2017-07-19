@@ -3,8 +3,8 @@
 
 // Change printer model and toolhead here
 
-#define LULZBOT_Oliveoil_TAZ_6
-#define TOOLHEAD_Oliveoil_SingleExtruder
+#define LULZBOT_Gladiola_Mini
+#define TOOLHEAD_Gladiola_SingleExtruder
 
 /* We define the LULZBOT_ values based on which printer or toolhead variants we are compiling
  * for, these constants are then placed where appropriate in the following files:
@@ -65,7 +65,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".5"
+#define LULZBOT_FW_VERSION ".6"
 
 // Select options based on printer model
 
@@ -140,12 +140,14 @@
     #define LULZBOT_MOTHERBOARD                   BOARD_MINIRAMBO
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN  // Digital pin 6
     #define LULZBOT_Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
+    #define LULZBOT_BAUDRATE 115200
 
 #elif defined(LULZBOT_IS_TAZ)
     #define LULZBOT_MOTHERBOARD                   BOARD_RAMBO
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN2_PIN  // Digital pin 2
     #define LULZBOT_Z_MIN_PROBE_ENDSTOP
     #define LULZBOT_Z_MIN_PROBE_PIN               SERVO0_PIN // Digital pin 22
+    #define LULZBOT_BAUDRATE 250000
 #endif
 
 #define LULZBOT_USE_CONTROLLER_FAN
