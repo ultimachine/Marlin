@@ -63,7 +63,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".3"
+#define LULZBOT_FW_VERSION ".4"
 
 // Select options based on printer model
 
@@ -523,8 +523,8 @@
     #define LULZBOT_DEFAULT_ACCELERATION          2000
     #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION   3000
 
-    #define LULZBOT_Z_MAX_POS                      159
-    #define LULZBOT_Z_MIN_POS                       -2
+    #define LULZBOT_Z_MAX_POS                      160
+    #define LULZBOT_Z_MIN_POS                      0
 
 #elif defined(LULZBOT_IS_TAZ)
     #define DIGIPOT_MOTOR_CURRENT_XY              175
@@ -644,8 +644,15 @@
         u8g.drawStr(67,62,SHORT_BUILD_VERSION LULZBOT_FW_VERSION); \
     } while( u8g.nextPage() );
 
-// Z Probe w/ Rewipe
-#define LULZBOT_NUM_REWIPES 1
+// Customize version string
+
+#define LULZBOT_DETAILED_BUILD_VERSION SHORT_BUILD_VERSION LULZBOT_FW_VERSION " (LulzBot " LULZBOT_CUSTOM_MACHINE_NAME " " LULZBOT_LCD_TOOLHEAD_NAME ")"
+#define LULZBOT_STRING_DISTRIBUTION_DATE __DATE__ __TIME__
+#define LULZBOT_SOURCE_CODE_URL "https://code.alephobjects.com/diffusion/MARLIN"
+
+// Bed Probe w/ Rewipe
+#define LULZBOT_NUM_REWIPES    1
+#define LULZBOT_BED_PROBE_MIN -2 // How far to push into bed before failing.
 
 #if defined(LULZBOT_USE_LCD_DISPLAY)
     #define LULZBOT_STOP_JOB_CMD card.stopSDPrint();
@@ -654,13 +661,13 @@
 #endif
 
 #define LULZBOT_PROBE_Z_WITH_REWIPE(speed) \
-    do_probe_move(0, speed);                          /* probe; if we reach Z=0, the probe failed */ \
-    for(int rewipes = 1; current_position[Z_AXIS] == 0; rewipes++) { \
+    do_probe_move(LULZBOT_BED_PROBE_MIN, speed); /* probe; if we reach limit, the probe failed */ \
+    for(int rewipes = 1; current_position[Z_AXIS] == LULZBOT_BED_PROBE_MIN; rewipes++) { \
         SERIAL_ERRORLNPGM(MSG_REWIPE); \
         LCD_MESSAGEPGM(MSG_REWIPE); \
         do_blocking_move_to_z(10, MMM_TO_MMS(speed)); /* raise nozzle */ \
         Nozzle::clean(0, 2, 0, 0);                    /* wipe nozzle */ \
-        do_probe_move(0, speed);                      /* reprobe */ \
+        do_probe_move(LULZBOT_BED_PROBE_MIN, speed);  /* reprobe */ \
         if(rewipes >= LULZBOT_NUM_REWIPES) {          /* max of tries */ \
             SERIAL_ERRORLNPGM("PROBE FAIL CLEAN NOZZLE"); /* cura listens for this message specifically */ \
             LCD_MESSAGEPGM(MSG_LEVEL_FAIL);           /* use a more friendly message on the LCD */ \
