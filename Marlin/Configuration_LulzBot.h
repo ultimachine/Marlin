@@ -23,6 +23,7 @@
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
     !defined(LULZBOT_Huerfano_Mini) && \
+    !defined(LULZBOT_Gladiola_GLCD) && \
     !defined(LULZBOT_Oliveoil_TAZ_6) && \
     !defined(LULZBOT_Huerfano_TAZ_7) \
 ) || ( \
@@ -45,6 +46,7 @@
     #error   Printer Model Choices:
     #error      Gladiola_Mini            // Lulzbot Mini  (Gladiola)
     #error      Huerfano_Mini            // Lulzbot Mini  (Huerfano)
+    #error      Gladiola_GLCD            // Lulzbot Mini  (Gladiola w/ LCD)
     #error      Oliveoil_TAZ_6           // Lulzbot TAZ 6 (Olive Oil)
     #error      Huerfano_TAZ_7           // Lulzbot TAZ 7 (Huerfano)
     #error
@@ -63,7 +65,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".4"
+#define LULZBOT_FW_VERSION ".5"
 
 // Select options based on printer model
 
@@ -78,6 +80,13 @@
     #define LULZBOT_CUSTOM_MACHINE_NAME "Mini"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
+#endif
+
+#if defined(LULZBOT_Gladiola_GLCD)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini GLCD"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_LCD_DISPLAY
 #endif
 
 #if defined(LULZBOT_Oliveoil_TAZ_6)
@@ -150,7 +159,7 @@
 /* Endstop settings are determined by printer model, except for the
  * X_MAX which varies by toolhead. */
 
-#if defined(LULZBOT_Gladiola_Mini)
+#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_GLCD)
     #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
     #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
     #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
@@ -310,7 +319,13 @@
     #define LULZBOT_BABYSTEPPING
     #define LULZBOT_BABYSTEP_ZPROBE_OFFSET
     #define LULZBOT_SHOW_CUSTOM_BOOTSCREEN
+    #define LULZBOT_ENCODER_PULSES_PER_STEP 2
+    #define LULZBOT_ENCODER_STEPS_PER_MENU_ITEM 1
     #define LULZBOT_MENU_BED_LEVELING_GCODE "G28 XY\nM109 S175\nG28 Z\nM109 R145\nG12\nG29\nM104 S0"
+    #if defined(LULZBOT_Gladiola_GLCD)
+        // In the experimental Gladiola_GLCD, the encoder direction is reversed.
+        #define LULZBOT_REVERSE_ENCODER_DIRECTION
+    #endif
 #endif
 
 /*********************************************** COMMON TOOLHEADS PARAMETERS *****************************/
@@ -539,7 +554,7 @@
     #define LULZBOT_Z_MIN_POS                       0
 #endif
 
-#if defined(LULZBOT_Gladiola_Mini)
+#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_GLCD)
     #define PWM_MOTOR_CURRENT_Z                   1630
     #define LULZBOT_Z_STEPS                       1600
 

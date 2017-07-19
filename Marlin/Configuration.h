@@ -1249,13 +1249,13 @@
 // This option overrides the default number of encoder pulses needed to
 // produce one step. Should be increased for high-resolution encoders.
 //
-//#define ENCODER_PULSES_PER_STEP 1
+#define ENCODER_PULSES_PER_STEP LULZBOT_ENCODER_PULSES_PER_STEP
 
 //
 // Use this option to override the number of step signals required to
 // move between next/prev menu items.
 //
-//#define ENCODER_STEPS_PER_MENU_ITEM 5
+#define ENCODER_STEPS_PER_MENU_ITEM LULZBOT_ENCODER_STEPS_PER_MENU_ITEM
 
 /**
  * Encoder Direction Options
@@ -1272,7 +1272,9 @@
 //
 //  Set this option if CLOCKWISE causes values to DECREASE
 //
-//#define REVERSE_ENCODER_DIRECTION
+#if defined(LULZBOT_REVERSE_ENCODER_DIRECTION)
+#define REVERSE_ENCODER_DIRECTION LULZBOT_REVERSE_ENCODER_DIRECTION
+#endif
 
 //
 // This option reverses the encoder direction for navigating LCD menus.
