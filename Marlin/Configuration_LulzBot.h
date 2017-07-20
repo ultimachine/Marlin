@@ -336,6 +336,9 @@
         // In the experimental Gladiola_GLCD, the encoder direction is reversed.
         #define LULZBOT_REVERSE_ENCODER_DIRECTION
     #endif
+    // Confusingly, Marlin shows three separate e-step settings: the active nozzle, nozzle1, nozzle2.
+    // We hide the first since it is redundant.
+    #define LULZBOT_HIDE_E_STEPS_FOR_ACTIVE_NOZZLE
 #endif
 
 /*********************************************** COMMON TOOLHEADS PARAMETERS *****************************/
@@ -471,6 +474,7 @@
     #undef  LULZBOT_WIPE_Y2
     #define LULZBOT_WIPE_Y2                    73
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    true
+    #define LULZBOT_DISTINCT_E_FACTORS
 #endif /* TOOLHEAD_Longfin_FlexyDually */
 
 
@@ -617,13 +621,11 @@
 #endif
 
 // default steps per unit for LulzBot TAZ.
-// LULZBOT_ESTEPS_PER_EXTRUDER is required for the tuning of FlexyDually
-// but currently is not implemented in Marlin 1.1.4.
 
-#if LULZBOT_EXTRUDERS == 1 || not defined(LULZBOT_ESTEPS_PER_EXTRUDER)
-    #define LULZBOT_DEFAULT_AXIS_STEPS_PER_UNIT   {LULZBOT_XY_STEPS,LULZBOT_XY_STEPS,LULZBOT_Z_STEPS,LULZBOT_E_STEPS}
-#elif LULZBOT_EXTRUDERS == 2
+#if defined(LULZBOT_DISTINCT_E_FACTORS) && LULZBOT_EXTRUDERS == 2
     #define LULZBOT_DEFAULT_AXIS_STEPS_PER_UNIT   {LULZBOT_XY_STEPS,LULZBOT_XY_STEPS,LULZBOT_Z_STEPS,LULZBOT_E_STEPS,LULZBOT_E_STEPS}
+#else
+    #define LULZBOT_DEFAULT_AXIS_STEPS_PER_UNIT   {LULZBOT_XY_STEPS,LULZBOT_XY_STEPS,LULZBOT_Z_STEPS,LULZBOT_E_STEPS}
 #endif
 
 // Gralco's customized Z Offset overlay (also requires dogm_bitmaps_Lulzbot.h)

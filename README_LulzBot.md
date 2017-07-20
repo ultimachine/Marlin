@@ -15,5 +15,4 @@ To select what firmware to build, modify lines 6 and 7 of "Configuration_LulzBot
 # Known Issues:
 
 1. The Makefile does not work. Building must be done via the Arduino IDE (internal builds are being done with 1.8.3)
-2. There is no way to tune the FlexyDually properly right now, as Marlin 1.1.4 does not support separate ESTEPs per extruder.
-3. Printer needs to be power cycled to clear "clean nozzle" state.
+2. Printer needs to be power cycled to clear "clean nozzle" state.
