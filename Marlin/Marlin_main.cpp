@@ -3935,21 +3935,7 @@ inline void gcode_G28(const bool always_home_all) {
     tool_change(old_tool_index, 0, true);
   #endif
 
-  #ifdef LULZBOT_RAISE_AFTER_HOME
-      if (home_all || homeZ) {
-        // Raise Z after homing Z if z is not already high enough (never lower z)
-        destination[Z_AXIS] = LOGICAL_Z_POSITION(Z_HOMING_HEIGHT);
-        if (destination[Z_AXIS] > current_position[Z_AXIS]) {
-
-          #if ENABLED(DEBUG_LEVELING_FEATURE)
-            if (DEBUGGING(LEVELING))
-              SERIAL_ECHOLNPAIR("Raise Z (after homing) to ", destination[Z_AXIS]);
-          #endif
-
-          do_blocking_move_to_z(destination[Z_AXIS]);
-        }
-      }
-  #endif
+  LULZBOT_AFTER_Z_HOME_ACTION
 
   lcd_refresh();
 
@@ -7088,7 +7074,15 @@ inline void gcode_M104() {
     #endif
 
     if (parser.value_celsius() > thermalManager.degHotend(target_extruder))
+      #if defined(LULZBOT_COOLING_MESSAGES)
+        #if LULZBOT_EXTRUDERS > 1
+        lcd_status_printf_P(0, PSTR("Extruder %i %s"), target_extruder + 1, MSG_HEATING);
+        #else
+        lcd_status_printf_P(0, PSTR("Extruder %s"), MSG_HEATING);
+        #endif
+      #else
       lcd_status_printf_P(0, PSTR("E%i %s"), target_extruder + 1, MSG_HEATING);
+      #endif
   }
 
   #if ENABLED(AUTOTEMP)

@@ -65,7 +65,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".7"
+#define LULZBOT_FW_VERSION ".8"
 
 // Select options based on printer model
 
@@ -221,7 +221,7 @@
     #define LULZBOT_Z_SAFE_HOMING_X_POINT         (-19)
     #define LULZBOT_Z_SAFE_HOMING_Y_POINT         (258)
     #define LULZBOT_Z_HOMING_HEIGHT               5
-    #define LULZBOT_RAISE_AFTER_HOME // Not in upstream Marlin.
+    #define LULZBOT_AFTER_Z_HOME_CMD              "G0 Z5" // Raise to clear homing button
 #endif
 
 #if defined(LULZBOT_MINI_BED)
@@ -266,6 +266,13 @@
 #define LULZBOT_Z_PROBE_SPEED_FAST           (8*60)
 #define LULZBOT_Z_CLEARANCE_DEPLOY_PROBE      5
 #define LULZBOT_Z_CLEARANCE_BETWEEN_PROBES    5
+
+/* We use G92 for adjusting the coordinate space in the Yellowfin toolhead,
+ * however upstream Marlin has made it so G92 adjusts the software endstops,
+ * which makes G92 unusable for our use case. As an interim measure, revert
+ * to the previous behavior of G29 using NO_WORKSPACE_OFFSETS
+*/
+#define LULZBOT_NO_WORKSPACE_OFFSETS
 
 /* Enable the probe pins only only when homing/probing,
  * as this helps reduce EMI by grounding the lines.
@@ -471,7 +478,8 @@
     // Prototype Dual v3 for TAZ.
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Dual Extruder 3"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_AFTER_Z_PROBE_CMD               "G92 Z15.5" // Correction for raised homing button
+    #undef  LULZBOT_AFTER_Z_HOME_CMD
+    #define LULZBOT_AFTER_Z_HOME_CMD               "G92 Z5.5\nG0 Z10" // Correction for raised homing button
     #undef  LULZBOT_WIPE_X1
     #undef  LULZBOT_WIPE_X2
     #define LULZBOT_WIPE_X1                       -22
@@ -481,10 +489,12 @@
     #undef  LULZBOT_Z_SAFE_HOMING_X_POINT
     #undef  LULZBOT_Z_SAFE_HOMING_Y_POINT
     #define LULZBOT_Z_SAFE_HOMING_X_POINT        (-22)    // X point for Z homing when homing all axis (G28)
-    #define LULZBOT_Z_SAFE_HOMING_Y_POINT        (260)    // Y point for Z homing when homing all axis (G28)
+    #define LULZBOT_Z_SAFE_HOMING_Y_POINT        (265)    // Y point for Z homing when homing all axis (G28)
     #undef  LULZBOT_X_MAX_POS
     #define LULZBOT_X_MAX_POS                      290
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING       false
+    #undef  LULZBOT_INVERT_E0_DIR
+    #define LULZBOT_INVERT_E0_DIR                 false
     #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Yellowfin_DualExtruder */
 
@@ -705,4 +715,15 @@
             return NAN;                               /* abort the leveling in progress */ \
         } \
     }
+
+// Raise after home cmd, used only on TAZ to lift the print head after homing
+#if defined(LULZBOT_AFTER_Z_HOME_CMD)
+    #define LULZBOT_AFTER_Z_HOME_ACTION \
+        if(home_all || homeZ) { \
+          enqueue_and_echo_commands_P(PSTR(LULZBOT_AFTER_Z_HOME_CMD)); \
+        }
+#else
+    #define LULZBOT_AFTER_Z_HOME_ACTION
+#endif
+
 #endif /* CONFIGURATION_LULZBOT */
