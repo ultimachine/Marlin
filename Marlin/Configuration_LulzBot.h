@@ -3,8 +3,8 @@
 
 // Change printer model and toolhead here
 
-#define LULZBOT_Gladiola_Mini
-#define TOOLHEAD_Gladiola_SingleExtruder
+#define LULZBOT_Oliveoil_TAZ_6
+#define TOOLHEAD_Oliveoil_SingleExtruder
 
 /* We define the LULZBOT_ values based on which printer or toolhead variants we are compiling
  * for, these constants are then placed where appropriate in the following files:
@@ -65,7 +65,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".6"
+#define LULZBOT_FW_VERSION ".7"
 
 // Select options based on printer model
 
@@ -323,6 +323,7 @@
     #define LULZBOT_SHOW_CUSTOM_BOOTSCREEN
     #define LULZBOT_ENCODER_PULSES_PER_STEP 2
     #define LULZBOT_ENCODER_STEPS_PER_MENU_ITEM 1
+    #define LULZBOT_COOLING_MESSAGES
     #define LULZBOT_MENU_BED_LEVELING_GCODE "G28 XY\nM109 S175\nG28 Z\nM109 R145\nG12\nG29\nM104 S0"
     #if defined(LULZBOT_Gladiola_GLCD)
         // In the experimental Gladiola_GLCD, the encoder direction is reversed.

@@ -7303,7 +7303,19 @@ inline void gcode_M109() {
         print_job_timer.start();
     #endif
 
+    #if defined(LULZBOT_COOLING_MESSAGES)
+    const bool heating = thermalManager.isHeatingHotend(target_extruder);
+    const char * verb = thermalManager.isHeatingHotend(target_extruder) ? MSG_HEATING : MSG_COOLING;
+    if (heating || !no_wait_for_cooling) {
+      #if LULZBOT_EXTRUDERS > 1
+      lcd_status_printf_P(0, PSTR("Extruder %i %s"), target_extruder + 1, verb);
+      #else
+      lcd_status_printf_P(0, PSTR("Extruder %s"), verb);
+      #endif
+    }
+    #else
     if (thermalManager.isHeatingHotend(target_extruder)) lcd_status_printf_P(0, PSTR("E%i %s"), target_extruder + 1, MSG_HEATING);
+    #endif
   }
   else return;
 
@@ -7398,7 +7410,15 @@ inline void gcode_M109() {
   } while (wait_for_heatup && TEMP_CONDITIONS);
 
   if (wait_for_heatup) {
+    #if defined(LULZBOT_COOLING_MESSAGES)
+    if(wants_to_cool) {
+      LCD_MESSAGEPGM(MSG_COOLING_COMPLETE);
+    } else {
+      LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
+    }
+    #else
     LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
+    #endif
     #if ENABLED(PRINTER_EVENT_LEDS)
       #if ENABLED(RGBW_LED)
         set_led_color(0, 0, 0, 255);  // Turn on the WHITE LED
@@ -7427,7 +7447,6 @@ inline void gcode_M109() {
   inline void gcode_M190() {
     if (DEBUGGING(DRYRUN)) return;
 
-    LCD_MESSAGEPGM(MSG_BED_HEATING);
     const bool no_wait_for_cooling = parser.seenval('S');
     if (no_wait_for_cooling || parser.seenval('R')) {
       thermalManager.setTargetBed(parser.value_celsius());
@@ -7437,6 +7456,16 @@ inline void gcode_M109() {
       #endif
     }
     else return;
+
+    #if defined(LULZBOT_COOLING_MESSAGES)
+    if(thermalManager.isCoolingBed()) {
+      LCD_MESSAGEPGM(MSG_BED_COOLING);
+    } else {
+      LCD_MESSAGEPGM(MSG_BED_HEATING);
+    }
+    #else
+      LCD_MESSAGEPGM(MSG_BED_HEATING);
+    #endif
 
     #if TEMP_BED_RESIDENCY_TIME > 0
       millis_t residency_start_ms = 0;
