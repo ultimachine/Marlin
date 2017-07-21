@@ -65,7 +65,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".8"
+#define LULZBOT_FW_VERSION ".9"
 
 // Select options based on printer model
 
@@ -77,7 +77,7 @@
 
 #if defined(LULZBOT_Huerfano_Mini)
     // Prototype Mini w/ Z-Belt
-    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini Z-Belt"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
 #endif
@@ -105,9 +105,10 @@
 #endif
 
 // Shared values
-#define LULZBOT_STRING_CONFIG_H_AUTHOR        "(Aleph Objects Inc., LulzBot Default)"
+#define LULZBOT_STRING_CONFIG_H_AUTHOR        "(Aleph Objects Inc., LulzBot Diffusion)"
 #define LULZBOT_BUFSIZE                       10
 #define LULZBOT_EEPROM_SETTINGS
+#define LULZBOT_EMERGENCY_PARSER
 
 // Temperature settings
 
@@ -379,7 +380,9 @@
 
 #if defined(TOOLHEAD_Heather_Aero)
     // Prototype Aero toolhead for Mini
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING        false
+    #define LULZBOT_LCD_TOOLHEAD_NAME              "Titan AERO"
+//          16 chars max                            ^^^^^^^^^^^^^^^
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
 #endif /* TOOLHEAD_Heather_Aero */
 
 /*********************************************** TAZ TOOLHEADS *******************************************/
@@ -483,7 +486,7 @@
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Dual Extruder 3"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #undef  LULZBOT_AFTER_Z_HOME_CMD
-    #define LULZBOT_AFTER_Z_HOME_CMD               "G92 Z5.5\nG0 Z10" // Correction for raised homing button
+    #define LULZBOT_AFTER_Z_HOME_CMD               "G92 Z5.5\nG0 Z16" // Correction for raised homing button
     #undef  LULZBOT_WIPE_X1
     #undef  LULZBOT_WIPE_X2
     #define LULZBOT_WIPE_X1                       -22
@@ -584,6 +587,8 @@
     #define Z_PULLEY_TEETH                        24
     #define Z_MOTOR_GEAR_REDUCTION                26.8512396694
     #define LULZBOT_Z_STEPS (Z_FULL_STEPS_PER_ROTATION * Z_MICROSTEPS * Z_MOTOR_GEAR_REDUCTION / double(Z_BELT_PITCH) / double(Z_PULLEY_TEETH))
+    #undef  LULZBOT_Z_MAX_POS
+    #define LULZBOT_Z_MAX_POS                     183
 
 #elif defined(LULZBOT_Oliveoil_TAZ_6)
     #define DIGIPOT_MOTOR_CURRENT_Z               200
