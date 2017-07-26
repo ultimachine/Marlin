@@ -21,6 +21,7 @@
  */
 
 #include "Configuration_LulzBot.h"
+#include "Conditionals_LulzBot.h"
 
 /**
  * Configuration.h

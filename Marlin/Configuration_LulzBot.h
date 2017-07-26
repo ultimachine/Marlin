@@ -32,11 +32,10 @@
 
 */
 
-// If compiling using the Arduino IDE, change printer model and toolhead here:
+// If compiling using the Arduino IDE, uncomment and set printer model
+// and toolhead here:
 
-#define LULZBOT_Huerfano_TAZ_7
-#define TOOLHEAD_Angelfish_Aero
-
-#include "Conditionals_LulzBot.h"
+//#define LULZBOT_Oliveoil_TAZ_6
+//#define TOOLHEAD_Oliveoil_SingleExtruder
 
 #endif /* CONFIGURATION_LULZBOT */

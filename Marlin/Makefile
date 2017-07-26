@@ -60,7 +60,7 @@ HARDWARE_MOTHERBOARD ?= 301
 
 # Arduino source install directory, and version number
 # On most linuxes this will be /usr/share/arduino
-ARDUINO_INSTALL_DIR  ?= ${HOME}/devel/arduino-1.8.3
+ARDUINO_INSTALL_DIR  ?= ../ArduinoAddons/arduino-1.8.3
 ARDUINO_VERSION      ?= 183
 
 # You can optionally set a path to the avr-gcc tools. Requires a trailing slash. (ex: /usr/local/avr-gcc/bin)
@@ -82,8 +82,21 @@ LIQUID_TWI2        ?= 0
 # this defines if Wire is needed
 WIRE               ?= 0
 
-# this defines if U8GLIB is needed
+# this defines if U8GLIB is needed (may require RELOC_WORKAROUND)
 U8GLIB             ?= 1
+
+# this defines whether to add a workaround for the avr-gcc relocation bug
+#	  https://www.stix.id.au/wiki/AVR_relocation_truncations_workaround
+RELOC_WORKAROUND   ?= 1
+
+############
+# The following added by AlephObjects for adjusting the name of the output
+# hex file
+VERSION=$(shell grep "define SHORT_BUILD_VERSION" Version.h | cut -d \" -f 2)
+REVISION=$(shell grep "define LULZBOT_FW" Conditionals_LulzBot.h | cut -d \" -f 2)
+HASH = $(shell git rev-parse --verify HEAD --short)
+HEX_FILENAME=Marlin_$(MODEL)_$(TOOLHEAD)_$(VERSION)$(REVISION)_$(HASH)
+LULZBOT_EXTRAS=-DLULZBOT_$(MODEL) -DTOOLHEAD_$(TOOLHEAD) -Wfatal-errors
 
 ############################################################################
 # Below here nothing should be changed...
@@ -320,6 +333,11 @@ ifeq ($(U8GLIB), 1)
 SRC += u8g_ll_api.c u8g_bitmap.c u8g_clip.c u8g_com_null.c u8g_delay.c u8g_page.c u8g_pb.c u8g_pb16h1.c u8g_rect.c u8g_state.c u8g_font.c u8g_font_data.c
 endif
 
+ifeq ($(RELOC_WORKAROUND), 1)
+LD_PREFIX=-nodefaultlibs
+LD_SUFFIX=-lm -lgcc -lc -lgcc
+endif
+
 #Check for Arduino 1.0.0 or higher and use the correct source files for that version
 ifeq ($(shell [ $(ARDUINO_VERSION) -ge 100 ] && echo true), true)
 CXXSRC += main.cpp
@@ -377,10 +395,11 @@ CTUNING = -funsigned-char -funsigned-bitfields -fpack-struct \
 	-flto \
 	-DARDUINO=$(ARDUINO_VERSION)
 ifneq ($(HARDWARE_MOTHERBOARD),)
-CTUNING += -DMOTHERBOARD=${HARDWARE_MOTHERBOARD}
+# LulzBot: Commented out this line since this is set by Conditionals_LulzBot.h
+#CTUNING += -DMOTHERBOARD=${HARDWARE_MOTHERBOARD}
 endif
 #CEXTRA = -Wa,-adhlns=$(<:.c=.lst)
-CEXTRA = -fno-use-cxa-atexit -fno-threadsafe-statics
+CEXTRA = -fno-use-cxa-atexit -fno-threadsafe-statics $(LULZBOT_EXTRAS)
 
 CFLAGS := $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CWARN) $(CEXTRA) $(CTUNING) $(CSTANDARD)
 CXXFLAGS :=         $(CDEFS) $(CINCS) -O$(OPT) -Wall    $(CEXTRA) $(CTUNING) $(CXXSTANDARD)
@@ -426,7 +445,10 @@ endif
 # Default target.
 all: sizeafter
 
-build: $(BUILD_DIR) elf hex
+build: $(BUILD_DIR) elf hex $(BUILD_DIR)/$(HEX_FILENAME).hex
+
+$(BUILD_DIR)/$(HEX_FILENAME).hex: $(BUILD_DIR)/$(TARGET).hex
+	mv $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(HEX_FILENAME).hex
 
 # Creates the object directory
 $(BUILD_DIR):
@@ -498,7 +520,7 @@ extcoff: $(TARGET).elf
 	# Link: create ELF output file from library.
 $(BUILD_DIR)/$(TARGET).elf: $(OBJ) Configuration.h
 	$(Pecho) "  CXX   $@"
-	$P $(CC) $(ALL_CXXFLAGS) -Wl,--gc-sections,--relax -o $@ -L. $(OBJ) $(LDFLAGS)
+	$P $(CC) $(LD_PREFIX) $(ALL_CXXFLAGS) -Wl,--gc-sections,--relax -o $@ -L. $(OBJ) $(LDFLAGS) $(LD_SUFFIX)
 
 $(BUILD_DIR)/%.o: %.c Configuration.h Configuration_adv.h $(MAKEFILE)
 	$(Pecho) "  CC    $<"
