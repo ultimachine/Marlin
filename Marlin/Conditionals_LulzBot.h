@@ -19,6 +19,7 @@
     !defined(LULZBOT_Gladiola_Mini) && \
     !defined(LULZBOT_Huerfano_Mini) && \
     !defined(LULZBOT_Gladiola_GLCD) && \
+    !defined(LULZBOT_Huerfano_GLCD) && \
     !defined(LULZBOT_Oliveoil_TAZ_6) && \
     !defined(LULZBOT_Huerfano_TAZ_7) \
 ) || ( \
@@ -60,7 +61,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".10"
+#define LULZBOT_FW_VERSION ".13"
 
 // Select options based on printer model
 
@@ -79,6 +80,14 @@
 
 #if defined(LULZBOT_Gladiola_GLCD)
     #define LULZBOT_CUSTOM_MACHINE_NAME "Mini GLCD"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_LCD_DISPLAY
+#endif
+
+#if defined(LULZBOT_Huerfano_GLCD)
+    // Prototype Mini w/ Z-Belt
+    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini GLCD Z-Belt"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_LCD_DISPLAY
@@ -163,7 +172,7 @@
     #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
     #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
 
-#elif defined(LULZBOT_IS_TAZ) || defined(LULZBOT_Huerfano_Mini)
+#elif defined(LULZBOT_IS_TAZ) || defined(LULZBOT_Huerfano_Mini) || defined(LULZBOT_Huerfano_GLCD)
     #define LULZBOT_X_MIN_ENDSTOP_INVERTING       false
     #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       false
     #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       false
@@ -238,12 +247,22 @@
 #define LULZBOT_NOZZLE_CLEAN_FEATURE
 
 #define LULZBOT_AUTO_BED_LEVELING_3POINT
-#define LULZBOT_ABL_PROBE_PT_1_X LULZBOT_LEFT_PROBE_BED_POSITION
-#define LULZBOT_ABL_PROBE_PT_1_Y LULZBOT_FRONT_PROBE_BED_POSITION
-#define LULZBOT_ABL_PROBE_PT_2_X LULZBOT_RIGHT_PROBE_BED_POSITION
-#define LULZBOT_ABL_PROBE_PT_2_Y LULZBOT_FRONT_PROBE_BED_POSITION
-#define LULZBOT_ABL_PROBE_PT_3_X LULZBOT_RIGHT_PROBE_BED_POSITION
-#define LULZBOT_ABL_PROBE_PT_3_Y LULZBOT_BACK_PROBE_BED_POSITION
+
+#if defined(LULZBOT_AUTO_BED_LEVELING_3POINT)
+  // Experimental three point leveling.
+  #define LULZBOT_ABL_PROBE_PT_1_X LULZBOT_LEFT_PROBE_BED_POSITION
+  #define LULZBOT_ABL_PROBE_PT_1_Y LULZBOT_FRONT_PROBE_BED_POSITION
+  #define LULZBOT_ABL_PROBE_PT_2_X LULZBOT_RIGHT_PROBE_BED_POSITION
+  #define LULZBOT_ABL_PROBE_PT_2_Y LULZBOT_FRONT_PROBE_BED_POSITION
+  #define LULZBOT_ABL_PROBE_PT_3_X LULZBOT_RIGHT_PROBE_BED_POSITION
+  #define LULZBOT_ABL_PROBE_PT_3_Y LULZBOT_BACK_PROBE_BED_POSITION
+#else
+  // Traditionally LulzBot printers have employed a four-point leveling
+  // using a degenerate 2x2 grid.
+  #define LULZBOT_GRID_MAX_POINTS_X            2
+  #define LULZBOT_GRID_MAX_POINTS_Y            2
+  #define LULZBOT_PROBE_Y_FIRST
+#endif
 
 /* Define probe parameters related to bed leveling,
  * e.g. the washers on the bed. These are confusingly
@@ -328,7 +347,7 @@
     #define LULZBOT_ENCODER_STEPS_PER_MENU_ITEM 1
     #define LULZBOT_COOLING_MESSAGES
     #define LULZBOT_MENU_BED_LEVELING_GCODE "G28 XY\nM109 S175\nG28 Z\nM109 R145\nG12\nG29\nM104 S0"
-    #if defined(LULZBOT_Gladiola_GLCD)
+    #if defined(LULZBOT_Gladiola_GLCD) || defined(LULZBOT_Huerfano_GLCD)
         // In the experimental Gladiola_GLCD, the encoder direction is reversed.
         #define LULZBOT_REVERSE_ENCODER_DIRECTION
     #endif
@@ -488,6 +507,10 @@
     #define LULZBOT_WIPE_X2                       -22
     #undef  LULZBOT_Z_HOMING_HEIGHT
     #define LULZBOT_Z_HOMING_HEIGHT                10
+    #undef  LULZBOT_Z_CLEARANCE_DEPLOY_PROBE
+    #define LULZBOT_Z_CLEARANCE_DEPLOY_PROBE       10
+    #undef  LULZBOT_Z_CLEARANCE_BETWEEN_PROBES
+    #define LULZBOT_Z_CLEARANCE_BETWEEN_PROBES     10
     #undef  LULZBOT_Z_SAFE_HOMING_X_POINT
     #undef  LULZBOT_Z_SAFE_HOMING_Y_POINT
     #define LULZBOT_Z_SAFE_HOMING_X_POINT        (-22)    // X point for Z homing when homing all axis (G28)
@@ -573,7 +596,7 @@
     #define PWM_MOTOR_CURRENT_Z                   1630
     #define LULZBOT_Z_STEPS                       1600
 
-#elif defined(LULZBOT_Huerfano_Mini)
+#elif defined(LULZBOT_Huerfano_Mini) || defined(LULZBOT_Huerfano_GLCD)
     #define PWM_MOTOR_CURRENT_Z                   1000
     // Prototype Z-Belt Mini
     #define Z_FULL_STEPS_PER_ROTATION             200
@@ -583,7 +606,7 @@
     #define Z_MOTOR_GEAR_REDUCTION                26.8512396694
     #define LULZBOT_Z_STEPS (Z_FULL_STEPS_PER_ROTATION * Z_MICROSTEPS * Z_MOTOR_GEAR_REDUCTION / double(Z_BELT_PITCH) / double(Z_PULLEY_TEETH))
     #undef  LULZBOT_Z_MAX_POS
-    #define LULZBOT_Z_MAX_POS                     183
+    #define LULZBOT_Z_MAX_POS                     186.1
 
 #elif defined(LULZBOT_Oliveoil_TAZ_6)
     #define DIGIPOT_MOTOR_CURRENT_Z               200
@@ -670,8 +693,9 @@
 #define LULZBOT_SOURCE_CODE_URL "https://code.alephobjects.com/diffusion/MARLIN"
 
 // Bed Probe w/ Rewipe
-#define LULZBOT_NUM_REWIPES    1
-#define LULZBOT_BED_PROBE_MIN -2 // How far to push into bed before failing.
+#define LULZBOT_NUM_REWIPES      1
+#define LULZBOT_BED_PROBE_MIN   -3 // Limit on pushing into the bed
+#define LULZBOT_BED_PROBE_FAIL  -2 // At what point is a failure detected
 
 #if defined(LULZBOT_USE_LCD_DISPLAY)
     #define LULZBOT_STOP_JOB_CMD card.stopSDPrint();
@@ -681,7 +705,7 @@
 
 #define LULZBOT_PROBE_Z_WITH_REWIPE(speed) \
     do_probe_move(LULZBOT_BED_PROBE_MIN, speed); /* probe; if we reach limit, the probe failed */ \
-    for(int rewipes = 1; current_position[Z_AXIS] == LULZBOT_BED_PROBE_MIN; rewipes++) { \
+    for(int rewipes = 1; current_position[Z_AXIS] < LULZBOT_BED_PROBE_FAIL; rewipes++) { \
         SERIAL_ERRORLNPGM(MSG_REWIPE); \
         LCD_MESSAGEPGM(MSG_REWIPE); \
         do_blocking_move_to_z(10, MMM_TO_MMS(speed)); /* raise nozzle */ \

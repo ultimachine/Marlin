@@ -848,8 +848,11 @@
  *   leveling in steps so you can manually adjust the Z height at each grid-point.
  *   With an LCD controller the process is guided step-by-step.
  */
+#if defined(LULZBOT_AUTO_BED_LEVELING_3POINT)
 #define AUTO_BED_LEVELING_3POINT LULZBOT_AUTO_BED_LEVELING_3POINT
-//#define AUTO_BED_LEVELING_LINEAR
+#else
+#define AUTO_BED_LEVELING_LINEAR
+#endif
 //#define AUTO_BED_LEVELING_BILINEAR
 //#define AUTO_BED_LEVELING_UBL
 //#define MESH_BED_LEVELING
@@ -884,7 +887,7 @@
   #define MIN_PROBE_EDGE 10
 
   // Probe along the Y axis, advancing X after each column
-  //#define PROBE_Y_FIRST
+  #define PROBE_Y_FIRST LULZBOT_PROBE_Y_FIRST
 
   #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
