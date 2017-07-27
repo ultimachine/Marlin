@@ -878,6 +878,18 @@ void kill_screen(const char* lcd_msg) {
 
   /**
    *
+   * Extra menu item to show LulzBot firmware version
+   *
+   */
+  #if defined(LULZBOT_SHOW_CUSTOM_BOOTSCREEN)
+  void lcd_show_custom_bootscreen() {
+    if (lcd_clicked) { defer_return_to_status = false; return lcd_goto_previous_menu(); }
+    lcd_custom_bootscreen();
+  }
+  #endif
+
+  /**
+   *
    * "Main" menu
    *
    */
@@ -918,6 +930,9 @@ void kill_screen(const char* lcd_msg) {
       #endif
     }
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
+    #if defined(LULZBOT_SHOW_CUSTOM_BOOTSCREEN)
+    MENU_ITEM(submenu, MSG_INFO_MENU, lcd_show_custom_bootscreen);
+    #endif
 
     #if ENABLED(SDSUPPORT)
       if (card.cardOK) {

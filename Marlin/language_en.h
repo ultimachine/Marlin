@@ -735,7 +735,7 @@
   #define MSG_DELTA_HEIGHT_CALIBRATE          _UxGT("Set Delta Height")
 #endif
 #ifndef MSG_INFO_MENU
-  #define MSG_INFO_MENU                       _UxGT("About Printer")
+  #define MSG_INFO_MENU                       _UxGT("About Firmware")
 #endif
 #ifndef MSG_INFO_PRINTER_MENU
   #define MSG_INFO_PRINTER_MENU               _UxGT("Printer Info")

@@ -62,7 +62,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".14"
+#define LULZBOT_FW_VERSION ".15"
 
 // Select options based on printer model
 
