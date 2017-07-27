@@ -43,6 +43,7 @@
     #error      Gladiola_Mini            // Lulzbot Mini  (Gladiola)
     #error      Huerfano_Mini            // Lulzbot Mini  (Huerfano)
     #error      Gladiola_GLCD            // Lulzbot Mini  (Gladiola w/ LCD)
+    #error      Huerfano_GLCD            // Lulzbot Mini  (Gladiola w/ LCD)
     #error      Oliveoil_TAZ_6           // Lulzbot TAZ 6 (Olive Oil)
     #error      Huerfano_TAZ_7           // Lulzbot TAZ 7 (Huerfano)
     #error
@@ -61,7 +62,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".13"
+#define LULZBOT_FW_VERSION ".14"
 
 // Select options based on printer model
 
@@ -246,7 +247,7 @@
 
 #define LULZBOT_NOZZLE_CLEAN_FEATURE
 
-#define LULZBOT_AUTO_BED_LEVELING_3POINT
+//#define LULZBOT_AUTO_BED_LEVELING_3POINT
 
 #if defined(LULZBOT_AUTO_BED_LEVELING_3POINT)
   // Experimental three point leveling.
