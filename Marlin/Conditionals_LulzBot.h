@@ -62,7 +62,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".16"
+#define LULZBOT_FW_VERSION ".17"
 
 // Select options based on printer model
 
@@ -202,6 +202,9 @@
     #define LULZBOT_INVERT_Y_HOME_DIR              1
     #define LULZBOT_INVERT_Z_HOME_DIR             -1
     #define LULZBOT_QUICKHOME
+
+    #define LULZBOT_AFTER_Z_HOME_Z_RAISE           5
+    #define LULZBOT_AFTER_Z_HOME_Z_ORIGIN          0
 #endif
 
 #if defined(LULZBOT_MINI_BED)
@@ -227,7 +230,6 @@
     #define LULZBOT_Z_SAFE_HOMING_X_POINT         (-19)
     #define LULZBOT_Z_SAFE_HOMING_Y_POINT         (258)
     #define LULZBOT_Z_HOMING_HEIGHT               5
-    #define LULZBOT_AFTER_Z_HOME_CMD              "G0 Z5" // Raise to clear homing button
 #endif
 
 #if defined(LULZBOT_MINI_BED)
@@ -259,10 +261,14 @@
   #define LULZBOT_ABL_PROBE_PT_3_Y LULZBOT_BACK_PROBE_BED_POSITION
 #else
   // Traditionally LulzBot printers have employed a four-point leveling
-  // using a degenerate 2x2 grid.
+  // using a degenerate 2x2 grid. This is the traditional behavior.
   #define LULZBOT_GRID_MAX_POINTS_X            2
   #define LULZBOT_GRID_MAX_POINTS_Y            2
-  #define LULZBOT_PROBE_Y_FIRST
+  #if defined(LULZBOT_IS_MINI)
+    // We can't control the order of probe points exactly,
+    // but on a Mini setting this makes the probe look better.
+    #define LULZBOT_PROBE_Y_FIRST
+  #endif
 #endif
 
 /* Define probe parameters related to bed leveling,
@@ -499,8 +505,10 @@
     // Prototype Dual v3 for TAZ.
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Dual Extruder 3"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #undef  LULZBOT_AFTER_Z_HOME_CMD
-    #define LULZBOT_AFTER_Z_HOME_CMD               "G92 Z5.5\nG0 Z16" // Correction for raised homing button
+    #undef  LULZBOT_AFTER_Z_HOME_Z_RAISE
+    #define LULZBOT_AFTER_Z_HOME_Z_RAISE           16
+    #undef  LULZBOT_AFTER_Z_HOME_Z_ORIGIN
+    #define LULZBOT_AFTER_Z_HOME_Z_ORIGIN          5.5
     #undef  LULZBOT_WIPE_X1
     #undef  LULZBOT_WIPE_X2
     #define LULZBOT_WIPE_X1                       -22
@@ -511,6 +519,8 @@
     #define LULZBOT_Z_CLEARANCE_DEPLOY_PROBE       10
     #undef  LULZBOT_Z_CLEARANCE_BETWEEN_PROBES
     #define LULZBOT_Z_CLEARANCE_BETWEEN_PROBES     10
+    #undef  LULZBOT_BACK_PROBE_BED_POSITION
+    #define LULZBOT_BACK_PROBE_BED_POSITION       293
     #undef  LULZBOT_Z_SAFE_HOMING_X_POINT
     #undef  LULZBOT_Z_SAFE_HOMING_Y_POINT
     #define LULZBOT_Z_SAFE_HOMING_X_POINT        (-22)    // X point for Z homing when homing all axis (G28)
@@ -721,12 +731,6 @@
             BUZZ(25, 880); BUZZ(50, 0);               /* play tone */ \
             BUZZ(25, 880); BUZZ(50, 0); \
             BUZZ(25, 880); BUZZ(50, 0); \
-            BUZZ(75, 880); BUZZ(50, 0); \
-            BUZZ(75, 880); BUZZ(50, 0); \
-            BUZZ(75, 880); BUZZ(50, 0); \
-            BUZZ(25, 880); BUZZ(50, 0); \
-            BUZZ(25, 880); BUZZ(50, 0); \
-            BUZZ(25, 880); BUZZ(50, 0); \
             do_blocking_move_to_z(100, MMM_TO_MMS(Z_PROBE_SPEED_FAST)); /* raise head */ \
             LULZBOT_STOP_JOB_CMD;                     /* stop print job */ \
             clear_command_queue(); \
@@ -735,11 +739,22 @@
         } \
     }
 
-// Raise after home cmd, used only on TAZ to lift the print head after homing
-#if defined(LULZBOT_AFTER_Z_HOME_CMD)
+#define LULZBOT_G92_Z(z) \
+      stepper.synchronize(); \
+      current_position[Z_AXIS] = z; \
+      SYNC_PLAN_POSITION_KINEMATIC();
+
+#define LULZBOT_G0_Z(z) \
+      do_blocking_move_to_z(z);
+
+// On a TAZ, we need to raise the print head after homing to clear the button;
+// On the yellowfin we also need to reset the origin to account for the Z home riser.
+
+#if defined(LULZBOT_IS_TAZ)
     #define LULZBOT_AFTER_Z_HOME_ACTION \
         if(home_all || homeZ) { \
-          enqueue_and_echo_commands_P(PSTR(LULZBOT_AFTER_Z_HOME_CMD)); \
+          LULZBOT_G92_Z(LULZBOT_AFTER_Z_HOME_Z_ORIGIN); \
+          LULZBOT_G0_Z(LULZBOT_AFTER_Z_HOME_Z_RAISE); \
         }
 #else
     #define LULZBOT_AFTER_Z_HOME_ACTION

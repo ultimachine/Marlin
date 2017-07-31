@@ -147,6 +147,11 @@ check_avr_tools
 rm -rf build
 mkdir build
 
-build_for_mini
-build_for_taz
+if [ $# -eq 2 ]; then
+  build_firmware $1 $2
+else
+  build_for_mini
+  build_for_taz
+fi
+
 build_summary

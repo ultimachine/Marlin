@@ -887,7 +887,9 @@
   #define MIN_PROBE_EDGE 10
 
   // Probe along the Y axis, advancing X after each column
+  #if defined(LULZBOT_PROBE_Y_FIRST)
   #define PROBE_Y_FIRST LULZBOT_PROBE_Y_FIRST
+  #endif
 
   #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
