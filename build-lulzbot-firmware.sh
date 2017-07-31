@@ -1,5 +1,6 @@
 #!/bin/sh
 
+####
 # Copyright (C) 2017  AlephObjects, Inc.
 #
 #
@@ -11,6 +12,15 @@
 # without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE.  See the GNU AGPL for more details.
 #
+
+####
+# The following variables list the models and toolheads to build for:
+
+MINI_MODELS="Gladiola_Mini Huerfano_Mini Gladiola_GLCD Huerfano_GLCD"
+MINI_TOOLHEADS="Gladiola_SingleExtruder Albatross_Flexystruder Heather_Aero"
+
+TAZ_MODELS="Oliveoil_TAZ_6 Huerfano_TAZ_7"
+TAZ_TOOLHEADS="Oliveoil_SingleExtruder Kanyu_Flexystruder Opah_Moarstruder Javelin_DualExtruder Longfin_FlexyDually Yellowfin_DualExtruder Angelfish_Aero"
 
 ####
 # build_firmware <printer> <toolhead>
@@ -82,6 +92,51 @@ check_avr_tools() {
   check_tool avr-size
 }
 
+####
+# build_for_mini
+#
+# Build all the toolhead variants for the mini
+#
+build_for_mini() {
+  for model in $MINI_MODELS
+  do
+    for toolhead in $MINI_TOOLHEADS
+    do
+      build_firmware ${model} ${toolhead}
+    done
+  done
+}
+
+####
+# build_for_taz
+#
+# Build all the toolhead variants for the TAZ
+#
+build_for_taz() {
+  for model in $TAZ_MODELS
+  do
+    for toolhead in $TAZ_TOOLHEADS
+    do
+      build_firmware ${model} ${toolhead}
+    done
+  done
+}
+
+####
+# build_summary
+#
+# Print out a summary of hex files that were created
+#
+build_summary() {
+  echo
+  echo
+  echo
+  echo Firmware hex files built in "`pwd`/build":
+  echo
+  ls build
+  echo
+}
+
 ############################################
 # MAIN SCRIPT
 ############################################
@@ -92,32 +147,6 @@ check_avr_tools
 rm -rf build
 mkdir build
 
-MINI_MODELS="Gladiola_Mini Huerfano_Mini Gladiola_GLCD Huerfano_GLCD"
-TAZ_MODELS="Oliveoil_TAZ_6 Huerfano_TAZ_7"
-
-MINI_TOOLHEADS="Gladiola_SingleExtruder Albatross_Flexystruder Heather_Aero"
-TAZ_TOOLHEADS="Oliveoil_SingleExtruder Kanyu_Flexystruder Opah_Moarstruder Javelin_DualExtruder Longfin_FlexyDually Yellowfin_DualExtruder Angelfish_Aero"
-
-for model in $MINI_MODELS
-do
-  for toolhead in $MINI_TOOLHEADS
-  do
-    build_firmware ${model} ${toolhead}
-  done
-done
-
-for model in $TAZ_MODELS
-do
-  for toolhead in $TAZ_TOOLHEADS
-  do
-    build_firmware ${model} ${toolhead}
-  done
-done
-
-echo
-echo
-echo
-echo Firmware hex files built in "`pwd`/build":
-echo
-ls build
-echo
+build_for_mini
+build_for_taz
+build_summary
