@@ -62,7 +62,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".15"
+#define LULZBOT_FW_VERSION ".16"
 
 // Select options based on printer model
 
@@ -74,7 +74,7 @@
 
 #if defined(LULZBOT_Huerfano_Mini)
     // Prototype Mini w/ Z-Belt
-    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini Z-Belt"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini 2"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
 #endif
@@ -88,7 +88,7 @@
 
 #if defined(LULZBOT_Huerfano_GLCD)
     // Prototype Mini w/ Z-Belt
-    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini GLCD Z-Belt"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini 2 GLCD"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_LCD_DISPLAY
@@ -274,7 +274,6 @@
 #define LULZBOT_PROBE_DOUBLE_TOUCH
 #define LULZBOT_X_PROBE_OFFSET_FROM_EXTRUDER  0
 #define LULZBOT_Y_PROBE_OFFSET_FROM_EXTRUDER  0
-#define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.5
 #define LULZBOT_Z_PROBE_OFFSET_RANGE_MIN      -2
 #define LULZBOT_Z_PROBE_OFFSET_RANGE_MAX      5
 #define LULZBOT_XY_PROBE_SPEED                6000
@@ -580,6 +579,8 @@
     #define LULZBOT_Z_MAX_POS                      160
     #define LULZBOT_Z_MIN_POS                      0
 
+    #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.43
+
 #elif defined(LULZBOT_IS_TAZ)
     #define DIGIPOT_MOTOR_CURRENT_XY              175
     #define LULZBOT_XY_STEPS                      100.5
@@ -590,7 +591,9 @@
         #define LULZBOT_DEFAULT_ACCELERATION      500
     #endif
     #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION   3000
-    #define LULZBOT_Z_MIN_POS                       0
+    #define LULZBOT_Z_MIN_POS                     0
+
+    #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER -1.5
 #endif
 
 #if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_GLCD)

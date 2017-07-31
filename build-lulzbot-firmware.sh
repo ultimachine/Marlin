@@ -1,14 +1,93 @@
 #!/bin/sh
 
+# Copyright (C) 2017  AlephObjects, Inc.
+#
+#
+# The bash script in this page is free software: you can
+# redistribute it and/or modify it under the terms of the GNU Affero
+# General Public License (GNU AGPL) as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option)
+# any later version.  The code is distributed WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU AGPL for more details.
+#
+
+####
+# build_firmware <printer> <toolhead>
+#
+# Compiles firmware for the specified printer and toolhead
+#
 build_firmware() {
   printer=$1
   toolhead=$2
   echo
   echo Building for ${printer} and ${toolhead}
   echo
-  (cd Marlin; make clean; make $MAKEOPTS MODEL=${printer} TOOLHEAD=${toolhead}) || exit
+  (cd Marlin; make clean; make $MAKEOPTS AVR_TOOLS_PATH=${AVR_TOOLS_PATH}/ MODEL=${printer} TOOLHEAD=${toolhead}) || exit
   mv Marlin/applet/*.hex build
 }
+
+####
+# check_tool <exec_name>
+#
+# Checks whether a tool exists in the AVR_TOOLS_PATH
+#
+check_tool() {
+  if [ ! -x "$AVR_TOOLS_PATH/$1" ]; then
+    echo Cannot locate $1 in $AVR_TOOLS_PATH.
+    exit 1
+  fi
+}
+
+####
+# locate_avr_tools
+#
+# Attempts to locate the avr tools, otherwise prompts
+# the user for a location.
+#
+locate_avr_tools() {
+  AVR_OBJCOPY=`which avr-objcopy`
+  if [ $? -eq 0 ]; then
+    AVR_TOOLS_PATH=`dirname $AVR_OBJCOPY`
+  fi
+  while [ ! -x $AVR_TOOLS_PATH/avr-gcc ]
+  do
+    echo
+    echo avr-gcc tools not found!
+    echo
+    read -p "Type path to avr-gcc tools: " AVR_TOOLS_PATH
+    if [ -z $AVR_TOOLS_PATH ]; then
+      echo Aborting.
+      exit
+    fi
+  done
+}
+
+####
+# check_avr_tools
+#
+# Verify that all the AVR tools we need exist in the located
+# directory.
+#
+check_avr_tools() {
+  echo
+  echo Using $AVR_TOOLS_PATH for avr-gcc tools.
+  echo
+
+  check_tool avr-gcc
+  check_tool avr-objcopy
+  check_tool avr-g++
+  check_tool avr-objdump
+  check_tool avr-ar
+  check_tool avr-size
+}
+
+############################################
+# MAIN SCRIPT
+############################################
+
+locate_avr_tools
+check_avr_tools
 
 rm -rf build
 mkdir build
