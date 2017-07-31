@@ -8,6 +8,8 @@
 
 #define LARGE_FLASH         true
 
+#define SERVO0_PIN 12
+
 
 #undef X_MS1_PIN
 #undef X_MS2_PIN
@@ -22,8 +24,8 @@
 
 #define X_STEP_PIN          37
 #define X_DIR_PIN           48
-#define X_MIN_PIN           12
-#define X_MAX_PIN           30
+#define X_MIN_PIN           30 //12
+#define X_MAX_PIN           -1 //30
 #define X_ENABLE_PIN        29
 #define X_MS1_PIN           40
 #define X_MS2_PIN           41
