@@ -14,7 +14,7 @@ Run the "build-lulzbot-firmware.sh" from the top level directory.
 
 # Compilation using Arduino IDE
 
-To select what firmware to build, modify lines 6 and 7 of "Configuration_LulzBot.h" according to the instructions on line 39.
+To select what firmware to build, modify lines 38 and 39 of "Configuration_LulzBot.h" according to the instructions.
 
 # Known Issues:
 

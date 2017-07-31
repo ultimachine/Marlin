@@ -3,7 +3,7 @@
 
 /*
 
-  If compiling from the command line:
+   If compiling from the command line:
 
       build-all-taz-toolheads.sh
 
