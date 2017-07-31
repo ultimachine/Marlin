@@ -22,7 +22,7 @@
       Heather_Aero             // Titan AERO (Heather)
 
    TAZ Toolhead Choices:
-      Oliveoil_SingleExtruder  // Standard Single Extruder (TAZ Olive)
+      Tilapia_SingleExtruder   // Standard Single Extruder (Tilapia)
       Kanyu_Flexystruder       // Flexystruder (Kanyu)
       Opah_Moarstruder         // Moarstruder (Opah)
       Javelin_DualExtruder     // Dual Extruder v2 (Javelin)
@@ -36,6 +36,6 @@
 // and toolhead here:
 
 //#define LULZBOT_Oliveoil_TAZ_6
-//#define TOOLHEAD_Oliveoil_SingleExtruder
+//#define TOOLHEAD_Tilapia_SingleExtruder
 
 #endif /* CONFIGURATION_LULZBOT */

@@ -20,7 +20,7 @@ MINI_MODELS="Gladiola_Mini Huerfano_Mini Gladiola_GLCD Huerfano_GLCD"
 MINI_TOOLHEADS="Gladiola_SingleExtruder Albatross_Flexystruder Heather_Aero"
 
 TAZ_MODELS="Oliveoil_TAZ_6 Huerfano_TAZ_7"
-TAZ_TOOLHEADS="Oliveoil_SingleExtruder Kanyu_Flexystruder Opah_Moarstruder Javelin_DualExtruder Longfin_FlexyDually Yellowfin_DualExtruder Angelfish_Aero"
+TAZ_TOOLHEADS="Tilapia_SingleExtruder Kanyu_Flexystruder Opah_Moarstruder Javelin_DualExtruder Longfin_FlexyDually Yellowfin_DualExtruder Angelfish_Aero"
 
 ####
 # build_firmware <printer> <toolhead>

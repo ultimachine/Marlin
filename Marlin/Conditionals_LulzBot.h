@@ -26,7 +26,7 @@
     !defined(TOOLHEAD_Gladiola_SingleExtruder) && \
     !defined(TOOLHEAD_Albatross_Flexystruder) && \
     !defined(TOOLHEAD_Heather_Aero) && \
-    !defined(TOOLHEAD_Oliveoil_SingleExtruder) && \
+    !defined(TOOLHEAD_Tilapia_SingleExtruder) && \
     !defined(TOOLHEAD_Kanyu_Flexystruder) && \
     !defined(TOOLHEAD_Opah_Moarstruder) && \
     !defined(TOOLHEAD_Javelin_DualExtruder) && \
@@ -43,7 +43,7 @@
     #error      Gladiola_Mini            // Lulzbot Mini  (Gladiola)
     #error      Huerfano_Mini            // Lulzbot Mini  (Huerfano)
     #error      Gladiola_GLCD            // Lulzbot Mini  (Gladiola w/ LCD)
-    #error      Huerfano_GLCD            // Lulzbot Mini  (Gladiola w/ LCD)
+    #error      Huerfano_GLCD            // Lulzbot Mini  (Huerfano w/ LCD)
     #error      Oliveoil_TAZ_6           // Lulzbot TAZ 6 (Olive Oil)
     #error      Huerfano_TAZ_7           // Lulzbot TAZ 7 (Huerfano)
     #error
@@ -53,7 +53,7 @@
     #error      Heather_Aero             // Titan AERO (Heather)
     #error
     #error   TAZ Toolhead Choices:
-    #error      Oliveoil_SingleExtruder  // Standard Single Extruder (TAZ Olive)
+    #error      Tilapia_SingleExtruder   // Standard Single Extruder (Tilapia)
     #error      Kanyu_Flexystruder       // Flexystruder (Kanyu)
     #error      Opah_Moarstruder         // Moarstruder (Opah)
     #error      Javelin_DualExtruder     // Dual Extruder v2 (Javelin)
@@ -407,7 +407,7 @@
 
 /*********************************************** TAZ TOOLHEADS *******************************************/
 
-#if defined(TOOLHEAD_Oliveoil_SingleExtruder) || defined(TOOLHEAD_Angelfish_Aero)
+#if defined(TOOLHEAD_Tilapia_SingleExtruder) || defined(TOOLHEAD_Angelfish_Aero)
     #define LULZBOT_TOOLHEAD_VER                    VERSION_STRING
     #define LULZBOT_UUID                            "845f003c-aebd-4e53-a6b9-7d0984fde609"
     #define LULZBOT_EXTRUDERS                  1
@@ -416,15 +416,15 @@
     #define LULZBOT_Y_MAX_POS                  303
     #define LULZBOT_Y_MIN_POS                  -20
     #define LULZBOT_AO_Hexagon
-#endif /* TOOLHEAD_Oliveoil_SingleExtruder || TOOLHEAD_Angelfish_Aero */
+#endif /* TOOLHEAD_Tilapia_SingleExtruder || TOOLHEAD_Angelfish_Aero */
 
-#if defined(TOOLHEAD_Oliveoil_SingleExtruder)
+#if defined(TOOLHEAD_Tilapia_SingleExtruder)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Single Extruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_BUILD_VARIANT              " LulzBot"
     #define DIGIPOT_MOTOR_CURRENT_E            135,135  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    false
-#endif /* TOOLHEAD_Oliveoil_SingleExtruder */
+#endif /* TOOLHEAD_Tilapia_SingleExtruder */
 
 #if defined(TOOLHEAD_Angelfish_Aero)
     // Prototype Aero for TAZ
