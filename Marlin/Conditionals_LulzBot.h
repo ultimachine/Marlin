@@ -17,15 +17,15 @@
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
-    !defined(LULZBOT_Huerfano_Mini) && \
+    !defined(LULZBOT_Hibiscus_Mini) && \
     !defined(LULZBOT_Gladiola_GLCD) && \
-    !defined(LULZBOT_Huerfano_GLCD) && \
+    !defined(LULZBOT_Hibiscus_GLCD) && \
     !defined(LULZBOT_Oliveoil_TAZ_6) && \
-    !defined(LULZBOT_Huerfano_TAZ_7) \
+    !defined(LULZBOT_Quiver_TAZ_7) \
 ) || ( \
     !defined(TOOLHEAD_Gladiola_SingleExtruder) && \
     !defined(TOOLHEAD_Albatross_Flexystruder) && \
-    !defined(TOOLHEAD_Heather_Aero) && \
+    !defined(TOOLHEAD_Finch_Aero) && \
     !defined(TOOLHEAD_Tilapia_SingleExtruder) && \
     !defined(TOOLHEAD_Kanyu_Flexystruder) && \
     !defined(TOOLHEAD_Opah_Moarstruder) && \
@@ -34,32 +34,7 @@
     !defined(TOOLHEAD_Yellowfin_DualExtruder) && \
     !defined(TOOLHEAD_Angelfish_Aero) \
 )
-    #error Must specify model and toolhead to build:
-    #error
-    #error   make clean
-    #error   make MODEL=<model> TOOLHEAD=<toolhead>
-    #error
-    #error   Printer Model Choices:
-    #error      Gladiola_Mini            // Lulzbot Mini  (Gladiola)
-    #error      Huerfano_Mini            // Lulzbot Mini  (Huerfano)
-    #error      Gladiola_GLCD            // Lulzbot Mini  (Gladiola w/ LCD)
-    #error      Huerfano_GLCD            // Lulzbot Mini  (Huerfano w/ LCD)
-    #error      Oliveoil_TAZ_6           // Lulzbot TAZ 6 (Olive Oil)
-    #error      Huerfano_TAZ_7           // Lulzbot TAZ 7 (Huerfano)
-    #error
-    #error   Mini Toolhead Choices:
-    #error      Gladiola_SingleExtruder  // Standard Single Extruder (Gladiola)
-    #error      Albatross_Flexystruder   // Flexystruder (Albatross)
-    #error      Heather_Aero             // Titan AERO (Heather)
-    #error
-    #error   TAZ Toolhead Choices:
-    #error      Tilapia_SingleExtruder   // Standard Single Extruder (Tilapia)
-    #error      Kanyu_Flexystruder       // Flexystruder (Kanyu)
-    #error      Opah_Moarstruder         // Moarstruder (Opah)
-    #error      Javelin_DualExtruder     // Dual Extruder v2 (Javelin)
-    #error      Longfin_FlexyDually      // FlexyDually (Longfin)
-    #error      Yellowfin_DualExtruder   // Dual Extruder v3 (Yellowfin)
-    #error      Angelfish_Aero           // Titan AERO (Angelfish)
+    #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
 #define LULZBOT_FW_VERSION ".18"
@@ -72,7 +47,7 @@
     #define LULZBOT_MINI_BED
 #endif
 
-#if defined(LULZBOT_Huerfano_Mini)
+#if defined(LULZBOT_Hibiscus_Mini)
     // Prototype Mini w/ Z-Belt
     #define LULZBOT_CUSTOM_MACHINE_NAME "Mini 2"
     #define LULZBOT_IS_MINI
@@ -86,7 +61,7 @@
     #define LULZBOT_USE_LCD_DISPLAY
 #endif
 
-#if defined(LULZBOT_Huerfano_GLCD)
+#if defined(LULZBOT_Hibiscus_GLCD)
     // Prototype Mini w/ Z-Belt
     #define LULZBOT_CUSTOM_MACHINE_NAME "Mini 2 GLCD"
     #define LULZBOT_IS_MINI
@@ -101,7 +76,7 @@
     #define LULZBOT_USE_LCD_DISPLAY
 #endif
 
-#if defined(LULZBOT_Huerfano_TAZ_7)
+#if defined(LULZBOT_Quiver_TAZ_7)
     // Prototype TAZ w/ Z-Belt
     #define LULZBOT_CUSTOM_MACHINE_NAME "TAZ 7"
     #define LULZBOT_IS_TAZ
@@ -185,7 +160,7 @@
     #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
     #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
 
-#elif defined(LULZBOT_IS_TAZ) || defined(LULZBOT_Huerfano_Mini) || defined(LULZBOT_Huerfano_GLCD)
+#elif defined(LULZBOT_IS_TAZ) || defined(LULZBOT_Hibiscus_Mini) || defined(LULZBOT_Hibiscus_GLCD)
     #define LULZBOT_X_MIN_ENDSTOP_INVERTING       false
     #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       false
     #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       false
@@ -365,7 +340,7 @@
     #define LULZBOT_ENCODER_STEPS_PER_MENU_ITEM 1
     #define LULZBOT_COOLING_MESSAGES
     #define LULZBOT_MENU_BED_LEVELING_GCODE "G28 XY\nM109 S175\nG28 Z\nM109 R145\nG12\nG29\nM104 S0"
-    #if defined(LULZBOT_Gladiola_GLCD) || defined(LULZBOT_Huerfano_GLCD)
+    #if defined(LULZBOT_Gladiola_GLCD) || defined(LULZBOT_Hibiscus_GLCD)
         // In the experimental Gladiola_GLCD, the encoder direction is reversed.
         #define LULZBOT_REVERSE_ENCODER_DIRECTION
     #endif
@@ -392,7 +367,7 @@
 
 /*********************************************** MINI TOOLHEADS *******************************************/
 
-#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Heather_Aero)
+#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aero)
     #define LULZBOT_TOOLHEAD_VER               VERSION_STRING
     #define LULZBOT_UUID                       "351487b6-ca9a-4c1a-8765-d668b1da6585"
     #define LULZBOT_EXTRUDERS                  1
@@ -403,7 +378,7 @@
     #define LULZBOT_AO_Hexagon
 
     #define PWM_MOTOR_CURRENT_E               1250
-#endif /* TOOLHEAD_Gladiola_SingleExtruder || TOOLHEAD_Albatross_Flexystruder || TOOLHEAD_Heather_Aero */
+#endif /* TOOLHEAD_Gladiola_SingleExtruder || TOOLHEAD_Albatross_Flexystruder || TOOLHEAD_Finch_Aero */
 
 #if defined(TOOLHEAD_Gladiola_SingleExtruder)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Single Extruder"
@@ -417,12 +392,12 @@
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
 #endif /* TOOLHEAD_Albatross_Flexystruder */
 
-#if defined(TOOLHEAD_Heather_Aero)
+#if defined(TOOLHEAD_Finch_Aero)
     // Prototype Aero toolhead for Mini
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Titan AERO"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
-#endif /* TOOLHEAD_Heather_Aero */
+#endif /* TOOLHEAD_Finch_Aero */
 
 /*********************************************** TAZ TOOLHEADS *******************************************/
 
@@ -629,7 +604,7 @@
     #define PWM_MOTOR_CURRENT_Z                   1630
     #define LULZBOT_Z_STEPS                       1600
 
-#elif defined(LULZBOT_Huerfano_Mini) || defined(LULZBOT_Huerfano_GLCD)
+#elif defined(LULZBOT_Hibiscus_Mini) || defined(LULZBOT_Hibiscus_GLCD)
     #define PWM_MOTOR_CURRENT_Z                   1000
     // Prototype Z-Belt Mini
     #define Z_FULL_STEPS_PER_ROTATION             200
@@ -648,7 +623,7 @@
     #define LULZBOT_Z_STEPS                       1600
     #define LULZBOT_Z_MAX_POS                     270
 
-#elif defined(LULZBOT_Huerfano_TAZ_7)
+#elif defined(LULZBOT_Quiver_TAZ_7)
     #define DIGIPOT_MOTOR_CURRENT_Z               175
     // Prototype Z-belt driven TAZ 7
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {800, 800, 600, 40}   // (mm/sec)
