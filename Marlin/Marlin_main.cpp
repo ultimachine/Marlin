@@ -10521,6 +10521,10 @@ void process_next_command() {
         case 26: // G26: Mesh Validation Pattern generation
           gcode_G26();
           break;
+      #elif defined(LULZBOT_G26_BACKWARDS_COMPATIBILITY)
+        case 26: // G26: LulzBot clear probe fail
+          LULZBOT_G26_RESET_ACTION;
+          break;
       #endif // AUTO_BED_LEVELING_UBL
 
       #if ENABLED(NOZZLE_PARK_FEATURE)

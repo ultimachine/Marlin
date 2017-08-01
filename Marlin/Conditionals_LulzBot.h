@@ -115,6 +115,18 @@
 #define LULZBOT_EEPROM_SETTINGS
 #define LULZBOT_EMERGENCY_PARSER
 
+// Prior branches of the LulzBot firmware used G26
+// to reset a probe failed condition. Marlin upstrem
+// now redefines that for unified bed leveling. The
+// following maps G26 to M999 for equivalent behavior,
+// so long as UBL is disabled.
+#define LULZBOT_G26_BACKWARDS_COMPATIBILITY
+
+// The following should be kept more or less:
+#define LULZBOT_G26_RESET_ACTION \
+  Running = true; \
+  lcd_reset_alert_level();
+
 // Temperature settings
 
 #define LULZBOT_TEMP_SENSOR_0                 5
@@ -357,15 +369,15 @@
         // In the experimental Gladiola_GLCD, the encoder direction is reversed.
         #define LULZBOT_REVERSE_ENCODER_DIRECTION
     #endif
-    / * Marlin shows three extruders on a dual:
-      *   Extruder    - The active nozzle (varies)
-      *   Extruder 1  - The primary extruder
-      *   Extruder 2  - The secondary extruder
-      *
-      * The following causes the active nozzle to be
-      * hidden as seeing three nozzles may be
-      * confusing to users.
-      */
+    /* Marlin shows three extruders on a dual:
+     *   Extruder    - The active nozzle (varies)
+     *   Extruder 1  - The primary extruder
+     *   Extruder 2  - The secondary extruder
+     *
+     * The following causes the active nozzle to be
+     * hidden as seeing three nozzles may be
+     * confusing to users.
+     */
     #define LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD
 #endif
 
