@@ -62,7 +62,7 @@
     #error      Angelfish_Aero           // Titan AERO (Angelfish)
 #endif
 
-#define LULZBOT_FW_VERSION ".17"
+#define LULZBOT_FW_VERSION ".18"
 
 // Select options based on printer model
 
@@ -357,9 +357,16 @@
         // In the experimental Gladiola_GLCD, the encoder direction is reversed.
         #define LULZBOT_REVERSE_ENCODER_DIRECTION
     #endif
-    // Confusingly, Marlin shows three separate e-step settings: the active nozzle, nozzle1, nozzle2.
-    // We hide the first since it is redundant.
-    #define LULZBOT_HIDE_E_STEPS_FOR_ACTIVE_NOZZLE
+    / * Marlin shows three extruders on a dual:
+      *   Extruder    - The active nozzle (varies)
+      *   Extruder 1  - The primary extruder
+      *   Extruder 2  - The secondary extruder
+      *
+      * The following causes the active nozzle to be
+      * hidden as seeing three nozzles may be
+      * confusing to users.
+      */
+    #define LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD
 #endif
 
 /*********************************************** COMMON TOOLHEADS PARAMETERS *****************************/
