@@ -236,7 +236,7 @@
 
 #define LULZBOT_NOZZLE_CLEAN_FEATURE
 
-//#define LULZBOT_AUTO_BED_LEVELING_3POINT
+#define LULZBOT_AUTO_BED_LEVELING_3POINT
 
 #if defined(LULZBOT_AUTO_BED_LEVELING_3POINT)
   // Experimental three point leveling.
