@@ -58,6 +58,8 @@ class MarlinSettings {
       static void report(bool forReplay=false) { UNUSED(forReplay); }
     #endif
 
+    LULZBOT_SAVE_ZOFFSET_TO_EEPROM_DECL
+
   private:
     static void postprocess();
 

@@ -1008,7 +1008,7 @@ void kill_screen(const char* lcd_msg) {
     #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
 
       void lcd_babystep_zoffset() {
-        if (lcd_clicked) { defer_return_to_status = false; return lcd_goto_previous_menu(); }
+        if (lcd_clicked) { defer_return_to_status = false; LULZBOT_SAVE_ZOFFSET_TO_EEPROM; return lcd_goto_previous_menu(); }
         defer_return_to_status = true;
         ENCODER_DIRECTION_NORMAL();
         if (encoderPosition) {

@@ -37,7 +37,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".19"
+#define LULZBOT_FW_VERSION ".20"
 
 // Select options based on printer model
 
@@ -748,5 +748,45 @@
 #else
     #define LULZBOT_AFTER_Z_HOME_ACTION
 #endif
+
+/* Historically, the Lulzbot firmware would save the Z-Offset into the EEPROM
+ * each time it is changed. The latest Marlin made this more difficult since they
+ * added a CRC to the EEPROM. We work around this by bracketing the EEPROM_READ
+ * and EEPROM_WRITE routines such that the CRC ignores the Z-Offset value. That
+ * code also captures the eeprom_index so we can write only that value later.
+ */
+
+/* The following goes in "configuration_store.cpp", before and after
+ * "EEPROM_WRITE(zprobe_zoffset)" and "EEPROM_READ(zprobe_zoffset)"
+ */
+#define LULZBOT_EEPROM_BEFORE_ZOFFSET \
+    const uint16_t eeprom_saved_crc = working_crc; \
+    eeprom_zoffset_index = eeprom_index;
+
+#define LULZBOT_EEPROM_AFTER_ZOFFSET \
+    working_crc = eeprom_saved_crc;
+
+/* The following goes in "configuration_store.h" */
+#define LULZBOT_SAVE_ZOFFSET_TO_EEPROM_DECL \
+    static int eeprom_zoffset_index; \
+    static void store_zoffset();
+
+/* The following goes in "configuration_store.cpp" */
+#define LULZBOT_SAVE_ZOFFSET_TO_EEPROM_IMPL \
+    int MarlinSettings::eeprom_zoffset_index = -1; \
+    void MarlinSettings::store_zoffset() { \
+        if(eeprom_zoffset_index > 0) { \
+            uint16_t working_crc; \
+            int eeprom_index = eeprom_zoffset_index; \
+            EEPROM_WRITE(zprobe_zoffset); \
+            SERIAL_ECHO_START(); \
+            SERIAL_ECHOPAIR("Updating zoffset in EEPROM: ", zprobe_zoffset); \
+            SERIAL_ECHOPAIR("; EEPROM Index: ", eeprom_zoffset_index); \
+            SERIAL_ECHOLNPGM(""); \
+        } \
+    }
+
+/* The following goes in "ultralcd.cpp" in "lcd_babystep_zoffset" */
+#define LULZBOT_SAVE_ZOFFSET_TO_EEPROM settings.store_zoffset();
 
 #endif /* CONDITIONALS_LULZBOT */

@@ -300,6 +300,8 @@ void MarlinSettings::postprocess() {
     } while (--size);
   }
 
+  LULZBOT_SAVE_ZOFFSET_TO_EEPROM_IMPL
+
   /**
    * M500 - Store Configuration
    */
@@ -393,7 +395,9 @@ void MarlinSettings::postprocess() {
     #if !HAS_BED_PROBE
       const float zprobe_zoffset = 0;
     #endif
+    LULZBOT_EEPROM_BEFORE_ZOFFSET
     EEPROM_WRITE(zprobe_zoffset);
+    LULZBOT_EEPROM_AFTER_ZOFFSET
 
     //
     // Planar Bed Leveling matrix
@@ -789,7 +793,9 @@ void MarlinSettings::postprocess() {
       #if !HAS_BED_PROBE
         float zprobe_zoffset;
       #endif
+      LULZBOT_EEPROM_BEFORE_ZOFFSET
       EEPROM_READ(zprobe_zoffset);
+      LULZBOT_EEPROM_AFTER_ZOFFSET
 
       //
       // Planar Bed Leveling matrix
