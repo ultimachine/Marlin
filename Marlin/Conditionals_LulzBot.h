@@ -37,7 +37,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".18"
+#define LULZBOT_FW_VERSION ".19"
 
 // Select options based on printer model
 
@@ -354,6 +354,7 @@
      * confusing to users.
      */
     #define LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD
+    #define LULZBOT_HIDE_PID_CONFIG_IN_LCD
 #endif
 
 /*********************************************** COMMON TOOLHEADS PARAMETERS *****************************/
@@ -465,7 +466,7 @@
 #if defined(TOOLHEAD_Javelin_DualExtruder) || defined(TOOLHEAD_Longfin_FlexyDually) || defined(TOOLHEAD_Yellowfin_DualExtruder)
     #define LULZBOT_TOOLHEAD_VER               VERSION_STRING" Dual"
     #define LULZBOT_BUILD_VARIANT              " LulzBot Dual"
-    #define LULZBOT_SWAP_FAN_PINS_6_AND_8      // For backwards compatibility
+    #define LULZBOT_EXTRUDER_FAN_ON_PIN_6      // For backwards compatibility with TAZ 4
     #define DIGIPOT_MOTOR_CURRENT_E            160, 160  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
     #define LULZBOT_EXTRUDERS                  2
     #define LULZBOT_UUID                       "c5077702-4ecd-4532-beaf-6acf94acc404"
@@ -705,12 +706,6 @@
 #define LULZBOT_BED_PROBE_MIN   -3 // Limit on pushing into the bed
 #define LULZBOT_BED_PROBE_FAIL  -2 // At what point is a failure detected
 
-#if defined(LULZBOT_USE_LCD_DISPLAY)
-    #define LULZBOT_STOP_JOB_CMD card.stopSDPrint();
-#else
-    #define LULZBOT_STOP_JOB_CMD
-#endif
-
 #define LULZBOT_PROBE_Z_WITH_REWIPE(speed) \
     do_probe_move(LULZBOT_BED_PROBE_MIN, speed); /* probe; if we reach limit, the probe failed */ \
     for(int rewipes = 1; current_position[Z_AXIS] < LULZBOT_BED_PROBE_FAIL; rewipes++) { \
@@ -726,9 +721,8 @@
             BUZZ(25, 880); BUZZ(50, 0); \
             BUZZ(25, 880); BUZZ(50, 0); \
             do_blocking_move_to_z(100, MMM_TO_MMS(Z_PROBE_SPEED_FAST)); /* raise head */ \
-            LULZBOT_STOP_JOB_CMD;                     /* stop print job */ \
-            clear_command_queue(); \
-            print_job_timer.stop(); \
+            stop();                                   /* stop print job */ \
+            LCD_MESSAGEPGM(MSG_LEVEL_FAIL);           /* stop changes the message... */ \
             return NAN;                               /* abort the leveling in progress */ \
         } \
     }

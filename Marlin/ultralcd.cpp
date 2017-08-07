@@ -2793,7 +2793,9 @@ void kill_screen(const char* lcd_msg) {
 
     MENU_ITEM(submenu, MSG_MOVE_E, lcd_move_get_e_amount);
     #if E_MANUAL > 1
+      #if not defined(LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD)
       MENU_ITEM(submenu, MSG_MOVE_E MSG_MOVE_E1, lcd_move_get_e0_amount);
+      #endif
       MENU_ITEM(submenu, MSG_MOVE_E MSG_MOVE_E2, lcd_move_get_e1_amount);
       #if E_MANUAL > 2
         MENU_ITEM(submenu, MSG_MOVE_E MSG_MOVE_E3, lcd_move_get_e2_amount);
@@ -3018,7 +3020,7 @@ void kill_screen(const char* lcd_msg) {
     // PID-P E4, PID-I E4, PID-D E4, PID-C E4, PID Autotune E4
     // PID-P E5, PID-I E5, PID-D E5, PID-C E5, PID Autotune E5
     //
-    #if ENABLED(PIDTEMP)
+    #if ENABLED(PIDTEMP) && not defined(LULZBOT_HIDE_PID_CONFIG_IN_LCD)
 
       #define _PID_BASE_MENU_ITEMS(ELABEL, eindex) \
         raw_Ki = unscalePID_i(PID_PARAM(Ki, eindex)); \

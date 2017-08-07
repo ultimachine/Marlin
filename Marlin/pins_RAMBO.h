@@ -126,12 +126,12 @@
 #define HEATER_2_PIN        6
 #define HEATER_BED_PIN      3
 
-#ifdef LULZBOT_SWAP_FAN_PINS_6_AND_8
+#if defined(LULZBOT_EXTRUDER_FAN_ON_PIN_6)
   #define FAN_PIN           6
-  #define FAN1_PIN          8
+  //#define FAN1_PIN          8
 #else
   #define FAN_PIN           8
-  #define FAN1_PIN          6
+  //#define FAN1_PIN          6
 #endif
 #define FAN2_PIN            2
 
