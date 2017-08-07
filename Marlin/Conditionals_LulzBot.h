@@ -523,8 +523,9 @@
     #undef  LULZBOT_X_MAX_POS
     #define LULZBOT_X_MAX_POS                      290
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING       false
-    #undef  LULZBOT_INVERT_E0_DIR
-    #define LULZBOT_INVERT_E0_DIR                 false
+    #define LULZBOT_SWAP_EXTRUDERS
+    #undef  LULZBOT_INVERT_E1_DIR
+    #define LULZBOT_INVERT_E1_DIR                 false
     #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Yellowfin_DualExtruder */
 
