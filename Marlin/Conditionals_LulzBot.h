@@ -37,7 +37,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".20"
+#define LULZBOT_FW_VERSION ".21"
 
 // Select options based on printer model
 
@@ -616,7 +616,7 @@
     #define Z_MOTOR_GEAR_REDUCTION                26.8512396694
     #define LULZBOT_Z_STEPS (Z_FULL_STEPS_PER_ROTATION * Z_MICROSTEPS * Z_MOTOR_GEAR_REDUCTION / double(Z_BELT_PITCH) / double(Z_PULLEY_TEETH))
     #undef  LULZBOT_Z_MAX_POS
-    #define LULZBOT_Z_MAX_POS                     186.1
+    #define LULZBOT_Z_MAX_POS                     178
 
 #elif defined(LULZBOT_Oliveoil_TAZ_6)
     #define DIGIPOT_MOTOR_CURRENT_Z               200
