@@ -27,6 +27,9 @@
 # The class MarlinSerialProtocol implements the error correction
 # and also manages acknowlegements and flow control.
 #
+# Note: Marlin does not implement a well defined protocol, so a
+# lot of this implementation is guesswork.
+#
 # The prototypical use case for this class is as follows:
 #
 #   for line in enumerate(gcode):
@@ -36,6 +39,7 @@
 #
 
 import functools
+import re
 
 class GCodeHistory:
   """This class implements a history of GCode commands. Right now, we
@@ -71,6 +75,9 @@ class GCodeHistory:
   def atEnd(self):
     return self.pos == len(self.list)
 
+  def position(self):
+    return self.pos
+
 class MarlinSerialProtocol:
   """This class implements the Marlin serial protocol, such
   as adding a checksum to each line, replying to resend
@@ -80,6 +87,7 @@ class MarlinSerialProtocol:
     self.marlinBufSize          = 4
     self.marlinReserve          = 1
     self.pendingOk              = 0
+    self.gotError               = False
     self.history                = GCodeHistory()
     self.restart()
 
@@ -99,6 +107,11 @@ class MarlinSerialProtocol:
     data = "N%d%s"    % (position, cmd)
     return "N%d%s*%d" % (position, cmd, self._computeChecksum(data))
 
+  def _sendImmediate(self, cmd):
+      self.serial.write(cmd + '\n')
+      self.serial.flush()
+      self.pendingOk += 1
+
   def _sendToMarlin(self):
     """Sends as many commands as are available and to fill the Marlin buffer.
        Commands are read from the history. Generally only the most recently
@@ -106,11 +119,9 @@ class MarlinSerialProtocol:
        further back in the history than that"""
     while(not self.history.atEnd() and self.marlinBufferCapacity() > 0):
       pos, cmd = self.history.getNextCommand();
-      self.serial.write(cmd + '\n')
-      self.serial.flush()
-      self.pendingOk += 1
+      self._sendImmediate(cmd)
 
-  def _isResend(self, line):
+  def _isResendRequest(self, line):
     """If the line is a resend command from Marlin, returns the line number. This
        code was taken from Cura 1, I do not know why it is so convoluted."""
     if "resend" in line.lower() or "rs" in line:
@@ -120,17 +131,26 @@ class MarlinSerialProtocol:
         if "rs" in line:
           return int(line.split()[1])
 
+  def _isNoLineNumberErr(self, line):
+    """If Marlin encounters a checksum without a line number, it will request
+       a resend. This often happens at the start of a print, when a command is
+       sent prior to Marlin being ready to listen."""
+    if line.startswith("Error:No Line Number with checksum"):
+      m = re.search("Last Line: (\d+)", line);
+      if(m):
+        return int(m.group(1)) + 1
+
+  def _resetMarlinLineCounter(self):
+    """Sends a command requesting that Marlin reset its line counter to match
+       our own position"""
+    cmd = self._addPositionAndChecksum(self.history.position()-1, b"M110")
+    self._sendImmediate(cmd)
+
   def _resendFrom(self, position):
     """If Marlin requests a resend, we need to backtrack."""
     self.history.rewindTo(position)
     self.pendingOk    = 1
-
-    # When receive a resend request, we must temporarily
-    # switch to sending commands one at a time, otherwise
-    # buffering could lead to additional errors, which
-    # cause Marlin to send more resend requests and
-    # to us never recovering.
-    self.resyncCountdown = self.marlinBufSize
+    self._enterResyncPeriod();
 
   def _flushReadBuffer(self):
     while self.serial.readline() != b"":
@@ -145,24 +165,70 @@ class MarlinSerialProtocol:
     self.history.append(cmd)
     self._sendToMarlin()
 
+  def _gotOkay(self):
+    if self.pendingOk > 0:
+      self.pendingOk -= 1
+
+  def _enterResyncPeriod(self):
+    """We define two operational modes. In the normal mode, we send as many
+       commands as necessary to keep the Marlin queue filled and wait for
+       an acknowledgement prior to issuing each subsequent command. In the
+       resync mode, we send only one command at a time, unless there is a
+       timeout waiting for a response, in which case we proceed to the next
+       command. The resync mode is engaged at the start of a print or after
+       an error causing a resend, as at those times the normal mode could
+       lead to an unrecoverable failure loop or block indefinitely."""
+    self.resyncCountdown = self.marlinBufSize
+
+  def _resyncCountdown(self):
+    """Decrement the resync countdown so we can eventually return to
+    normal mode"""
+    if self.resyncCountdown > 0:
+      self.resyncCountdown -= 1
+
+  def _inResync(self):
+    return self.resyncCountdown > 0
+
   def readLine(self):
     """This reads data from Marlin. If no data is available '' will be returned after
        the comm timeout. This *must* be called periodically to keep outgoing data moving
        from the buffers."""
     self._sendToMarlin()
     line = self.serial.readline()
-    if self._isResend(line):
-      # When a resend is requested, handle it.
-      # Return blank to caller.
-      position = self._isResend(line)
-      self._resendFrom(position)
+
+    # An okay means Marlin acknowledged a command. For us,
+    # this means a slot has been freed in the Marlin buffer.
+    if line.startswith(b"ok"):
+      self._gotOkay()
+      self._resyncCountdown()
+
+    # During the resync period, we treat timeouts as "ok".
+    # This keeps us from stalling if an "ok" is lost.
+    if self._inResync() and line == b"":
+      self._resyncCountdown()
+
+    # Sometimes Marlin replies with an "Error:", but not an "ok".
+    # So if we got an error, followed by a timeout, stop waiting
+    # for an "ok" as it probably ain't coming
+    if line.startswith(b"ok"):
+      self.gotError = False
+    elif line.startswith("Error:"):
+      self.gotError = True;
+    elif line == b"" and self.gotError:
+      self.gotError = False
+      self._gotOkay()
+
+    # Handle retry related messages. There's no specific
+    # consistency on how these are indicated, alas.
+    resendPos = self._isResendRequest(line) or self._isNoLineNumberErr(line)
+    if resendPos:
+      if resendPos > self.history.position():
+        # If Marlin is asking us to step forward in time, reset its counter.
+        self._resetMarlinLineCounter();
+      else:
+        # Otherwise rewind to where Marlin wants us to resend from.
+        self._resendFrom(resendPos);
       line = b""
-    elif line.startswith(b"ok"):
-      self.pendingOk -= 1
-      # Decrement the resync countdown so we
-      # can eventually return to buffered mode
-      if self.resyncCountdown > 0:
-        self.resyncCountdown -= 1
 
     return line
 
@@ -172,20 +238,20 @@ class MarlinSerialProtocol:
 
   def marlinBufferCapacity(self):
     """Returns how many buffer positions are open in Marlin. This is the difference between
-       the non-reserved buffer spots and the number of not yet acknowleged commands"""
-    if self.resyncCountdown > 0:
-      # If we are have recently received a resend request, go
-      # into unbuffered line-by-line mode temporarily.
+       the non-reserved buffer spots and the number of not yet acknowleged commands. In
+       resync mode, this always returns 0 if a command has not yet been acknowledged, 1
+       otherwise."""
+    if self._inResync():
       return 0 if self.pendingOk else 1
     else:
       return (self.marlinBufSize - self.marlinReserve) - self.pendingOk
 
   def restart(self):
     """Clears all buffers and issues a M110 to Marlin. Call this at the start of every print."""
-    self. _flushReadBuffer()
-    self.resyncCountdown = self.marlinBufSize
     self.history.clear()
-    self.sendCommand(b"M110")
+    self._flushReadBuffer()
+    self._enterResyncPeriod()
+    self._resetMarlinLineCounter()
 
   def close(self):
     self.serial.close()

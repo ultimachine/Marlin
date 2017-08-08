@@ -24,8 +24,6 @@ from pyMarlin   import *
 import argparse
 import serial
 
-UseNoisySerial = True
-
 def load_gcode(filename):
   with open(filename, "r") as f:
     gcode = f.readlines()
@@ -33,7 +31,7 @@ def load_gcode(filename):
   return gcode
 
 def send_gcode_test(filename, serial):
-  gcode = load_gcode("test.gco");
+  gcode = load_gcode(filename);
 
   for i, line in enumerate(gcode):
     serial.sendCommand(line)
@@ -43,10 +41,11 @@ def send_gcode_test(filename, serial):
       print("Progress: %d" % (i*100/len(gcode)), end='\r')
 
 parser = argparse.ArgumentParser(description='''sends gcode to a printer while injecting errors to test error recovery.''')
-parser.add_argument('-f', '--fake',   help='Use a fake Marlin simulation instead of serial port, for self-testing.', action='store_false', dest='port')
 parser.add_argument('-p', '--port',   help='Serial port.', default='/dev/ttyACM1')
+parser.add_argument('-f', '--fake',   help='Use a fake Marlin simulation instead of serial port, for self-testing.', action='store_false', dest='port')
 parser.add_argument('-e', '--errors', help='Corrupt 1 out N lines to exercise error recovery.', default='0', type=int)
 parser.add_argument('-l', '--log',    help='Write log file.')
+parser.add_argument('-b', '--baud',   help='Sets the baud rate for the serial port.', default='115000', type=int)
 parser.add_argument('filename',       help='file containing gcode.')
 args = parser.parse_args()
 
@@ -54,26 +53,23 @@ print()
 
 if args.port:
   print("Serial port: ", args.port)
-  sio = serial.Serial(args.port, 115000, timeout = 3, writeTimeout = 10000)
+  print("Baud rate:   ", args.baud)
+  sio = serial.Serial(args.port, args.baud, timeout = 3, writeTimeout = 10000)
 else:
   print("Using simulated Marlin device.")
   sio = FakeMarlinSerialDevice()
 
 if args.log:
   print("Writing log file: ", args.log)
-  chatty = LoggingSerialConnection(sio, args.log)
-else:
-  chatty = sio
+  sio = LoggingSerialConnection(sio, args.log)
 
 if args.errors:
   print("1 out of %d lines will be corrupted." % args.errors)
-  noisy = NoisySerialConnection(chatty)
-  noisy.setErrorRate(1, args.errors)
-else:
-  noisy = chatty
+  sio = NoisySerialConnection(sio)
+  sio.setErrorRate(1, args.errors)
 
 print()
 
-proto = MarlinSerialProtocol(noisy)
+proto = MarlinSerialProtocol(sio)
 send_gcode_test(args.filename, proto)
 proto.close()
