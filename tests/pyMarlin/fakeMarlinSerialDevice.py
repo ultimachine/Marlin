@@ -31,14 +31,14 @@ class FakeMarlinSerialDevice:
     self.cumulativeErrors    = 0
 
   def _enqueue_reply(self, str):
-    if str == b"ok":
+    if str.startswith("ok"):
       self.pendingOk += 1
     self.replies.append(str + '\n')
 
   def _dequeue_reply(self):
     if len(self.replies):
       reply = self.replies.pop(0)
-      if reply == b"ok\n":
+      if reply.startswith("ok"):
         self.pendingOk -= 1
       return reply
     else:
@@ -49,8 +49,10 @@ class FakeMarlinSerialDevice:
     return functools.reduce(lambda x,y: x^y, map(ord, data))
 
   def write(self, data):
-    m = re.match('N(\d+)(\D[^*]*)\*(\d*)$', data)
-    if m and int(m.group(1)) == self.line and self._computeChecksum("N%d%s" % (self.line, m.group(2))) == int(m.group(3)):
+    if not isinstance(data, (bytes, bytearray)):
+      data = data.encode()
+    m = re.match(b'N(\d+)(\D[^*]*)\*(\d*)$', data)
+    if m and int(m.group(1)) == self.line and self._computeChecksum(b"N%d%s" % (self.line, m.group(2))) == int(m.group(3)):
       # We have a valid, properly sequenced command with a valid checksum
       self.line += 1
     else:
@@ -63,22 +65,22 @@ class FakeMarlinSerialDevice:
     for i in range(0,random.randint(0,4)):
       # Simulate a command that takes a while to execute
       self._enqueue_reply("")
-    self._enqueue_reply("ok")
+    self._enqueue_reply("ok T:10")
 
     self.cumulativeWrites     += 1
     self.cumulativeQueueSize  += self.pendingOk
 
   def readline(self):
     self.cumulativeReads      += 1
-    return self._dequeue_reply()
+    return self._dequeue_reply().encode()
 
   def flush(self):
     pass
 
   def close(self):
-    print "Average length of commands queue: %.2f" % (float(self.cumulativeQueueSize) / self.cumulativeWrites)
-    print "Average reads per write:          %.2f" % (float(self.cumulativeReads)     / self.cumulativeWrites)
-    print "Average errors per write:         %.2f" % (float(self.cumulativeErrors)    / self.cumulativeWrites)
-    print "Total writes:                     %d"   % self.cumulativeWrites
-    print "Total errors:                     %d"   % self.cumulativeErrors
-    print
+    print("Average length of commands queue: %.2f" % (float(self.cumulativeQueueSize) / self.cumulativeWrites))
+    print("Average reads per write:          %.2f" % (float(self.cumulativeReads)     / self.cumulativeWrites))
+    print("Average errors per write:         %.2f" % (float(self.cumulativeErrors)    / self.cumulativeWrites))
+    print("Total writes:                     %d"   % self.cumulativeWrites)
+    print("Total errors:                     %d"   % self.cumulativeErrors)
+    print("")

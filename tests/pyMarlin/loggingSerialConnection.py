@@ -27,7 +27,7 @@ class LoggingSerialConnection:
       self.file.flush()
 
   def write(self, data):
-    self._log("> " + data, end='')
+    self._log("> " + data.decode(), end='')
     self.serial.write(data)
 
   def flush(self):
@@ -41,5 +41,5 @@ class LoggingSerialConnection:
     if(data == b""):
       self._log("< Timeout")
     else:
-      self._log("< " + data, end='')
+      self._log("< " + data.decode(), end='')
     return data
