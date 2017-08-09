@@ -37,7 +37,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".21"
+#define LULZBOT_FW_VERSION ".22"
 
 // Select options based on printer model
 
@@ -150,6 +150,14 @@
 #define LULZBOT_USE_XMAX_PLUG
 #define LULZBOT_USE_YMAX_PLUG
 #define LULZBOT_USE_ZMAX_PLUG
+
+#define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
+#define LULZBOT_ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
+
+// The RAMBO does not support interrupts on all pins
+// so leave the ENDSTOP_INTERRUPTS_FEATURE disabled
+
+//#define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
 
 /* Endstop settings are determined by printer model, except for the
  * X_MAX which varies by toolhead. */
