@@ -33,7 +33,7 @@
 # The prototypical use case for this class is as follows:
 #
 #   for line in enumerate(gcode):
-#     serial.sendCommand(line)
+#     serial.enqueueCommand(line)
 #     while(not serial.clearToSend()):
 #       serial.readLine()
 #
@@ -157,7 +157,7 @@ class MarlinSerialProtocol:
       if self.stallCountdown > 0:
         self.stallCountdown -= 1
       else:
-        self.stallCountdown = 30
+        self.stallCountdown = 2
         self._sendImmediate("\nN0M105*0\n")
     else:
       estimated_duration = 15 if self.slow_commands.search(line) else 2
@@ -247,7 +247,7 @@ class MarlinSerialProtocol:
     """Clears all buffers and issues a M110 to Marlin. Call this at the start of every print."""
     self.history.clear()
     self.pendingOk       = 0
-    self.stallCountdown  = 30
+    self.stallCountdown  = 5
     self.gotError        = False
     self._flushReadBuffer()
     self._resetMarlinLineCounter()
