@@ -21,9 +21,10 @@ class FakeMarlinSerialDevice:
      contain errors"""
 
   def __init__(self):
-    self.line      = 1
-    self.replies   = []
-    self.pendingOk = 0
+    self.line           = 1
+    self.replies        = []
+    self.pendingOk      = 0
+    self.dropCharacters = 0
 
     self.cumulativeReads     = 0
     self.cumulativeWrites    = 0
@@ -44,14 +45,37 @@ class FakeMarlinSerialDevice:
     else:
       return ''
 
+  def _enqueue_okay(self):
+    self._enqueue_reply("ok T:10")
+
   def _computeChecksum(self, data):
     """Computes the GCODE checksum, this is the XOR of all characters in the payload, including the position"""
-    return functools.reduce(lambda x,y: x^y, map(ord, data))
+    return functools.reduce(lambda x,y: x^y, map(ord, data) if isinstance(data, str) else list(data))
 
   def write(self, data):
-    if not isinstance(data, (bytes, bytearray)):
+    if isinstance(data, str):
       data = data.encode()
-    m = re.match(b'N(\d+)(\D[^*]*)\*(\d*)$', data)
+
+    if data.strip() == b"":
+      return
+
+    if self.dropCharacters:
+      data = data[self.dropCharacters:]
+      self.dropCharacters = 0
+
+    hasLineNumber = b"N" in data
+    hasChecksum   = b"*" in data
+
+    if not hasLineNumber and not hasChecksum:
+      self._enqueue_okay()
+      return
+
+    # Handle M110 commands which tell Marlin to reset the line counter
+    m = re.match(b'N(\d+)M110\*(\d+)$', data)
+    if m:
+      self.line = int(m.group(1))
+
+    m = re.match(b'N(\d+)(\D[^*]*)\*(\d+)$', data)
     if m and int(m.group(1)) == self.line and self._computeChecksum(b"N%d%s" % (self.line, m.group(2))) == int(m.group(3)):
       # We have a valid, properly sequenced command with a valid checksum
       self.line += 1
@@ -61,11 +85,14 @@ class FakeMarlinSerialDevice:
       self.replies   = []
       self.pendingOk = 0
       self._enqueue_reply("Resend: " + str(self.line))
+      # When Marlin issues a resend, it often misses the next few
+      # characters. So simulate this here.
+      self.dropCharacters = random.randint(0, 5)
 
     for i in range(0,random.randint(0,4)):
       # Simulate a command that takes a while to execute
       self._enqueue_reply("")
-    self._enqueue_reply("ok T:10")
+    self._enqueue_okay()
 
     self.cumulativeWrites     += 1
     self.cumulativeQueueSize  += self.pendingOk
@@ -83,4 +110,4 @@ class FakeMarlinSerialDevice:
     print("Average errors per write:         %.2f" % (float(self.cumulativeErrors)    / self.cumulativeWrites))
     print("Total writes:                     %d"   % self.cumulativeWrites)
     print("Total errors:                     %d"   % self.cumulativeErrors)
-    print("")
+    print()

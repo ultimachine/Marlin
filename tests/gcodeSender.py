@@ -47,9 +47,9 @@ def send_gcode_test(filename, serial):
     gcode = load_gcode(filename)
 
   for i, line in enumerate(gcode):
-    serial.sendCommand(line)
+    serial.enqueueCommand(line)
     while(not serial.clearToSend()):
-      serial.readLine()
+      serial.readline()
     if(i % 1000 == 0):
       print("Progress: %d" % (i*100/len(gcode)), end='\r')
       sys.stdout.flush()
@@ -57,7 +57,8 @@ def send_gcode_test(filename, serial):
 parser = argparse.ArgumentParser(description='''sends gcode to a printer while injecting errors to test error recovery.''')
 parser.add_argument('-p', '--port',   help='Serial port.', default='/dev/ttyACM1')
 parser.add_argument('-f', '--fake',   help='Use a fake Marlin simulation instead of serial port, for self-testing.', action='store_false', dest='port')
-parser.add_argument('-e', '--errors', help='Corrupt 1 out N lines to exercise error recovery.', default='0', type=int)
+parser.add_argument('-e', '--errors', help='Corrupt 1 out N lines written to exercise error recovery.', default='0', type=int)
+parser.add_argument('-r', '--readerrors', help='Corrupt 1 out N lines read to exercise error recovery.', default='0', type=int)
 parser.add_argument('-l', '--log',    help='Write log file.')
 parser.add_argument('-b', '--baud',   help='Sets the baud rate for the serial port.', default='115000', type=int)
 parser.add_argument('filename',       help='file containing gcode, or TEST for synthetic non-printing GCODE')
@@ -73,14 +74,19 @@ else:
   print("Using simulated Marlin device.")
   sio = FakeMarlinSerialDevice()
 
+if args.readerrors:
+  print("1 out of %d lines read will be corrupted." % args.readerrors)
+  sio = NoisySerialConnection(sio)
+  sio.setReadErrorRate(1, args.readerrors)
+
 if args.log:
   print("Writing log file: ", args.log)
   sio = LoggingSerialConnection(sio, args.log)
 
 if args.errors:
-  print("1 out of %d lines will be corrupted." % args.errors)
+  print("1 out of %d lines written will be corrupted." % args.errors)
   sio = NoisySerialConnection(sio)
-  sio.setErrorRate(1, args.errors)
+  sio.setWriteErrorRate(1, args.errors)
 
 print()
 

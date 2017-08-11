@@ -14,24 +14,34 @@ import random
 import string
 
 class NoisySerialConnection:
-  """Wrapper class which injects character noise into the outgoing packets
-     of a serial connection for testing Marlin's error correction"""
+  """Wrapper class which injects character noise into data of
+     a serial connection for testing Marlin's error correction"""
   def __init__(self, serial):
-    self.serial     = serial
-    self.errorRate  = 0
+    self.serial         = serial
+    self.readErrorRate  = 0
+    self.writeErrorRate = 0
 
-  def _corruptStr(self, str):
+  def _corruptData(self, data):
     """Introduces a single character error on a string"""
-    charToCorrupt = random.randint(0, len(str) - 1)
-    return str[:charToCorrupt] + random.choice(string.ascii_letters) + str[charToCorrupt+1:]
+    badChar = random.choice(string.ascii_letters)
+    badChar = badChar if isinstance(data, str) else badChar.encode()
+    if len(data) == 0:
+      return data
+    if len(data) == 1:
+      return badChar
+    charToCorrupt = random.randint(0, len(data) - 1)
+    return data[:charToCorrupt] + badChar + data[charToCorrupt+1:]
 
   def write(self, data):
-    if(random.random() < self.errorRate):
-      data = self._corruptStr(data)
+    if(random.random() < self.writeErrorRate):
+      data = self._corruptData(data)
     self.serial.write(data)
 
   def readline(self):
-    return self.serial.readline()
+    data = self.serial.readline()
+    if(random.random() < self.readErrorRate):
+      data = self._corruptData(data)
+    return data
 
   def flush(self):
     self.serial.flush()
@@ -39,6 +49,10 @@ class NoisySerialConnection:
   def close(self):
     self.serial.close()
 
-  def setErrorRate(self, badWrites, totalWrites):
+  def setWriteErrorRate(self, badWrites, totalWrites):
     """Inserts a single character error into every badWrites out of totalWrites"""
-    self.errorRate = float(badWrites)/float(totalWrites)
+    self.writeErrorRate = float(badWrites)/float(totalWrites)
+
+  def setReadErrorRate(self, badReads, totalReads):
+    """Inserts a single character error into every badReads out of totalReads"""
+    self.readErrorRate = float(badReads)/float(totalReads)
