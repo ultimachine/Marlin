@@ -37,7 +37,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".22"
+#define LULZBOT_FW_VERSION ".23"
 
 // Select options based on printer model
 
@@ -141,6 +141,12 @@
     #define LULZBOT_Z_MIN_PROBE_ENDSTOP
     #define LULZBOT_Z_MIN_PROBE_PIN               SERVO0_PIN // Digital pin 22
     #define LULZBOT_BAUDRATE 250000
+
+    // On the TAZ, the bed washers are on Z_MIN_PROBE while the
+    // Z-Home button is on Z_MIN, yet we need both to be disabled
+    // when z_probe_enabled is false. We added this special case
+    // to "endstops.cpp"
+    #define LULZBOT_Z_MIN_USES_Z_PROBE_ENABLED
 #endif
 
 #define LULZBOT_USE_CONTROLLER_FAN
@@ -298,35 +304,39 @@
  *
  * On TAZ:
  *   Z_MIN_PIN corresponds to the Z-Home push button.
- *   LULZBOT_Z_MIN_PROBE_PIN are the bed washers.
+ *   Z_MIN_PROBE_PIN are the bed washers.
  */
 #if defined(LULZBOT_MINI_BED)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
         if(enable) { \
-          /* Set as inputs with pull-up resistor */ \
-          SET_INPUT(Z_MIN_PIN); \
-          WRITE(Z_MIN_PIN, HIGH); \
+            /* Set as inputs with pull-up resistor */ \
+            SET_INPUT(Z_MIN_PIN); \
+            WRITE(Z_MIN_PIN, HIGH); \
         } else { \
-          /* Ground to prevent EMI */ \
-          SET_OUTPUT(Z_MIN_PIN); \
-          WRITE(Z_MIN_PIN, LOW); \
+            /* Ground to prevent EMI */ \
+            SET_OUTPUT(Z_MIN_PIN); \
+            WRITE(Z_MIN_PIN, LOW); \
         } \
     }
 
 #elif defined(LULZBOT_TAZ_BED)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
         if(enable) { \
-          /* Set both as inputs with pull-up resistor */ \
-          SET_INPUT(LULZBOT_Z_MIN_PROBE_PIN); \
-          WRITE(LULZBOT_Z_MIN_PROBE_PIN, HIGH); \
-          SET_INPUT(Z_MIN_PIN); \
-          WRITE(Z_MIN_PIN, HIGH); \
+            /* Set both as inputs with pull-up resistor */ \
+            SET_INPUT(LULZBOT_Z_MIN_PROBE_PIN); \
+            WRITE(LULZBOT_Z_MIN_PROBE_PIN, HIGH); \
+            SET_INPUT(Z_MIN_PIN); \
+            WRITE(Z_MIN_PIN, HIGH); \
+            /* The following is required since Marlin would \
+             * not normally deploy the probe for Z-Min */ \
+            endstops.enable_z_probe(true); \
         } else { \
-          /* Ground both pins to prevent EMI */ \
-          SET_OUTPUT(LULZBOT_Z_MIN_PROBE_PIN); \
-          WRITE(LULZBOT_Z_MIN_PROBE_PIN, LOW); \
-          SET_OUTPUT(Z_MIN_PIN); \
-          WRITE(Z_MIN_PIN, LOW); \
+            /* Ground both pins to prevent EMI */ \
+            SET_OUTPUT(LULZBOT_Z_MIN_PROBE_PIN); \
+            WRITE(LULZBOT_Z_MIN_PROBE_PIN, LOW); \
+            SET_OUTPUT(Z_MIN_PIN); \
+            WRITE(Z_MIN_PIN, LOW); \
+            endstops.enable_z_probe(false); \
         } \
     }
 #endif

@@ -3917,6 +3917,8 @@ inline void gcode_G28(const bool always_home_all) {
 
   #endif // !DELTA (gcode_G28)
 
+  LULZBOT_AFTER_Z_HOME_ACTION // This must happen before endstops.not_homing()
+
   endstops.not_homing();
 
   #if ENABLED(DELTA) && ENABLED(DELTA_HOME_TO_SAFE_ZONE)
@@ -3934,8 +3936,6 @@ inline void gcode_G28(const bool always_home_all) {
   #if HOTENDS > 1
     tool_change(old_tool_index, 0, true);
   #endif
-
-  LULZBOT_AFTER_Z_HOME_ACTION
 
   lcd_refresh();
 

@@ -409,7 +409,7 @@ void Endstops::update() {
 
         #else // !Z_DUAL_ENDSTOPS
 
-          #if ENABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
+          #if ENABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN) || defined(LULZBOT_Z_MIN_USES_Z_PROBE_ENABLED)
             if (z_probe_enabled) UPDATE_ENDSTOP(Z, MIN);
           #else
             UPDATE_ENDSTOP(Z, MIN);
