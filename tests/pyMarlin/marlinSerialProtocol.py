@@ -87,7 +87,7 @@ class MarlinSerialProtocol:
     self.marlinBufSize          = 4
     self.marlinReserve          = 1
     self.history                = GCodeHistory()
-    self.slow_commands          = re.compile("M109|M190|G28|G29")
+    self.slow_commands          = re.compile(b"M109|M190|G28|G29")
     self.restart()
 
   def _stripCommentsAndWhitespace(self, str):
@@ -150,15 +150,15 @@ class MarlinSerialProtocol:
 
   def _stallWatchdog(self, line):
     """Watches for a stall in the print. This can happen if a number of
-       okays are lost in transmission. To recover, we send Marlin a command
-       with an invalid checksum. One it requests a resend, we will back into
-       a known good state."""
+       okays are lost in transmission. To recover, we send Marlin an invalid
+       command (no line number, with an asterisk). One it requests a resend,
+       we will back into a known good state."""
     if line == b"":
       if self.stallCountdown > 0:
         self.stallCountdown -= 1
       else:
         self.stallCountdown = 2
-        self._sendImmediate("\nN0M105*0\n")
+        self._sendImmediate("\nM105*\n")
     else:
       estimated_duration = 15 if self.slow_commands.search(line) else 2
       self.stallCountdown = max(estimated_duration, self.stallCountdown-1)
