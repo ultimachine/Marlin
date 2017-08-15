@@ -43,6 +43,10 @@ class NoisySerialConnection:
       data = self._corruptData(data)
     return data
 
+  @property
+  def in_waiting(self):
+    return self.serial.in_waiting
+
   def flush(self):
     self.serial.flush()
 

@@ -43,3 +43,7 @@ class LoggingSerialConnection:
     else:
       self._log("< " + data.decode(), end='')
     return data
+
+  @property
+  def in_waiting(self):
+    return self.serial.in_waiting

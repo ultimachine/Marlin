@@ -47,7 +47,7 @@ def send_gcode_test(filename, serial):
     gcode = load_gcode(filename)
 
   for i, line in enumerate(gcode):
-    serial.enqueueCommand(line)
+    serial.sendCmdReliable(line)
     while(not serial.clearToSend()):
       serial.readline()
     if(i % 1000 == 0):

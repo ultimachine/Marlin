@@ -37,7 +37,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".23"
+#define LULZBOT_FW_VERSION ".24"
 
 // Select options based on printer model
 
@@ -544,6 +544,8 @@
     #define LULZBOT_SWAP_EXTRUDERS
     #undef  LULZBOT_INVERT_E1_DIR
     #define LULZBOT_INVERT_E1_DIR                 false
+    #undef  LULZBOT_E_STEPS
+    #define LULZBOT_E_STEPS                        760
     #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Yellowfin_DualExtruder */
 

@@ -33,9 +33,9 @@
 # The prototypical use case for this class is as follows:
 #
 #   for line in enumerate(gcode):
-#     serial.enqueueCommand(line)
+#     serial.sendCmdLine(line)
 #     while(not serial.clearToSend()):
-#       serial.readLine()
+#       serial.readline()
 #
 
 import functools
@@ -87,7 +87,10 @@ class MarlinSerialProtocol:
     self.marlinBufSize          = 4
     self.marlinReserve          = 1
     self.history                = GCodeHistory()
+    self.asap              = []
     self.slow_commands          = re.compile(b"M109|M190|G28|G29")
+    self.slow_timeout           = 400
+    self.fast_timeout           = 15
     self.restart()
 
   def _stripCommentsAndWhitespace(self, str):
@@ -113,9 +116,13 @@ class MarlinSerialProtocol:
 
   def _sendToMarlin(self):
     """Sends as many commands as are available and to fill the Marlin buffer.
-       Commands are read from the history. Generally only the most recently
-       appended command is sent; but after a resend request, we may be
-       further back in the history than that"""
+       Commands are first read from the asap queue, then read from the
+       history. Generally only the most recently history command is sent;
+       but after a resend request, we may be further back in the history
+       than that"""
+    while(len(self.asap) and self.marlinBufferCapacity() > 0):
+      cmd = self.asap.pop(0);
+      self._sendImmediate(cmd)
     while(not self.history.atEnd() and self.marlinBufferCapacity() > 0):
       pos, cmd = self.history.getNextCommand();
       self._sendImmediate(cmd)
@@ -158,9 +165,9 @@ class MarlinSerialProtocol:
         self.stallCountdown -= 1
       else:
         self.stallCountdown = 2
-        self._sendImmediate("\nM105*\n")
+        self._sendImmediate(b"\nM105*\n")
     else:
-      estimated_duration = 15 if self.slow_commands.search(line) else 2
+      estimated_duration = self.slow_timeout if self.slow_commands.search(line) else self.fast_timeout
       self.stallCountdown = max(estimated_duration, self.stallCountdown-1)
 
   def _resendFrom(self, position):
@@ -173,14 +180,26 @@ class MarlinSerialProtocol:
     while self.serial.readline() != b"":
       pass
 
-  def enqueueCommand(self, cmd):
-    """Adds a command to the sending queue. Queued commands will only be processed during calls to readLine()"""
-    if isinstance(cmd, str):
-      cmd = cmd.encode()
-    cmd = self._stripCommentsAndWhitespace(cmd)
-    cmd = self._replaceEmptyLineWithM105(cmd)
+  def sendCmdReliable(self, line):
+    """Adds command line (can contain comments or blanks) to the queue for reliable
+       transmission. Queued commands will be processed during calls to readLine() or
+       clearToSend()"""
+    if isinstance(line, str):
+      line = line.encode()
+    line = self._stripCommentsAndWhitespace(line)
+    cmd = self._replaceEmptyLineWithM105(line)
     cmd = self._addPositionAndChecksum(self.history.getAppendPosition(), cmd)
     self.history.append(cmd)
+
+  def sendCmdUnreliable(self, line):
+    """Sends a command (can contain comments or blanks) prior to any other
+       history commands. Commands will be processed during calls to
+       readLine() or clearToSend()"""
+    if isinstance(line, str):
+      line = line.encode()
+    cmd = self._stripCommentsAndWhitespace(line)
+    if cmd:
+      self.asap.append(cmd)
 
   def _gotOkay(self):
     if self.pendingOk > 0:
@@ -217,9 +236,10 @@ class MarlinSerialProtocol:
     # detects a command with a checksum or line number error.
     resendPos = self._isResendRequest(line) or self._isNoLineNumberErr(line)
     if resendPos:
-      # If we got a resend requests, purge lines until timeout, but watch
-      # for any subsequent resend requests (we must only act on the last).
-      while line != b"":
+      # If we got a resend requests, purge lines until input buffer is empty
+      # or timeout, but watch for any subsequent resend requests (we must
+      # only act on the last).
+      while self.serial.in_waiting and line != b"":
         line = self.serial.readline()
         resendPos = self._isResendRequest(line) or self._isNoLineNumberErr(line) or resendPos
       # Process the last received resend request:
@@ -247,7 +267,7 @@ class MarlinSerialProtocol:
     """Clears all buffers and issues a M110 to Marlin. Call this at the start of every print."""
     self.history.clear()
     self.pendingOk       = 0
-    self.stallCountdown  = 5
+    self.stallCountdown  = self.fast_timeout
     self.gotError        = False
     self._flushReadBuffer()
     self._resetMarlinLineCounter()
