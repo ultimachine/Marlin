@@ -37,7 +37,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".24"
+#define LULZBOT_FW_VERSION ".25"
 
 // Select options based on printer model
 
@@ -494,6 +494,7 @@
     #define LULZBOT_Y_MIN_POS                     -20
     #define LULZBOT_TEMP_SENSOR_1                   5
     #define LULZBOT_AO_Hexagon
+    #define LULZBOT_NO_HOME_ON_TOOLHEAD_CHANGE
 #endif /* TOOLHEAD_Javelin_DualExtruder || TOOLHEAD_Longfin_FlexyDually || TOOLHEAD_Yellowfin_DualExtruder */
 
 #if defined(TOOLHEAD_Javelin_DualExtruder)
@@ -637,6 +638,9 @@
     #define LULZBOT_Z_STEPS (Z_FULL_STEPS_PER_ROTATION * Z_MICROSTEPS * Z_MOTOR_GEAR_REDUCTION / double(Z_BELT_PITCH) / double(Z_PULLEY_TEETH))
     #undef  LULZBOT_Z_MAX_POS
     #define LULZBOT_Z_MAX_POS                     178
+
+    #undef  LULZBOT_DEFAULT_MAX_FEEDRATE
+    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {800, 800, 16, 40}      // (mm/sec)
 
 #elif defined(LULZBOT_Oliveoil_TAZ_6)
     #define DIGIPOT_MOTOR_CURRENT_Z               200

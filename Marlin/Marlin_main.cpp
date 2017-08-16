@@ -10093,6 +10093,11 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
       feedrate_mm_s = fr_mm_s > 0.0 ? fr_mm_s : XY_PROBE_FEEDRATE_MM_S;
 
       if (tmp_extruder != active_extruder) {
+
+#if defined(LULZBOT_NO_MOVE_ON_TOOLHEAD_CHANGE)
+      no_move = true;
+#endif
+
         if (!no_move && axis_unhomed_error()) {
           SERIAL_ECHOLNPGM("No move on toolchange");
           no_move = true;
