@@ -82,7 +82,7 @@ class MarlinSerialProtocol:
   """This class implements the Marlin serial protocol, such
   as adding a checksum to each line, replying to resend
   requests and keeping the Marlin buffer full"""
-  def __init__(self, serial):
+  def __init__(self, serial, onResendCallback=None):
     self.serial                 = serial
     self.marlinBufSize          = 4
     self.marlinReserve          = 1
@@ -91,6 +91,7 @@ class MarlinSerialProtocol:
     self.slow_commands          = re.compile(b"M109|M190|G28|G29")
     self.slow_timeout           = 400
     self.fast_timeout           = 15
+    self.onResendCallback       = onResendCallback
     self.restart()
 
   def _stripCommentsAndWhitespace(self, str):
@@ -175,6 +176,8 @@ class MarlinSerialProtocol:
     self.history.rewindTo(position)
     self.pendingOk     = 0
     self.consecutiveOk = 0
+    if self.onResendCallback:
+      self.onResendCallback(position)
 
   def _flushReadBuffer(self):
     while self.serial.readline() != b"":

@@ -90,6 +90,8 @@ if args.errors:
 
 print()
 
-proto = MarlinSerialProtocol(sio)
+def onResendCallback(line):
+  print("Resending from: %d" % (line))
+proto = MarlinSerialProtocol(sio, onResendCallback)
 send_gcode_test(args.filename, proto)
 proto.close()
