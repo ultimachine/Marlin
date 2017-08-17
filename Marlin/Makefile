@@ -338,6 +338,11 @@ LD_PREFIX=-nodefaultlibs
 LD_SUFFIX=-lm -lgcc -lc -lgcc
 endif
 
+#Disabling the timestamp is useful for diffing binaries between different builds.
+ifeq ($(NO_TIMESTAMP), 1)
+CDEFS +=-D__DATE__="??? ?? ????" -D__TIME__="??:??:??"
+endif
+
 #Check for Arduino 1.0.0 or higher and use the correct source files for that version
 ifeq ($(shell [ $(ARDUINO_VERSION) -ge 100 ] && echo true), true)
 CXXSRC += main.cpp

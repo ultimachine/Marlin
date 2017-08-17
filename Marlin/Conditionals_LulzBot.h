@@ -200,7 +200,7 @@
 /* Endstop settings are determined by printer model, except for the
  * X_MAX which varies by toolhead. */
 
-if defined(LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS)
+#if defined(LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS)
     // TAZ 6+ and Huerfano Mini onwards use normally closed endstops.
     // This is safer, as a loose connector or broken wire will halt
     // the axis

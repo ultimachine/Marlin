@@ -147,7 +147,14 @@ check_avr_tools
 rm -rf build
 mkdir build
 
-if [ $# -eq 2 ]; then
+if [ "$1" = "--no-timestamp" ]
+then
+  shift
+  MAKEOPTS="NO_TIMESTAMP=1"
+fi
+
+if [ $# -eq 2 ]
+then
   build_firmware $1 $2
 else
   build_for_mini
