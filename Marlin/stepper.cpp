@@ -947,9 +947,9 @@ void tmc2130_init()
   for(int i=0;i<4;i++)
   {
     //tmc2130_write(cs[i],0x6C,0b10100,01,00,0xC5);
-    tmc2130_chopconf(cs[i],1,16);
+    tmc2130_chopconf(cs[i],1,16); // 16 Microstepping to 256 microstepping
     tmc2130_write(cs[i],0x10,0,15,current[i],current[i]); //0x10 IHOLD_IRUN
-    tmc2130_write(cs[i],0x0,0,0,0,1); //address=0x0 GCONF EXT VREF
+    tmc2130_write(cs[i],0x0,0,0,0,0b101); //address=0x0 GCONF EXT VREF - STEALTH CHOP
     //tmc2130_write(cs[i],0x11,0,0,0,0xA);
     tmc2130_write(cs[i],0x70,0,0b111,0x01,0xC8); //address=0x70 PWM_CONF //reset default=0x00050480
   }
