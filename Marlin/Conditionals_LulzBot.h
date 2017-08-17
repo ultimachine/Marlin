@@ -38,7 +38,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".26"
+#define LULZBOT_FW_VERSION ".27"
 
 // Select options based on printer model
 
@@ -106,7 +106,6 @@
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MAX_ENDSTOPS
-    #define LULZBOT_USE_HOME_BUTTON
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
 #endif
 
@@ -158,23 +157,25 @@
 #if defined(LULZBOT_IS_MINI)
     #define LULZBOT_MOTHERBOARD                   BOARD_MINIRAMBO
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN  // Digital pin 6
-    #define LULZBOT_Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
     #define LULZBOT_BAUDRATE 115200
 
 #elif defined(LULZBOT_IS_TAZ)
     #define LULZBOT_MOTHERBOARD                   BOARD_RAMBO
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN2_PIN  // Digital pin 2
     #define LULZBOT_BAUDRATE 250000
+#endif
 
-    // On the TAZ 6+, the bed washers are on Z_MIN_PROBE while the
+#if defined(LULZBOT_USE_HOME_BUTTON)
+    #define LULZBOT_Z_MIN_PROBE_ENDSTOP
+    #define LULZBOT_Z_MIN_PROBE_PIN               SERVO0_PIN // Digital pin 22
+    // On the TAZ 6, the bed washers are on Z_MIN_PROBE while the
     // Z-Home button is on Z_MIN, yet we need both to be disabled
     // when z_probe_enabled is false. We added this special case
     // to "endstops.cpp"
-    #if defined(LULZBOT_USE_AUTOLEVELING)
-        #define LULZBOT_Z_MIN_PROBE_ENDSTOP
-        #define LULZBOT_Z_MIN_PROBE_PIN               SERVO0_PIN // Digital pin 22
-        #define LULZBOT_Z_MIN_USES_Z_PROBE_ENABLED
-    #endif // LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_Z_MIN_USES_Z_PROBE_ENABLED
+#else
+    // The Mini and TAZ 7+ lack a home button and probe using the Z_MIN pin.
+    #define LULZBOT_Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
 #endif
 
 #define LULZBOT_USE_CONTROLLER_FAN
@@ -238,7 +239,13 @@
     #define LULZBOT_INVERT_Z_HOME_DIR             -1 // Home towards bed
     #define LULZBOT_QUICKHOME
 
-#elif defined(LULZBOT_IS_TAZ)
+#elif defined(LULZBOT_IS_TAZ) && !defined(LULZBOT_USE_HOME_BUTTON)
+    #define LULZBOT_INVERT_X_HOME_DIR             -1 // Home left
+    #define LULZBOT_INVERT_Y_HOME_DIR              1 // Home bed forward
+    #define LULZBOT_INVERT_Z_HOME_DIR              1 // Home to top
+    #define LULZBOT_QUICKHOME
+
+#elif defined(LULZBOT_IS_TAZ) &&  defined(LULZBOT_USE_HOME_BUTTON)
     #define LULZBOT_INVERT_X_HOME_DIR             -1 // Home left
     #define LULZBOT_INVERT_Y_HOME_DIR              1 // Home bed forward
     #define LULZBOT_INVERT_Z_HOME_DIR             -1 // Home towards bed
@@ -357,7 +364,7 @@
         } \
     }
 
-#elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_TAZ_BED)
+#elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_USE_HOME_BUTTON)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
         if(enable) { \
             /* Set both as inputs with pull-up resistor */ \
