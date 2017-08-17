@@ -38,7 +38,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".27"
+#define LULZBOT_FW_VERSION ".28"
 
 // Select options based on printer model
 
@@ -253,11 +253,14 @@
 #endif
 
 #if defined(LULZBOT_MINI_BED)
-    #define LULZBOT_HOMING_FEEDRATE_XY            (30*60)
-    #define LULZBOT_HOMING_FEEDRATE_Z             (12*60)
+    #define LULZBOT_HOMING_FEEDRATE_XY            (30*60) // mm/m
+    #define LULZBOT_HOMING_FEEDRATE_Z              (8*60) // mm/m
+#elif defined(LULZBOT_Quiver_TAZ_7)
+    #define LULZBOT_HOMING_FEEDRATE_XY            (50*60) // mm/m
+    #define LULZBOT_HOMING_FEEDRATE_Z             (10*60) // mm/m
 #elif defined(LULZBOT_TAZ_BED)
-    #define LULZBOT_HOMING_FEEDRATE_XY            (50*60)
-    #define LULZBOT_HOMING_FEEDRATE_Z             (8*60)
+    #define LULZBOT_HOMING_FEEDRATE_XY            (50*60) // mm/m
+    #define LULZBOT_HOMING_FEEDRATE_Z             (3*60)  // mm/m
 #endif // LULZBOT_TAZ_BED
 
 #if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
@@ -750,7 +753,7 @@
 #if defined(LULZBOT_IS_MINI)
     #define PWM_MOTOR_CURRENT_XY                  1300
     #define LULZBOT_XY_STEPS                      100.5
-    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {800, 800, 8, 40}      // (mm/sec)
+    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 8, 40}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
 
     #define LULZBOT_DEFAULT_XJERK                 12.0
@@ -790,24 +793,24 @@
     #define LULZBOT_Z_STEPS (Z_FULL_STEPS_PER_ROTATION * Z_MICROSTEPS * Z_MOTOR_GEAR_REDUCTION / double(Z_BELT_PITCH) / double(Z_PULLEY_TEETH))
 
     #undef  LULZBOT_DEFAULT_MAX_FEEDRATE
-    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {800, 800, 16, 40}      // (mm/sec)
+    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 16, 25}      // (mm/sec)
 
 #elif defined(LULZBOT_Juniper_TAZ_5)
     #define DIGIPOT_MOTOR_CURRENT_Z               240
-    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {800, 800, 3, 40}      // (mm/sec)
+    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 3, 25}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
     #define LULZBOT_Z_STEPS                       1600
 
 #elif defined(LULZBOT_Oliveoil_TAZ_6)
     #define DIGIPOT_MOTOR_CURRENT_Z               200
-    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {800, 800, 3, 40}      // (mm/sec)
+    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 3, 25}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
     #define LULZBOT_Z_STEPS                       1600
 
 #elif defined(LULZBOT_Quiver_TAZ_7)
     #define DIGIPOT_MOTOR_CURRENT_Z               175
     // Prototype Z-belt driven TAZ 7
-    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {800, 800, 600, 40}   // (mm/sec)
+    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 10, 25}   // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,10,10000}
     #define LULZBOT_Z_STEPS                       1790.08264463
 #endif
