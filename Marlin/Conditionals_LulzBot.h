@@ -20,6 +20,7 @@
     !defined(LULZBOT_Hibiscus_Mini) && \
     !defined(LULZBOT_Gladiola_GLCD) && \
     !defined(LULZBOT_Hibiscus_GLCD) && \
+    !defined(LULZBOT_Juniper_TAZ_5) && \
     !defined(LULZBOT_Oliveoil_TAZ_6) && \
     !defined(LULZBOT_Quiver_TAZ_7) \
 ) || ( \
@@ -37,7 +38,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".25"
+#define LULZBOT_FW_VERSION ".26"
 
 // Select options based on printer model
 
@@ -45,6 +46,8 @@
     #define LULZBOT_CUSTOM_MACHINE_NAME "Mini"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MAX_ENDSTOPS
 #endif
 
 #if defined(LULZBOT_Hibiscus_Mini)
@@ -52,6 +55,9 @@
     #define LULZBOT_CUSTOM_MACHINE_NAME "Mini 2"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
 #endif
 
 #if defined(LULZBOT_Gladiola_GLCD)
@@ -59,6 +65,8 @@
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MAX_ENDSTOPS
 #endif
 
 #if defined(LULZBOT_Hibiscus_GLCD)
@@ -67,6 +75,16 @@
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+#endif
+
+#if defined(LULZBOT_Juniper_TAZ_5)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "TAZ 5"
+    #define LULZBOT_IS_TAZ
+    #define LULZBOT_TAZ_BED
+    #define LULZBOT_USE_LCD_DISPLAY
 #endif
 
 #if defined(LULZBOT_Oliveoil_TAZ_6)
@@ -74,6 +92,10 @@
     #define LULZBOT_IS_TAZ
     #define LULZBOT_TAZ_BED
     #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_HOME_BUTTON
+    #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
 #endif
 
 #if defined(LULZBOT_Quiver_TAZ_7)
@@ -82,6 +104,10 @@
     #define LULZBOT_IS_TAZ
     #define LULZBOT_TAZ_BED
     #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_HOME_BUTTON
+    #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
 #endif
 
 // Shared values
@@ -138,24 +164,30 @@
 #elif defined(LULZBOT_IS_TAZ)
     #define LULZBOT_MOTHERBOARD                   BOARD_RAMBO
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN2_PIN  // Digital pin 2
-    #define LULZBOT_Z_MIN_PROBE_ENDSTOP
-    #define LULZBOT_Z_MIN_PROBE_PIN               SERVO0_PIN // Digital pin 22
     #define LULZBOT_BAUDRATE 250000
 
-    // On the TAZ, the bed washers are on Z_MIN_PROBE while the
+    // On the TAZ 6+, the bed washers are on Z_MIN_PROBE while the
     // Z-Home button is on Z_MIN, yet we need both to be disabled
     // when z_probe_enabled is false. We added this special case
     // to "endstops.cpp"
-    #define LULZBOT_Z_MIN_USES_Z_PROBE_ENABLED
+    #if defined(LULZBOT_USE_AUTOLEVELING)
+        #define LULZBOT_Z_MIN_PROBE_ENDSTOP
+        #define LULZBOT_Z_MIN_PROBE_PIN               SERVO0_PIN // Digital pin 22
+        #define LULZBOT_Z_MIN_USES_Z_PROBE_ENABLED
+    #endif // LULZBOT_USE_AUTOLEVELING
 #endif
 
 #define LULZBOT_USE_CONTROLLER_FAN
 #define LULZBOT_USE_XMIN_PLUG
 #define LULZBOT_USE_YMIN_PLUG
 #define LULZBOT_USE_ZMIN_PLUG
-#define LULZBOT_USE_XMAX_PLUG
-#define LULZBOT_USE_YMAX_PLUG
-#define LULZBOT_USE_ZMAX_PLUG
+
+// Z-Max Endstops were introduced on the Mini and TAZ 6
+#if defined(LULZBOT_USE_MAX_ENDSTOPS)
+    #define LULZBOT_USE_XMAX_PLUG
+    #define LULZBOT_USE_YMAX_PLUG
+    #define LULZBOT_USE_ZMAX_PLUG
+#endif
 
 #define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
 #define LULZBOT_ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
@@ -168,17 +200,19 @@
 /* Endstop settings are determined by printer model, except for the
  * X_MAX which varies by toolhead. */
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_GLCD)
-    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
-    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
-    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
-    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
-
-#elif defined(LULZBOT_IS_TAZ) || defined(LULZBOT_Hibiscus_Mini) || defined(LULZBOT_Hibiscus_GLCD)
+if defined(LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS)
+    // TAZ 6+ and Huerfano Mini onwards use normally closed endstops.
+    // This is safer, as a loose connector or broken wire will halt
+    // the axis
     #define LULZBOT_X_MIN_ENDSTOP_INVERTING       false
     #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       false
     #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       false
     #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       false
+#else
+    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
 #endif
 
 #define LULZBOT_Z_MIN_ENDSTOP_INVERTING           true
@@ -192,55 +226,67 @@
 
 #if defined(LULZBOT_IS_MINI)
     #define LULZBOT_HOMING_Z_WITH_PROBE           false
-    #define LULZBOT_INVERT_X_HOME_DIR             -1
-    #define LULZBOT_INVERT_Y_HOME_DIR              1
-    #define LULZBOT_INVERT_Z_HOME_DIR              1
+    #define LULZBOT_INVERT_X_HOME_DIR             -1 // Home left
+    #define LULZBOT_INVERT_Y_HOME_DIR              1 // Home bed forward
+    #define LULZBOT_INVERT_Z_HOME_DIR              1 // Home to top
+    #define LULZBOT_QUICKHOME
+
+#elif defined(LULZBOT_Juniper_TAZ_5)
+    #define LULZBOT_HOMING_Z_WITH_PROBE           false
+    #define LULZBOT_INVERT_X_HOME_DIR             -1 // Home left
+    #define LULZBOT_INVERT_Y_HOME_DIR             -1 // Home bed rear
+    #define LULZBOT_INVERT_Z_HOME_DIR             -1 // Home towards bed
     #define LULZBOT_QUICKHOME
 
 #elif defined(LULZBOT_IS_TAZ)
-    #define LULZBOT_HOMING_Z_WITH_PROBE           true
-    #define LULZBOT_INVERT_X_HOME_DIR             -1
-    #define LULZBOT_INVERT_Y_HOME_DIR              1
-    #define LULZBOT_INVERT_Z_HOME_DIR             -1
+    #define LULZBOT_INVERT_X_HOME_DIR             -1 // Home left
+    #define LULZBOT_INVERT_Y_HOME_DIR              1 // Home bed forward
+    #define LULZBOT_INVERT_Z_HOME_DIR             -1 // Home towards bed
     #define LULZBOT_QUICKHOME
-
-    #define LULZBOT_AFTER_Z_HOME_Z_RAISE           5
-    #define LULZBOT_AFTER_Z_HOME_Z_ORIGIN          0
 #endif
 
 #if defined(LULZBOT_MINI_BED)
+    #define LULZBOT_HOMING_FEEDRATE_XY            (30*60)
+    #define LULZBOT_HOMING_FEEDRATE_Z             (12*60)
+#elif defined(LULZBOT_TAZ_BED)
+    #define LULZBOT_HOMING_FEEDRATE_XY            (50*60)
+    #define LULZBOT_HOMING_FEEDRATE_Z             (8*60)
+#endif // LULZBOT_TAZ_BED
+
+#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     #define LULZBOT_LEFT_PROBE_BED_POSITION        0
     #define LULZBOT_RIGHT_PROBE_BED_POSITION     164
     #define LULZBOT_BACK_PROBE_BED_POSITION      162
     #define LULZBOT_FRONT_PROBE_BED_POSITION      -6
 
-    #define LULZBOT_HOMING_FEEDRATE_XY            (30*60)
-    #define LULZBOT_HOMING_FEEDRATE_Z             (12*60)
-
-#elif defined(LULZBOT_TAZ_BED)
+#elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_TAZ_BED)
     #define LULZBOT_LEFT_PROBE_BED_POSITION       -9
     #define LULZBOT_RIGHT_PROBE_BED_POSITION     288
     #define LULZBOT_BACK_PROBE_BED_POSITION      289
     #define LULZBOT_FRONT_PROBE_BED_POSITION      -9
+#endif
 
-    #define LULZBOT_HOMING_FEEDRATE_XY            (50*60)
-    #define LULZBOT_HOMING_FEEDRATE_Z             (8*60)
-
-    // Only the TAZ models have a Z-homing button
+// Only the TAZ 6+ models have a Z-homing button
+#if defined(LULZBOT_USE_HOME_BUTTON)
     #define LULZBOT_Z_SAFE_HOMING
     #define LULZBOT_Z_SAFE_HOMING_X_POINT         (-19)
     #define LULZBOT_Z_SAFE_HOMING_Y_POINT         (258)
     #define LULZBOT_Z_HOMING_HEIGHT               5
-#endif
 
-#if defined(LULZBOT_MINI_BED)
+    #define LULZBOT_AFTER_Z_HOME_Z_RAISE          5
+    #define LULZBOT_AFTER_Z_HOME_Z_ORIGIN         0
+#else
+    #define LULZBOT_Z_HOMING_HEIGHT               0
+#endif  // LULZBOT_USE_HOME_BUTTON
+
+#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     // Mini has a horizontal wiping pad on the back of the bed
     #define LULZBOT_WIPE_X1                       115
     #define LULZBOT_WIPE_X2                       45
     #define LULZBOT_WIPE_Y1                       173
     #define LULZBOT_WIPE_Y2                       173
 
-#elif defined(LULZBOT_TAZ_BED)
+#elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_TAZ_BED)
     // TAZ has a vertical wiping pad on the left side of the bed
     #define LULZBOT_WIPE_X1                      -16
     #define LULZBOT_WIPE_X2                      -16
@@ -248,9 +294,12 @@
     #define LULZBOT_WIPE_Y2                       25
 #endif
 
-#define LULZBOT_NOZZLE_CLEAN_FEATURE
-
-#define LULZBOT_AUTO_BED_LEVELING_3POINT
+#if defined(LULZBOT_USE_AUTOLEVELING)
+    #define LULZBOT_NOZZLE_CLEAN_FEATURE
+    // Select type of leveling to use:
+    //#define LULZBOT_AUTO_BED_LEVELING_BILINEAR
+    #define LULZBOT_AUTO_BED_LEVELING_3POINT
+#endif
 
 #if defined(LULZBOT_AUTO_BED_LEVELING_3POINT)
   // Experimental three point leveling.
@@ -260,7 +309,7 @@
   #define LULZBOT_ABL_PROBE_PT_2_Y LULZBOT_FRONT_PROBE_BED_POSITION
   #define LULZBOT_ABL_PROBE_PT_3_X LULZBOT_RIGHT_PROBE_BED_POSITION
   #define LULZBOT_ABL_PROBE_PT_3_Y LULZBOT_BACK_PROBE_BED_POSITION
-#else
+#elif defined(LULZBOT_AUTO_BED_LEVELING_BILINEAR)
   // Traditionally LulzBot printers have employed a four-point leveling
   // using a degenerate 2x2 grid. This is the traditional behavior.
   #define LULZBOT_GRID_MAX_POINTS_X            2
@@ -272,12 +321,16 @@
   #endif
 #endif
 
-/* Define probe parameters related to bed leveling,
+/* Auto-leveling was introduced on the Mini and TAZ 6.
+ * Define probe parameters related to bed leveling,
  * e.g. the washers on the bed. These are confusingly
  * named Z_MIN_PROBE in Marlin. The Z-Home switch
  * is called Z_MIN_ENDSTOP
  */
-#define LULZBOT_FIX_MOUNTED_PROBE
+#if defined(LULZBOT_USE_AUTOLEVELING)
+    #define LULZBOT_FIX_MOUNTED_PROBE
+#endif // LULZBOT_USE_AUTOLEVELING
+
 #define LULZBOT_PROBE_DOUBLE_TOUCH
 #define LULZBOT_X_PROBE_OFFSET_FROM_EXTRUDER  0
 #define LULZBOT_Y_PROBE_OFFSET_FROM_EXTRUDER  0
@@ -306,7 +359,7 @@
  *   Z_MIN_PIN corresponds to the Z-Home push button.
  *   Z_MIN_PROBE_PIN are the bed washers.
  */
-#if defined(LULZBOT_MINI_BED)
+#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
         if(enable) { \
             /* Set as inputs with pull-up resistor */ \
@@ -319,7 +372,7 @@
         } \
     }
 
-#elif defined(LULZBOT_TAZ_BED)
+#elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_TAZ_BED)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
         if(enable) { \
             /* Set both as inputs with pull-up resistor */ \
@@ -339,6 +392,8 @@
             endstops.enable_z_probe(false); \
         } \
     }
+#else
+    #define LULZBOT_ENABLE_PROBE_PINS(enable)
 #endif
 
 #define LULZBOT_FAN_KICKSTART_TIME          100
@@ -351,13 +406,15 @@
     #define LULZBOT_XYZ_HOLLOW_FRAME_DISABLE
     #define LULZBOT_MENU_HOLLOW_FRAME_DISABLE
     #define LULZBOT_USE_SMALL_INFOFONT
-    #define LULZBOT_BABYSTEPPING
-    #define LULZBOT_BABYSTEP_ZPROBE_OFFSET
+    #if defined(LULZBOT_USE_AUTOLEVELING)
+        #define LULZBOT_BABYSTEPPING
+        #define LULZBOT_BABYSTEP_ZPROBE_OFFSET
+        #define LULZBOT_MENU_BED_LEVELING_GCODE "G28 XY\nM109 S175\nG28 Z\nM109 R145\nG12\nG29\nM104 S0"
+    #endif
     #define LULZBOT_SHOW_CUSTOM_BOOTSCREEN
     #define LULZBOT_ENCODER_PULSES_PER_STEP 2
     #define LULZBOT_ENCODER_STEPS_PER_MENU_ITEM 1
     #define LULZBOT_COOLING_MESSAGES
-    #define LULZBOT_MENU_BED_LEVELING_GCODE "G28 XY\nM109 S175\nG28 Z\nM109 R145\nG12\nG29\nM104 S0"
     #if defined(LULZBOT_Gladiola_GLCD) || defined(LULZBOT_Hibiscus_GLCD)
         // In the experimental Gladiola_GLCD, the encoder direction is reversed.
         #define LULZBOT_REVERSE_ENCODER_DIRECTION
@@ -642,6 +699,13 @@
     #undef  LULZBOT_DEFAULT_MAX_FEEDRATE
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {800, 800, 16, 40}      // (mm/sec)
 
+#elif defined(LULZBOT_Juniper_TAZ_5)
+    #define DIGIPOT_MOTOR_CURRENT_Z               240
+    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {800, 800, 3, 40}      // (mm/sec)
+    #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
+    #define LULZBOT_Z_STEPS                       1600
+    #define LULZBOT_Z_MAX_POS                     270
+
 #elif defined(LULZBOT_Oliveoil_TAZ_6)
     #define DIGIPOT_MOTOR_CURRENT_Z               200
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {800, 800, 3, 40}      // (mm/sec)
@@ -763,7 +827,7 @@
 // On a TAZ, we need to raise the print head after homing to clear the button;
 // On the yellowfin we also need to reset the origin to account for the Z home riser.
 
-#if defined(LULZBOT_IS_TAZ)
+#if defined(LULZBOT_USE_HOME_BUTTON)
     #define LULZBOT_AFTER_Z_HOME_ACTION \
         if(home_all || homeZ) { \
           LULZBOT_G92_Z(LULZBOT_AFTER_Z_HOME_Z_ORIGIN); \
@@ -783,34 +847,42 @@
 /* The following goes in "configuration_store.cpp", before and after
  * "EEPROM_WRITE(zprobe_zoffset)" and "EEPROM_READ(zprobe_zoffset)"
  */
-#define LULZBOT_EEPROM_BEFORE_ZOFFSET \
-    const uint16_t eeprom_saved_crc = working_crc; \
-    eeprom_zoffset_index = eeprom_index;
+#if defined(LULZBOT_USE_AUTOLEVELING)
+    #define LULZBOT_EEPROM_BEFORE_ZOFFSET \
+        const uint16_t eeprom_saved_crc = working_crc; \
+        eeprom_zoffset_index = eeprom_index;
 
-#define LULZBOT_EEPROM_AFTER_ZOFFSET \
-    working_crc = eeprom_saved_crc;
+    #define LULZBOT_EEPROM_AFTER_ZOFFSET \
+        working_crc = eeprom_saved_crc;
 
-/* The following goes in "configuration_store.h" */
-#define LULZBOT_SAVE_ZOFFSET_TO_EEPROM_DECL \
-    static int eeprom_zoffset_index; \
-    static void store_zoffset();
+    /* The following goes in "configuration_store.h" */
+    #define LULZBOT_SAVE_ZOFFSET_TO_EEPROM_DECL \
+        static int eeprom_zoffset_index; \
+        static void store_zoffset();
 
-/* The following goes in "configuration_store.cpp" */
-#define LULZBOT_SAVE_ZOFFSET_TO_EEPROM_IMPL \
-    int MarlinSettings::eeprom_zoffset_index = -1; \
-    void MarlinSettings::store_zoffset() { \
-        if(eeprom_zoffset_index > 0) { \
-            uint16_t working_crc; \
-            int eeprom_index = eeprom_zoffset_index; \
-            EEPROM_WRITE(zprobe_zoffset); \
-            SERIAL_ECHO_START(); \
-            SERIAL_ECHOPAIR("Updating zoffset in EEPROM: ", zprobe_zoffset); \
-            SERIAL_ECHOPAIR("; EEPROM Index: ", eeprom_zoffset_index); \
-            SERIAL_ECHOLNPGM(""); \
-        } \
-    }
+    /* The following goes in "configuration_store.cpp" */
+    #define LULZBOT_SAVE_ZOFFSET_TO_EEPROM_IMPL \
+        int MarlinSettings::eeprom_zoffset_index = -1; \
+        void MarlinSettings::store_zoffset() { \
+            if(eeprom_zoffset_index > 0) { \
+                uint16_t working_crc; \
+                int eeprom_index = eeprom_zoffset_index; \
+                EEPROM_WRITE(zprobe_zoffset); \
+                SERIAL_ECHO_START(); \
+                SERIAL_ECHOPAIR("Updating zoffset in EEPROM: ", zprobe_zoffset); \
+                SERIAL_ECHOPAIR("; EEPROM Index: ", eeprom_zoffset_index); \
+                SERIAL_ECHOLNPGM(""); \
+            } \
+        }
 
-/* The following goes in "ultralcd.cpp" in "lcd_babystep_zoffset" */
-#define LULZBOT_SAVE_ZOFFSET_TO_EEPROM settings.store_zoffset();
+    /* The following goes in "ultralcd.cpp" in "lcd_babystep_zoffset" */
+    #define LULZBOT_SAVE_ZOFFSET_TO_EEPROM settings.store_zoffset();
+#else
+    #define LULZBOT_EEPROM_BEFORE_ZOFFSET
+    #define LULZBOT_EEPROM_AFTER_ZOFFSET
+    #define LULZBOT_SAVE_ZOFFSET_TO_EEPROM_DECL
+    #define LULZBOT_SAVE_ZOFFSET_TO_EEPROM_IMPL
+    #define LULZBOT_SAVE_ZOFFSET_TO_EEPROM
+#endif
 
 #endif /* CONDITIONALS_LULZBOT */
