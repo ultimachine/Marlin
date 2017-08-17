@@ -338,11 +338,6 @@ LD_PREFIX=-nodefaultlibs
 LD_SUFFIX=-lm -lgcc -lc -lgcc
 endif
 
-#Disabling the timestamp is useful for diffing binaries between different builds.
-ifeq ($(NO_TIMESTAMP), 1)
-CDEFS +=-D__DATE__="??? ?? ????" -D__TIME__="??:??:??"
-endif
-
 #Check for Arduino 1.0.0 or higher and use the correct source files for that version
 ifeq ($(shell [ $(ARDUINO_VERSION) -ge 100 ] && echo true), true)
 CXXSRC += main.cpp
@@ -379,6 +374,12 @@ MV = mv -f
 # Place -D or -U options here
 CDEFS    = -DF_CPU=$(F_CPU) ${addprefix -D , $(DEFINES)}
 CXXDEFS  = $(CDEFS)
+
+#Disabling the timestamp is useful for diffing binaries between different builds.
+ifeq ($(NO_TIMESTAMP), 1)
+#CDEFS +=-D__DATE__="??? ?? ????" -D__TIME__="??:??:??"
+CDEFS +=-D__DATE__='"Aug 17 2017"' -D__TIME__='"08:59:30"'
+endif
 
 ifeq ($(HARDWARE_VARIANT), Teensy)
 CDEFS  += -DUSB_SERIAL

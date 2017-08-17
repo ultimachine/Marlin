@@ -23,6 +23,16 @@ TAZ_MODELS="Juniper_TAZ_5 Oliveoil_TAZ_6 Quiver_TAZ_7"
 TAZ_TOOLHEADS="Tilapia_SingleExtruder Kanyu_Flexystruder Opah_Moarstruder Javelin_DualExtruder Longfin_FlexyDually Yellowfin_DualExtruder Angelfish_Aero"
 
 ####
+# usage
+#
+# Prints out a usage summary
+#
+usage() {
+  echo "Usage: $0 [--no-timestamps] [printer_model toolhead_name]"
+  exit
+}
+
+####
 # build_firmware <printer> <toolhead>
 #
 # Compiles firmware for the specified printer and toolhead
@@ -141,17 +151,27 @@ build_summary() {
 # MAIN SCRIPT
 ############################################
 
+while true
+do
+  case $1 in
+    --no-timestamps)
+      MAKEOPTS="NO_TIMESTAMP=1"
+      shift
+      ;;
+    --*)
+      usage
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
 locate_avr_tools
 check_avr_tools
 
 rm -rf build
 mkdir build
-
-if [ "$1" = "--no-timestamp" ]
-then
-  shift
-  MAKEOPTS="NO_TIMESTAMP=1"
-fi
 
 if [ $# -eq 2 ]
 then
