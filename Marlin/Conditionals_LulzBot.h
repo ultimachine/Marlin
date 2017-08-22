@@ -396,6 +396,14 @@
     #define LULZBOT_ENABLE_PROBE_PINS(enable)
 #endif
 
+/* Make it so M42 S<state> controls the state of the
+/* probe lines. This is useful for troubleshooting. */
+#define LULZBOT_M42_TOGGLES_PROBE_PINS \
+    if (!parser.seenval('P')) { \
+      LULZBOT_ENABLE_PROBE_PINS(pin_status); \
+      return; \
+    }
+
 #define LULZBOT_FAN_KICKSTART_TIME          100
 #define LULZBOT_FAN_MIN_PWM                  70
 #define LULZBOT_HOST_KEEPALIVE_FEATURE_DISABLED

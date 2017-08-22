@@ -6434,6 +6434,8 @@ inline void gcode_M42() {
   if (!parser.seenval('S')) return;
   const byte pin_status = parser.value_byte();
 
+  LULZBOT_M42_TOGGLES_PROBE_PINS
+
   const int pin_number = parser.intval('P', LED_PIN);
   if (pin_number < 0) return;
 
