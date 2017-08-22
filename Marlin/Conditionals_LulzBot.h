@@ -155,6 +155,10 @@
 
 // Motherboard specifics and custom pins for probing.
 
+#if defined(TOOLHEAD_ServoDual)
+    #undef LULZBOT_USE_HOME_BUTTON
+#endif
+
 #if defined(LULZBOT_IS_MINI)
     #define LULZBOT_MOTHERBOARD                   BOARD_MINIRAMBO
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN  // Digital pin 6
@@ -576,7 +580,7 @@
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ       0
     #define LULZBOT_TEMP_SENSOR_1              5
     #define LULZBOT_AO_Hexagon
-    #define LULZBOT_NO_HOME_ON_TOOLHEAD_CHANGE
+    #define LULZBOT_NO_MOVE_ON_TOOLHEAD_CHANGE
 #endif /* TOOLHEAD_Javelin_DualExtruder || TOOLHEAD_Longfin_FlexyDually || TOOLHEAD_Yellowfin_DualExtruder */
 
 #if defined(TOOLHEAD_Javelin_DualExtruder)
@@ -607,10 +611,11 @@
 #endif /* TOOLHEAD_Yellowfin_DualExtruder */
 
 #if defined(TOOLHEAD_ServoDual)
-    // Prototype Dual v3 for TAZ.
+    // Experimental dual nozzle using a servo
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Servo McStruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_NUM_SERVOS                     1
+    #define LULZBOT_SWITCHING_NOZZLE
 #endif /* TOOLHEAD_ServoDual */
 
 #if defined(TOOLHEAD_Yellowfin_DualExtruder) || defined(TOOLHEAD_ServoDual)

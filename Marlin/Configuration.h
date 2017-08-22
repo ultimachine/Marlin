@@ -171,7 +171,9 @@
 #endif
 
 // A dual-nozzle that uses a servomotor to raise/lower one of the nozzles
-//#define SWITCHING_NOZZLE
+#if defined(LULZBOT_SWITCHING_NOZZLE)
+#define SWITCHING_NOZZLE
+#endif
 #if ENABLED(SWITCHING_NOZZLE)
   #define SWITCHING_NOZZLE_SERVO_NR 0
   #define SWITCHING_NOZZLE_SERVO_ANGLES { 0, 90 }   // Angles for E0, E1
