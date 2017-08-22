@@ -33,12 +33,13 @@
     !defined(TOOLHEAD_Javelin_DualExtruder) && \
     !defined(TOOLHEAD_Longfin_FlexyDually) && \
     !defined(TOOLHEAD_Yellowfin_DualExtruder) && \
-    !defined(TOOLHEAD_Angelfish_Aero) \
+    !defined(TOOLHEAD_Angelfish_Aero) && \
+    !defined(TOOLHEAD_ServoDual) \
 )
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".28"
+#define LULZBOT_FW_VERSION ".29"
 
 // Select options based on printer model
 
@@ -556,7 +557,7 @@
     #define LULZBOT_Moarstruder
 #endif /* TOOLHEAD_Opah_Moarstruder */
 
-#if defined(TOOLHEAD_Javelin_DualExtruder) || defined(TOOLHEAD_Longfin_FlexyDually) || defined(TOOLHEAD_Yellowfin_DualExtruder)
+#if defined(TOOLHEAD_Javelin_DualExtruder) || defined(TOOLHEAD_Longfin_FlexyDually) || defined(TOOLHEAD_Yellowfin_DualExtruder) || defined(TOOLHEAD_ServoDual)
     #define LULZBOT_TOOLHEAD_VER               VERSION_STRING" Dual"
     #define LULZBOT_BUILD_VARIANT              " LulzBot Dual"
     #define LULZBOT_EXTRUDER_FAN_ON_PIN_6      // For backwards compatibility with TAZ 4
@@ -599,11 +600,20 @@
     #define LULZBOT_DISTINCT_E_FACTORS
 #endif /* TOOLHEAD_Longfin_FlexyDually */
 
-
 #if defined(TOOLHEAD_Yellowfin_DualExtruder)
     // Prototype Dual v3 for TAZ.
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Dual Extruder 3"
 //          16 chars max                            ^^^^^^^^^^^^^^^
+#endif /* TOOLHEAD_Yellowfin_DualExtruder */
+
+#if defined(TOOLHEAD_ServoDual)
+    // Prototype Dual v3 for TAZ.
+    #define LULZBOT_LCD_TOOLHEAD_NAME              "Servo McStruder"
+//          16 chars max                            ^^^^^^^^^^^^^^^
+    #define LULZBOT_NUM_SERVOS                     1
+#endif /* TOOLHEAD_ServoDual */
+
+#if defined(TOOLHEAD_Yellowfin_DualExtruder) || defined(TOOLHEAD_ServoDual)
     #undef  LULZBOT_AFTER_Z_HOME_Z_RAISE
     #define LULZBOT_AFTER_Z_HOME_Z_RAISE           16
     #undef  LULZBOT_AFTER_Z_HOME_Z_ORIGIN
