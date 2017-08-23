@@ -49,6 +49,7 @@
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_BAUDRATE 115200
 #endif
 
 #if defined(LULZBOT_Hibiscus_Mini)
@@ -59,6 +60,7 @@
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_BAUDRATE 250000
 #endif
 
 #if defined(LULZBOT_Gladiola_GLCD)
@@ -68,6 +70,7 @@
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_BAUDRATE 115200
 #endif
 
 #if defined(LULZBOT_Hibiscus_GLCD)
@@ -79,6 +82,7 @@
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_BAUDRATE 250000
 #endif
 
 #if defined(LULZBOT_Juniper_TAZ_5)
@@ -86,6 +90,7 @@
     #define LULZBOT_IS_TAZ
     #define LULZBOT_TAZ_BED
     #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_BAUDRATE 250000
 #endif
 
 #if defined(LULZBOT_Oliveoil_TAZ_6)
@@ -97,6 +102,7 @@
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_HOME_BUTTON
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_BAUDRATE 250000
 #endif
 
 #if defined(LULZBOT_Quiver_TAZ_7)
@@ -108,6 +114,7 @@
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_BAUDRATE 250000
 #endif
 
 // Shared values
@@ -162,12 +169,10 @@
 #if defined(LULZBOT_IS_MINI)
     #define LULZBOT_MOTHERBOARD                   BOARD_MINIRAMBO
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN  // Digital pin 6
-    #define LULZBOT_BAUDRATE 115200
 
 #elif defined(LULZBOT_IS_TAZ)
     #define LULZBOT_MOTHERBOARD                   BOARD_RAMBO
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN2_PIN  // Digital pin 2
-    #define LULZBOT_BAUDRATE 250000
 #endif
 
 #if defined(LULZBOT_USE_HOME_BUTTON)
