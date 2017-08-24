@@ -125,7 +125,7 @@ uint16_t max_display_update_time = 0;
   void lcd_control_motion_menu();
   void lcd_control_filament_menu();
 
-  #if ENABLED(LCD_INFO_MENU)
+  #if ENABLED(LCD_INFO_MENU) || defined(LULZBOT_PRINTERCOUNTER)
     #if ENABLED(PRINTCOUNTER)
       void lcd_info_stats_menu();
     #endif
@@ -932,6 +932,9 @@ void kill_screen(const char* lcd_msg) {
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
     #if defined(LULZBOT_SHOW_CUSTOM_BOOTSCREEN)
     MENU_ITEM(submenu, MSG_INFO_MENU, lcd_show_custom_bootscreen);
+    #endif
+    #if defined(LULZBOT_PRINTERCOUNTER)
+    MENU_ITEM(submenu, MSG_INFO_STATS_MENU, lcd_info_stats_menu);          // Printer Statistics >
     #endif
 
     #if ENABLED(SDSUPPORT)
@@ -3450,7 +3453,7 @@ void kill_screen(const char* lcd_msg) {
 
   #endif // SDSUPPORT
 
-  #if ENABLED(LCD_INFO_MENU)
+  #if ENABLED(LCD_INFO_MENU) || defined(LULZBOT_PRINTERCOUNTER)
 
     #if ENABLED(PRINTCOUNTER)
       /**

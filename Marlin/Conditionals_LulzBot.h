@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".30"
+#define LULZBOT_FW_VERSION ".32"
 
 // Select options based on printer model
 
@@ -61,6 +61,7 @@
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTERCOUNTER
 #endif
 
 #if defined(LULZBOT_Gladiola_GLCD)
@@ -83,6 +84,7 @@
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTERCOUNTER
 #endif
 
 #if defined(LULZBOT_Juniper_TAZ_5)
@@ -115,6 +117,7 @@
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTERCOUNTER
 #endif
 
 // Shared values
@@ -286,7 +289,7 @@
     #define LULZBOT_FRONT_PROBE_BED_POSITION      -9
 #endif
 
-// Only the TAZ 6+ models have a Z-homing button
+// Only the TAZ 6 has a Z-homing button
 #if defined(LULZBOT_USE_HOME_BUTTON)
     #define LULZBOT_Z_SAFE_HOMING
     #define LULZBOT_Z_SAFE_HOMING_X_POINT         (-19)
@@ -295,6 +298,12 @@
 
     #define LULZBOT_AFTER_Z_HOME_Z_RAISE          5
     #define LULZBOT_AFTER_Z_HOME_Z_ORIGIN         0
+#elif defined(LULZBOT_Juniper_TAZ_5)
+    // Set safe homing position so fan duct does not hit.
+    #define LULZBOT_Z_SAFE_HOMING
+    #define LULZBOT_Z_SAFE_HOMING_X_POINT         10
+    #define LULZBOT_Z_SAFE_HOMING_Y_POINT         10
+    #define LULZBOT_Z_HOMING_HEIGHT               5
 #else
     #define LULZBOT_Z_HOMING_HEIGHT               0
 #endif  // LULZBOT_USE_HOME_BUTTON
@@ -648,10 +657,12 @@
     #define LULZBOT_Z_CLEARANCE_BETWEEN_PROBES     10
     #undef  LULZBOT_BACK_PROBE_BED_POSITION
     #define LULZBOT_BACK_PROBE_BED_POSITION       293
-    #undef  LULZBOT_Z_SAFE_HOMING_X_POINT
-    #undef  LULZBOT_Z_SAFE_HOMING_Y_POINT
-    #define LULZBOT_Z_SAFE_HOMING_X_POINT        (-22)    // X point for Z homing when homing all axis (G28)
-    #define LULZBOT_Z_SAFE_HOMING_Y_POINT        (265)    // Y point for Z homing when homing all axis (G28)
+    #if defined(LULZBOT_USE_HOME_BUTTON)
+        #undef  LULZBOT_Z_SAFE_HOMING_X_POINT
+        #undef  LULZBOT_Z_SAFE_HOMING_Y_POINT
+        #define LULZBOT_Z_SAFE_HOMING_X_POINT        (-22)    // X point for Z homing when homing all axis (G28)
+        #define LULZBOT_Z_SAFE_HOMING_Y_POINT        (265)    // Y point for Z homing when homing all axis (G28)
+    #endif /* LULZBOT_USE_HOME_BUTTON */
     #undef  LULZBOT_TOOLHEAD_X_MAX_ADJ
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ             10
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING       false
@@ -677,6 +688,12 @@
     #define LULZBOT_STANDARD_Y_MAX_POS         191
     #define LULZBOT_STANDARD_Y_MIN_POS         -10
 
+#elif defined(LULZBOT_Juniper_TAZ_5)
+    #define LULZBOT_STANDARD_X_MAX_POS         298
+    #define LULZBOT_STANDARD_X_MIN_POS           0
+    #define LULZBOT_STANDARD_Y_MAX_POS         275
+    #define LULZBOT_STANDARD_Y_MIN_POS           0
+
 #elif defined(LULZBOT_IS_TAZ)
     #define LULZBOT_STANDARD_X_MAX_POS         300
     #define LULZBOT_STANDARD_X_MIN_POS         -20
@@ -694,7 +711,7 @@
 
 #elif defined(LULZBOT_Juniper_TAZ_5)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
-    #define LULZBOT_STANDARD_Z_MAX_POS         270
+    #define LULZBOT_STANDARD_Z_MAX_POS         250
 
 #elif defined(LULZBOT_Oliveoil_TAZ_6)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
