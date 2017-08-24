@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".32"
+#define LULZBOT_FW_VERSION ".33"
 
 // Select options based on printer model
 
@@ -133,7 +133,7 @@
 // so long as UBL is disabled.
 #define LULZBOT_G26_BACKWARDS_COMPATIBILITY
 
-// The following should be kept more or less:
+// The following should be kept more or less like M999
 #define LULZBOT_G26_RESET_ACTION \
   Running = true; \
   lcd_reset_alert_level();
@@ -363,6 +363,20 @@
 */
 #define LULZBOT_NO_WORKSPACE_OFFSETS
 
+/* On the Finch Aero toolhead, we need to disable the extruder
+ * motor as it causes noise on the probe line on Foxglove Minis.
+ */
+#if defined(LULZBOT_IS_MINI) && defined(TOOLHEAD_Finch_Aero)
+    #define LULZBOT_EXTRUDER_MOTOR_SHUTOFF_ON_PROBE(probing) \
+        if(probing) { \
+            disable_E0(); \
+        } else { \
+            enable_E0(); \
+        }
+#else
+    #define LULZBOT_EXTRUDER_MOTOR_SHUTOFF_ON_PROBE(probing)
+#endif
+
 /* Enable the probe pins only only when homing/probing,
  * as this helps reduce EMI by grounding the lines.
  *
@@ -384,6 +398,7 @@
             SET_OUTPUT(Z_MIN_PIN); \
             WRITE(Z_MIN_PIN, LOW); \
         } \
+        LULZBOT_EXTRUDER_MOTOR_SHUTOFF_ON_PROBE(enable) \
     }
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_USE_HOME_BUTTON)
