@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".33"
+#define LULZBOT_FW_VERSION ".34"
 
 // Select options based on printer model
 
@@ -717,8 +717,8 @@
 #endif
 
 #if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_GLCD)
-    #define LULZBOT_STANDARD_Z_MIN_POS           0
-    #define LULZBOT_STANDARD_Z_MAX_POS         160
+    #define LULZBOT_STANDARD_Z_MIN_POS          -2
+    #define LULZBOT_STANDARD_Z_MAX_POS         159
 
 #elif defined(LULZBOT_Hibiscus_Mini) || defined(LULZBOT_Hibiscus_GLCD)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
