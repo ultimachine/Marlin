@@ -26,20 +26,20 @@
 ) || ( \
     !defined(TOOLHEAD_Gladiola_SingleExtruder) && \
     !defined(TOOLHEAD_Albatross_Flexystruder) && \
-    !defined(TOOLHEAD_Finch_Aero) && \
+    !defined(TOOLHEAD_Finch_Aerostruder) && \
     !defined(TOOLHEAD_Tilapia_SingleExtruder) && \
     !defined(TOOLHEAD_Kanyu_Flexystruder) && \
     !defined(TOOLHEAD_Opah_Moarstruder) && \
     !defined(TOOLHEAD_Javelin_DualExtruderV2) && \
     !defined(TOOLHEAD_Longfin_FlexyDually) && \
     !defined(TOOLHEAD_Yellowfin_DualExtruderV3) && \
-    !defined(TOOLHEAD_Angelfish_Aero) && \
+    !defined(TOOLHEAD_Angelfish_Aerostruder) && \
     !defined(TOOLHEAD_Devel_ServoDual) \
 )
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".35"
+#define LULZBOT_FW_VERSION ".36"
 
 // Select options based on printer model
 
@@ -366,7 +366,7 @@
 /* On the Finch Aero toolhead, we need to disable the extruder
  * motor as it causes noise on the probe line on Foxglove Minis.
  */
-#if defined(LULZBOT_IS_MINI) && defined(TOOLHEAD_Finch_Aero)
+#if defined(LULZBOT_IS_MINI) && defined(TOOLHEAD_Finch_Aerostruder)
     #define LULZBOT_EXTRUDER_MOTOR_SHUTOFF_ON_PROBE(probing) \
         if(probing) { \
             disable_E0(); \
@@ -480,7 +480,7 @@
 
 /*********************************************** MINI TOOLHEADS *******************************************/
 
-#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aero)
+#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aerostruder)
     #define LULZBOT_TOOLHEAD_VER               VERSION_STRING
     #define LULZBOT_UUID                       "351487b6-ca9a-4c1a-8765-d668b1da6585"
     #define LULZBOT_EXTRUDERS                  1
@@ -496,7 +496,7 @@
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ       0
     #define LULZBOT_AO_Hexagon
     #define PWM_MOTOR_CURRENT_E               1250
-#endif /* TOOLHEAD_Gladiola_SingleExtruder || TOOLHEAD_Albatross_Flexystruder || TOOLHEAD_Finch_Aero */
+#endif /* TOOLHEAD_Gladiola_SingleExtruder || TOOLHEAD_Albatross_Flexystruder || TOOLHEAD_Finch_Aerostruder */
 
 #if defined(TOOLHEAD_Gladiola_SingleExtruder)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Single Extruder"
@@ -510,16 +510,16 @@
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
 #endif /* TOOLHEAD_Albatross_Flexystruder */
 
-#if defined(TOOLHEAD_Finch_Aero)
+#if defined(TOOLHEAD_Finch_Aerostruder)
     // Prototype Aero toolhead for Mini
-    #define LULZBOT_LCD_TOOLHEAD_NAME              "Titan AERO"
+    #define LULZBOT_LCD_TOOLHEAD_NAME              "Aerostruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
-#endif /* TOOLHEAD_Finch_Aero */
+#endif /* TOOLHEAD_Finch_Aerostruder */
 
 /*********************************************** TAZ TOOLHEADS *******************************************/
 
-#if defined(TOOLHEAD_Tilapia_SingleExtruder) || defined(TOOLHEAD_Angelfish_Aero)
+#if defined(TOOLHEAD_Tilapia_SingleExtruder) || defined(TOOLHEAD_Angelfish_Aerostruder)
     #define LULZBOT_TOOLHEAD_VER                    VERSION_STRING
     #define LULZBOT_UUID                            "845f003c-aebd-4e53-a6b9-7d0984fde609"
     #define LULZBOT_EXTRUDERS                  1
@@ -534,7 +534,7 @@
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ       0
     #define LULZBOT_AO_Hexagon
-#endif /* TOOLHEAD_Tilapia_SingleExtruder || TOOLHEAD_Angelfish_Aero */
+#endif /* TOOLHEAD_Tilapia_SingleExtruder || TOOLHEAD_Angelfish_Aerostruder */
 
 #if defined(TOOLHEAD_Tilapia_SingleExtruder)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Single Extruder"
@@ -544,14 +544,14 @@
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    false
 #endif /* TOOLHEAD_Tilapia_SingleExtruder */
 
-#if defined(TOOLHEAD_Angelfish_Aero)
+#if defined(TOOLHEAD_Angelfish_Aerostruder)
     // Prototype Aero for TAZ
-    #define LULZBOT_LCD_TOOLHEAD_NAME              "Titan AERO"
+    #define LULZBOT_LCD_TOOLHEAD_NAME              "Aerostruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_BUILD_VARIANT              " LulzBot AERO"
+    #define LULZBOT_BUILD_VARIANT              " LulzBot Aerostruder"
     #define DIGIPOT_MOTOR_CURRENT_E            160  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    false
-#endif /* TOOLHEAD_Angelfish_Aero */
+#endif /* TOOLHEAD_Angelfish_Aerostruder */
 
 #if defined(TOOLHEAD_Kanyu_Flexystruder)
     #define LULZBOT_TOOLHEAD_VER               VERSION_STRING" Flexystruder"
