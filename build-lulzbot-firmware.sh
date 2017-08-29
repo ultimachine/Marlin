@@ -28,7 +28,7 @@ TAZ_TOOLHEADS="Tilapia_SingleExtruder Kanyu_Flexystruder Opah_Moarstruder Javeli
 # Prints out a usage summary
 #
 usage() {
-  echo "Usage: $0 [--no-timestamps] [printer_model toolhead_name]"
+  echo "Usage: $0 [-s|--short-names] [--no-timestamps] [printer_model toolhead_name]"
   exit
 }
 
@@ -158,6 +158,10 @@ do
       MAKEOPTS="NO_TIMESTAMP=1"
       shift
       ;;
+    --short-names|-s)
+      SHORTNAMES=1
+      shift
+      ;;
     --*)
       usage
       ;;
@@ -179,6 +183,10 @@ then
 else
   build_for_mini
   build_for_taz
+fi
+
+if [ $SHORTNAMES ]; then
+  rename 's/Marlin_(.+)_(.+)_(.+)_(.+)_(.+)_(.+).hex/Marlin_$2_$4_$5_$6.hex/' build/*
 fi
 
 build_summary
