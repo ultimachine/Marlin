@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".36"
+#define LULZBOT_FW_VERSION ".37"
 
 // Select options based on printer model
 
@@ -581,6 +581,7 @@
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_BUILD_VARIANT              " LulzBot MOAR"
     #define LULZBOT_DEFAULT_ACCELERATION       250
+    #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION 250
     #define DIGIPOT_MOTOR_CURRENT_E            135  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
     #define LULZBOT_EXTRUDERS                  1
     #define LULZBOT_UUID                       "d651819d-4a79-4b73-bc5b-ae1fe1aab36b"
@@ -821,7 +822,7 @@
     #define LULZBOT_DEFAULT_ZJERK                  0.4
 
     #define LULZBOT_DEFAULT_ACCELERATION          2000
-    #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION   3000
+    #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION   2000
 
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.43
 
@@ -834,7 +835,9 @@
     #if not defined(LULZBOT_DEFAULT_ACCELERATION)
         #define LULZBOT_DEFAULT_ACCELERATION      500
     #endif
-    #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION   3000
+    #if not defined(LULZBOT_DEFAULT_TRAVEL_ACCELERATION)
+        #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION 500
+    #endif
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER -1.5
 #endif
 
