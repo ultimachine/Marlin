@@ -17,12 +17,12 @@
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
-    !defined(LULZBOT_Hibiscus_Mini) && \
-    !defined(LULZBOT_Gladiola_GLCD) && \
-    !defined(LULZBOT_Hibiscus_GLCD) && \
-    !defined(LULZBOT_Juniper_TAZ_5) && \
-    !defined(LULZBOT_Oliveoil_TAZ_6) && \
-    !defined(LULZBOT_Quiver_TAZ_7) \
+    !defined(LULZBOT_Hibiscus_Mini2) && \
+    !defined(LULZBOT_Gladiola_MiniLCD) && \
+    !defined(LULZBOT_Hibiscus_Mini2LCD) && \
+    !defined(LULZBOT_Juniper_TAZ5) && \
+    !defined(LULZBOT_Oliveoil_TAZ6) && \
+    !defined(LULZBOT_Quiver_TAZ7) \
 ) || ( \
     !defined(TOOLHEAD_Gladiola_SingleExtruder) && \
     !defined(TOOLHEAD_Albatross_Flexystruder) && \
@@ -30,16 +30,16 @@
     !defined(TOOLHEAD_Tilapia_SingleExtruder) && \
     !defined(TOOLHEAD_Kanyu_Flexystruder) && \
     !defined(TOOLHEAD_Opah_Moarstruder) && \
-    !defined(TOOLHEAD_Javelin_DualExtruder) && \
+    !defined(TOOLHEAD_Javelin_DualExtruderV2) && \
     !defined(TOOLHEAD_Longfin_FlexyDually) && \
-    !defined(TOOLHEAD_Yellowfin_DualExtruder) && \
+    !defined(TOOLHEAD_Yellowfin_DualExtruderV3) && \
     !defined(TOOLHEAD_Angelfish_Aero) && \
-    !defined(TOOLHEAD_ServoDual) \
+    !defined(TOOLHEAD_Devel_ServoDual) \
 )
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".34"
+#define LULZBOT_FW_VERSION ".35"
 
 // Select options based on printer model
 
@@ -52,7 +52,7 @@
     #define LULZBOT_BAUDRATE 115200
 #endif
 
-#if defined(LULZBOT_Hibiscus_Mini)
+#if defined(LULZBOT_Hibiscus_Mini2)
     // Prototype Mini w/ Z-Belt
     #define LULZBOT_CUSTOM_MACHINE_NAME "Mini 2"
     #define LULZBOT_IS_MINI
@@ -64,8 +64,8 @@
     #define LULZBOT_PRINTERCOUNTER
 #endif
 
-#if defined(LULZBOT_Gladiola_GLCD)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini GLCD"
+#if defined(LULZBOT_Gladiola_MiniLCD)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini LCD"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_LCD_DISPLAY
@@ -74,9 +74,9 @@
     #define LULZBOT_BAUDRATE 115200
 #endif
 
-#if defined(LULZBOT_Hibiscus_GLCD)
+#if defined(LULZBOT_Hibiscus_Mini2LCD)
     // Prototype Mini w/ Z-Belt
-    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini 2 GLCD"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini 2 LCD"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_LCD_DISPLAY
@@ -87,7 +87,7 @@
     #define LULZBOT_PRINTERCOUNTER
 #endif
 
-#if defined(LULZBOT_Juniper_TAZ_5)
+#if defined(LULZBOT_Juniper_TAZ5)
     #define LULZBOT_CUSTOM_MACHINE_NAME "TAZ 5"
     #define LULZBOT_IS_TAZ
     #define LULZBOT_TAZ_BED
@@ -95,7 +95,7 @@
     #define LULZBOT_BAUDRATE 250000
 #endif
 
-#if defined(LULZBOT_Oliveoil_TAZ_6)
+#if defined(LULZBOT_Oliveoil_TAZ6)
     #define LULZBOT_CUSTOM_MACHINE_NAME "TAZ 6"
     #define LULZBOT_IS_TAZ
     #define LULZBOT_TAZ_BED
@@ -107,7 +107,7 @@
     #define LULZBOT_BAUDRATE 250000
 #endif
 
-#if defined(LULZBOT_Quiver_TAZ_7)
+#if defined(LULZBOT_Quiver_TAZ7)
     // Prototype TAZ w/ Z-Belt
     #define LULZBOT_CUSTOM_MACHINE_NAME "TAZ 7"
     #define LULZBOT_IS_TAZ
@@ -165,7 +165,7 @@
 
 // Motherboard specifics and custom pins for probing.
 
-#if defined(TOOLHEAD_ServoDual)
+#if defined(TOOLHEAD_Devel_ServoDual)
     #undef LULZBOT_USE_HOME_BUTTON
 #endif
 
@@ -245,7 +245,7 @@
     #define LULZBOT_INVERT_Z_HOME_DIR              1 // Home to top
     #define LULZBOT_QUICKHOME
 
-#elif defined(LULZBOT_Juniper_TAZ_5)
+#elif defined(LULZBOT_Juniper_TAZ5)
     #define LULZBOT_HOMING_Z_WITH_PROBE           false
     #define LULZBOT_INVERT_X_HOME_DIR             -1 // Home left
     #define LULZBOT_INVERT_Y_HOME_DIR             -1 // Home bed rear
@@ -268,7 +268,7 @@
 #if defined(LULZBOT_MINI_BED)
     #define LULZBOT_HOMING_FEEDRATE_XY            (30*60) // mm/m
     #define LULZBOT_HOMING_FEEDRATE_Z              (8*60) // mm/m
-#elif defined(LULZBOT_Quiver_TAZ_7)
+#elif defined(LULZBOT_Quiver_TAZ7)
     #define LULZBOT_HOMING_FEEDRATE_XY            (50*60) // mm/m
     #define LULZBOT_HOMING_FEEDRATE_Z             (10*60) // mm/m
 #elif defined(LULZBOT_TAZ_BED)
@@ -298,7 +298,7 @@
 
     #define LULZBOT_AFTER_Z_HOME_Z_RAISE          5
     #define LULZBOT_AFTER_Z_HOME_Z_ORIGIN         0
-#elif defined(LULZBOT_Juniper_TAZ_5)
+#elif defined(LULZBOT_Juniper_TAZ5)
     // Set safe homing position so fan duct does not hit.
     #define LULZBOT_Z_SAFE_HOMING
     #define LULZBOT_Z_SAFE_HOMING_X_POINT         10
@@ -452,8 +452,8 @@
     #define LULZBOT_ENCODER_PULSES_PER_STEP 2
     #define LULZBOT_ENCODER_STEPS_PER_MENU_ITEM 1
     #define LULZBOT_COOLING_MESSAGES
-    #if defined(LULZBOT_Gladiola_GLCD) || defined(LULZBOT_Hibiscus_GLCD)
-        // In the experimental Gladiola_GLCD, the encoder direction is reversed.
+    #if defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Hibiscus_Mini2LCD)
+        // In the experimental Gladiola_MiniLCD, the encoder direction is reversed.
         #define LULZBOT_REVERSE_ENCODER_DIRECTION
     #endif
     /* Marlin shows three extruders on a dual:
@@ -598,7 +598,7 @@
     #define LULZBOT_Moarstruder
 #endif /* TOOLHEAD_Opah_Moarstruder */
 
-#if defined(TOOLHEAD_Javelin_DualExtruder) || defined(TOOLHEAD_Longfin_FlexyDually) || defined(TOOLHEAD_Yellowfin_DualExtruder) || defined(TOOLHEAD_ServoDual)
+#if defined(TOOLHEAD_Javelin_DualExtruderV2) || defined(TOOLHEAD_Longfin_FlexyDually) || defined(TOOLHEAD_Yellowfin_DualExtruderV3) || defined(TOOLHEAD_Devel_ServoDual)
     #define LULZBOT_TOOLHEAD_VER               VERSION_STRING" Dual"
     #define LULZBOT_BUILD_VARIANT              " LulzBot Dual"
     #define LULZBOT_EXTRUDER_FAN_ON_PIN_6      // For backwards compatibility with TAZ 4
@@ -618,9 +618,9 @@
     #define LULZBOT_TEMP_SENSOR_1              5
     #define LULZBOT_AO_Hexagon
     #define LULZBOT_NO_MOVE_ON_TOOLHEAD_CHANGE
-#endif /* TOOLHEAD_Javelin_DualExtruder || TOOLHEAD_Longfin_FlexyDually || TOOLHEAD_Yellowfin_DualExtruder */
+#endif /* TOOLHEAD_Javelin_DualExtruderV2 || TOOLHEAD_Longfin_FlexyDually || TOOLHEAD_Yellowfin_DualExtruderV3 */
 
-#if defined(TOOLHEAD_Javelin_DualExtruder)
+#if defined(TOOLHEAD_Javelin_DualExtruderV2)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Dual Extruder 2"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_TOOLHEAD_WIPE_X1_ADJ       0
@@ -628,7 +628,7 @@
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ      48
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    true
-#endif /* TOOLHEAD_Javelin_DualExtruder */
+#endif /* TOOLHEAD_Javelin_DualExtruderV2 */
 
 #if defined(TOOLHEAD_Longfin_FlexyDually)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "FlexyDually v2"
@@ -641,21 +641,21 @@
     #define LULZBOT_DISTINCT_E_FACTORS
 #endif /* TOOLHEAD_Longfin_FlexyDually */
 
-#if defined(TOOLHEAD_Yellowfin_DualExtruder)
+#if defined(TOOLHEAD_Yellowfin_DualExtruderV3)
     // Prototype Dual v3 for TAZ.
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Dual Extruder 3"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-#endif /* TOOLHEAD_Yellowfin_DualExtruder */
+#endif /* TOOLHEAD_Yellowfin_DualExtruderV3 */
 
-#if defined(TOOLHEAD_ServoDual)
+#if defined(TOOLHEAD_Devel_ServoDual)
     // Experimental dual nozzle using a servo
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Servo McStruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_NUM_SERVOS                     1
     #define LULZBOT_SWITCHING_NOZZLE
-#endif /* TOOLHEAD_ServoDual */
+#endif /* TOOLHEAD_Devel_ServoDual */
 
-#if defined(TOOLHEAD_Yellowfin_DualExtruder) || defined(TOOLHEAD_ServoDual)
+#if defined(TOOLHEAD_Yellowfin_DualExtruderV3) || defined(TOOLHEAD_Devel_ServoDual)
     #undef  LULZBOT_AFTER_Z_HOME_Z_RAISE
     #define LULZBOT_AFTER_Z_HOME_Z_RAISE           16
     #undef  LULZBOT_AFTER_Z_HOME_Z_ORIGIN
@@ -687,7 +687,7 @@
     #undef  LULZBOT_E_STEPS
     #define LULZBOT_E_STEPS                        760
     #define LULZBOT_AO_Hexagon
-#endif /* TOOLHEAD_Yellowfin_DualExtruder */
+#endif /* TOOLHEAD_Yellowfin_DualExtruderV3 */
 
 /*********************************** AXIS TRAVEL LIMITS *******************************************/
 
@@ -703,7 +703,7 @@
     #define LULZBOT_STANDARD_Y_MAX_POS         191
     #define LULZBOT_STANDARD_Y_MIN_POS         -10
 
-#elif defined(LULZBOT_Juniper_TAZ_5)
+#elif defined(LULZBOT_Juniper_TAZ5)
     #define LULZBOT_STANDARD_X_MAX_POS         298
     #define LULZBOT_STANDARD_X_MIN_POS           0
     #define LULZBOT_STANDARD_Y_MAX_POS         275
@@ -716,23 +716,23 @@
     #define LULZBOT_STANDARD_Y_MIN_POS         -20
 #endif
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_GLCD)
+#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
     #define LULZBOT_STANDARD_Z_MIN_POS          -2
     #define LULZBOT_STANDARD_Z_MAX_POS         159
 
-#elif defined(LULZBOT_Hibiscus_Mini) || defined(LULZBOT_Hibiscus_GLCD)
+#elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
     #define LULZBOT_STANDARD_Z_MAX_POS         178
 
-#elif defined(LULZBOT_Juniper_TAZ_5)
+#elif defined(LULZBOT_Juniper_TAZ5)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
     #define LULZBOT_STANDARD_Z_MAX_POS         250
 
-#elif defined(LULZBOT_Oliveoil_TAZ_6)
+#elif defined(LULZBOT_Oliveoil_TAZ6)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
     #define LULZBOT_STANDARD_Z_MAX_POS         270
 
-#elif defined(LULZBOT_Quiver_TAZ_7)
+#elif defined(LULZBOT_Quiver_TAZ7)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
     #define LULZBOT_STANDARD_Z_MAX_POS         290
 #endif
@@ -838,11 +838,11 @@
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER -1.5
 #endif
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_GLCD)
+#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
     #define PWM_MOTOR_CURRENT_Z                   1630
     #define LULZBOT_Z_STEPS                       1600
 
-#elif defined(LULZBOT_Hibiscus_Mini) || defined(LULZBOT_Hibiscus_GLCD)
+#elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
     #define PWM_MOTOR_CURRENT_Z                   1000
     // Prototype Z-Belt Mini
     #define Z_FULL_STEPS_PER_ROTATION             200
@@ -855,19 +855,19 @@
     #undef  LULZBOT_DEFAULT_MAX_FEEDRATE
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 16, 25}      // (mm/sec)
 
-#elif defined(LULZBOT_Juniper_TAZ_5)
+#elif defined(LULZBOT_Juniper_TAZ5)
     #define DIGIPOT_MOTOR_CURRENT_Z               240
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 3, 25}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
     #define LULZBOT_Z_STEPS                       1600
 
-#elif defined(LULZBOT_Oliveoil_TAZ_6)
+#elif defined(LULZBOT_Oliveoil_TAZ6)
     #define DIGIPOT_MOTOR_CURRENT_Z               200
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 3, 25}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
     #define LULZBOT_Z_STEPS                       1600
 
-#elif defined(LULZBOT_Quiver_TAZ_7)
+#elif defined(LULZBOT_Quiver_TAZ7)
     #define DIGIPOT_MOTOR_CURRENT_Z               175
     // Prototype Z-belt driven TAZ 7
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 10, 25}   // (mm/sec)

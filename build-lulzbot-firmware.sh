@@ -16,11 +16,11 @@
 ####
 # The following variables list the models and toolheads to build for:
 
-MINI_MODELS="Gladiola_Mini Hibiscus_Mini Gladiola_GLCD Hibiscus_GLCD"
+MINI_MODELS="Gladiola_Mini Hibiscus_Mini2 Gladiola_MiniLCD Hibiscus_Mini2LCD"
 MINI_TOOLHEADS="Gladiola_SingleExtruder Albatross_Flexystruder Finch_Aero"
 
-TAZ_MODELS="Juniper_TAZ_5 Oliveoil_TAZ_6 Quiver_TAZ_7"
-TAZ_TOOLHEADS="Tilapia_SingleExtruder Kanyu_Flexystruder Opah_Moarstruder Javelin_DualExtruder Longfin_FlexyDually Yellowfin_DualExtruder Angelfish_Aero"
+TAZ_MODELS="Juniper_TAZ5 Oliveoil_TAZ6 Quiver_TAZ7"
+TAZ_TOOLHEADS="Tilapia_SingleExtruder Kanyu_Flexystruder Opah_Moarstruder Javelin_DualExtruderV2 Longfin_FlexyDually Yellowfin_DualExtruderV3 Angelfish_Aero"
 
 ####
 # usage
