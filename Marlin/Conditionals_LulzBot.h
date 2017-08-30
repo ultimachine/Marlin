@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".38"
+#define LULZBOT_FW_VERSION ".39"
 
 // Select options based on printer model
 
@@ -695,7 +695,7 @@
     #define LULZBOT_INVERT_E1_DIR                 false
     #undef  LULZBOT_E_STEPS
     #define LULZBOT_E_STEPS                        760
-    #define LULZBOT_AO_Hexagon
+    #define LULZBOT_E3D_SOMEstruder_x2
 #endif /* TOOLHEAD_Yellowfin_DualExtruderV3 */
 
 /*********************************** AXIS TRAVEL LIMITS *******************************************/
@@ -794,6 +794,13 @@
     #define LULZBOT_DEFAULT_Ki 6.79
     #define LULZBOT_DEFAULT_Kd 113.94
 #endif /* LULZBOT_Moarstruder */
+
+#if defined(LULZBOT_E3D_SOMEstruder_x2)
+    // Side-by-side LulzBot E3D SOMEstruder (24v) on Yellowfin Dual
+    #define LULZBOT_DEFAULT_Kp 47.45
+    #define LULZBOT_DEFAULT_Ki 4.83
+    #define LULZBOT_DEFAULT_Kd 116.63
+#endif /* LULZBOT_E3D_SOMEstruder_x2 */
 
 #if defined(LULZBOT_AO_Hexagon)
     // LulzBot AO-Hexagon (24v)
