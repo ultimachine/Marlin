@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".37"
+#define LULZBOT_FW_VERSION ".38"
 
 // Select options based on printer model
 
@@ -162,6 +162,14 @@
 
 #define LULZBOT_THERMAL_PROTECTION_BED_PERIOD     15     // Seconds
 #define LULZBOT_THERMAL_PROTECTION_BED_HYSTERESIS 10     // Degrees Celsius
+
+#if defined(LULZBOT_IS_MINI)
+    #define LULZBOT_WATCH_TEMP_PERIOD 20    // Seconds
+    #define LULZBOT_WATCH_TEMP_INCREASE 2   // Degrees Celsius
+#elif defined(LULZBOT_IS_TAZ)
+    #define LULZBOT_WATCH_TEMP_PERIOD 40    // Seconds
+    #define LULZBOT_WATCH_TEMP_INCREASE 10   // Degrees Celsius
+#endif
 
 // Motherboard specifics and custom pins for probing.
 

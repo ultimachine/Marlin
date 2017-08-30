@@ -76,8 +76,8 @@
    * If you get false positives for "Heating failed" increase WATCH_TEMP_PERIOD and/or decrease WATCH_TEMP_INCREASE
    * WATCH_TEMP_INCREASE should not be below 2.
    */
-  #define WATCH_TEMP_PERIOD 20                // Seconds
-  #define WATCH_TEMP_INCREASE 2               // Degrees Celsius
+  #define WATCH_TEMP_PERIOD   LULZBOT_WATCH_TEMP_PERIOD                // Seconds
+  #define WATCH_TEMP_INCREASE LULZBOT_WATCH_TEMP_INCREASE               // Degrees Celsius
 #endif
 
 /**
