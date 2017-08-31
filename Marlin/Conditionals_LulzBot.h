@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".39"
+#define LULZBOT_FW_VERSION ".40"
 
 // Select options based on printer model
 
@@ -57,6 +57,7 @@
     #define LULZBOT_CUSTOM_MACHINE_NAME "Mini 2"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
+    #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
@@ -78,6 +79,7 @@
     // Prototype Mini w/ Z-Belt
     #define LULZBOT_CUSTOM_MACHINE_NAME "Mini 2 LCD"
     #define LULZBOT_IS_MINI
+    #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
@@ -112,6 +114,7 @@
     #define LULZBOT_CUSTOM_MACHINE_NAME "TAZ 7"
     #define LULZBOT_IS_TAZ
     #define LULZBOT_TAZ_BED
+    #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MAX_ENDSTOPS
@@ -502,7 +505,6 @@
     #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ       0
-    #define LULZBOT_AO_Hexagon
     #define PWM_MOTOR_CURRENT_E               1250
 #endif /* TOOLHEAD_Gladiola_SingleExtruder || TOOLHEAD_Albatross_Flexystruder || TOOLHEAD_Finch_Aerostruder */
 
@@ -510,12 +512,14 @@
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Single Extruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
+    #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Gladiola_SingleExtruder */
 
 #if defined(TOOLHEAD_Albatross_Flexystruder)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Flexystruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
+    #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Albatross_Flexystruder */
 
 #if defined(TOOLHEAD_Finch_Aerostruder)
@@ -523,6 +527,7 @@
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Aerostruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
+    #define LULZBOT_E3D_Titan_Aero
 #endif /* TOOLHEAD_Finch_Aerostruder */
 
 /*********************************************** TAZ TOOLHEADS *******************************************/
@@ -541,7 +546,6 @@
     #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ       0
-    #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Tilapia_SingleExtruder || TOOLHEAD_Angelfish_Aerostruder */
 
 #if defined(TOOLHEAD_Tilapia_SingleExtruder)
@@ -550,6 +554,7 @@
     #define LULZBOT_BUILD_VARIANT              " LulzBot"
     #define DIGIPOT_MOTOR_CURRENT_E            135,135  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    false
+    #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Tilapia_SingleExtruder */
 
 #if defined(TOOLHEAD_Angelfish_Aerostruder)
@@ -559,6 +564,7 @@
     #define LULZBOT_BUILD_VARIANT              " LulzBot Aerostruder"
     #define DIGIPOT_MOTOR_CURRENT_E            160  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    false
+    #define LULZBOT_E3D_Titan_Aero
 #endif /* TOOLHEAD_Angelfish_Aerostruder */
 
 #if defined(TOOLHEAD_Kanyu_Flexystruder)
@@ -809,18 +815,38 @@
     #define LULZBOT_DEFAULT_Kd 108.51
 #endif /* LULZBOT_AO_Hexagon */
 
+#if defined(LULZBOT_E3D_Titan_Aero)
+    // LulzBot V6 block with E3D Titan Aero
+    #define LULZBOT_DEFAULT_Kp 19.83
+    #define LULZBOT_DEFAULT_Ki  1.53
+    #define LULZBOT_DEFAULT_Kd 64.16
+#endif /* LULZBOT_E3D_Titan_Aero */
+
 // Heated bed parameters
 
 //24V 360W silicone heater from NPH on 3mm borosilicate (TAZ 2.2+)
-#if defined(LULZBOT_TAZ_BED)
+#if defined(LULZBOT_TAZ_BED) && !defined(LULZBOT_TWO_PIECE_BED)
   #define LULZBOT_DEFAULT_bedKp                 162
   #define LULZBOT_DEFAULT_bedKi                 17
   #define LULZBOT_DEFAULT_bedKd                 378
 
-#elif defined(LULZBOT_MINI_BED)
+// Modular two piece bed (TAZ 7+)
+#elif defined(LULZBOT_TAZ_BED) && defined(LULZBOT_TWO_PIECE_BED)
+  #define LULZBOT_DEFAULT_bedKp                 286.02
+  #define LULZBOT_DEFAULT_bedKi                 54.55
+  #define LULZBOT_DEFAULT_bedKd                 374.90
+
+//24V 360W silicone heater from NPH on 3mm borosilicate (TAZ 2.2+)
+#elif defined(LULZBOT_MINI_BED) && !defined(LULZBOT_TWO_PIECE_BED)
   #define LULZBOT_DEFAULT_bedKp                 294
   #define LULZBOT_DEFAULT_bedKi                 65
   #define LULZBOT_DEFAULT_bedKd                 382
+
+// Modular two piece bed (TAZ 7+)
+#elif defined(LULZBOT_MINI_BED) && defined(LULZBOT_TWO_PIECE_BED)
+  #define LULZBOT_DEFAULT_bedKp                 321.57
+  #define LULZBOT_DEFAULT_bedKi                 57.73
+  #define LULZBOT_DEFAULT_bedKd                 447.82
 #endif
 
 // Acceleration, feedrate, motor steps and motor currents for XYZ vary
