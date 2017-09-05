@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".40"
+#define LULZBOT_FW_VERSION ".41"
 
 // Select options based on printer model
 
