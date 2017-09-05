@@ -755,6 +755,12 @@ static void lcd_implementation_status_screen() {
 
   #endif // ADVANCED_PAUSE_FEATURE
 
+  #if defined(LULZBOT_SCROLL_LONG_FILE_NAMES)
+    static int        scroll_offset;
+    static int        scroll_max;
+    static int        scroll_row;
+  #endif
+
   // Set the colors for a menu item based on whether it is selected
   static void lcd_implementation_mark_as_selected(const uint8_t row, const bool isSelected) {
     row_y1 = row * row_height + 1;
@@ -941,14 +947,22 @@ static void lcd_implementation_status_screen() {
       uint8_t n = LCD_WIDTH - (START_COL) - 1;
       if (longFilename[0]) {
         filename = longFilename;
-        longFilename[n] = '\0';
+        #if defined(LULZBOT_SCROLL_LONG_FILE_NAMES)
+          if (isSelected) {
+            if(scroll_row != row) {
+              scroll_max    = max(0, strlen(longFilename) - n);
+              scroll_row    = row;
+              scroll_offset = 0;
+            }
+            filename += scroll_offset;
+          }
+        #endif
       }
 
       if (isDir) lcd_print(LCD_STR_FOLDER[0]);
 
-      while (char c = *filename) {
-        n -= lcd_print_and_count(c);
-        filename++;
+      for(const char *c = filename; *c && n > 0; c++) {
+        n -= lcd_print_and_count(*c);
       }
       while (n--) u8g.print(' ');
     }

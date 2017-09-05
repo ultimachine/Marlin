@@ -478,6 +478,7 @@
      */
     #define LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD
     #define LULZBOT_HIDE_PID_CONFIG_IN_LCD
+    #define LULZBOT_SCROLL_LONG_FILE_NAMES
 #endif
 
 /*********************************************** COMMON TOOLHEADS PARAMETERS *****************************/
