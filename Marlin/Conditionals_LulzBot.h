@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".41"
+#define LULZBOT_FW_VERSION ".1"
 
 // Select options based on printer model
 
@@ -217,6 +217,9 @@
 #define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
 #define LULZBOT_ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
 
+// Workaround for bug in Marlin 1.1.5 where motion is stopped a X or Y = 0
+#define LULZBOT_MIN_SOFTWARE_ENDSTOPS_DISABLED
+
 // The RAMBO does not support interrupts on all pins
 // so leave the ENDSTOP_INTERRUPTS_FEATURE disabled
 
@@ -354,6 +357,7 @@
  */
 #if defined(LULZBOT_USE_AUTOLEVELING)
     #define LULZBOT_FIX_MOUNTED_PROBE
+    #define LULZBOT_PROBE_POINTS_OUTSIDE_OF_BED
 #endif // LULZBOT_USE_AUTOLEVELING
 
 #define LULZBOT_PROBE_DOUBLE_TOUCH
@@ -719,17 +723,26 @@
     #define LULZBOT_STANDARD_Y_MAX_POS         191
     #define LULZBOT_STANDARD_Y_MIN_POS         -10
 
+    #define LULZBOT_X_BED_SIZE                 155
+    #define LULZBOT_Y_BED_SIZE                 155
+
 #elif defined(LULZBOT_Juniper_TAZ5)
     #define LULZBOT_STANDARD_X_MAX_POS         298
     #define LULZBOT_STANDARD_X_MIN_POS           0
-    #define LULZBOT_STANDARD_Y_MAX_POS         275
+    #define LULZBOT_STANDARD_Y_MAX_POS         276
     #define LULZBOT_STANDARD_Y_MIN_POS           0
+
+    #define LULZBOT_X_BED_SIZE                 288
+    #define LULZBOT_Y_BED_SIZE                 275
 
 #elif defined(LULZBOT_IS_TAZ)
     #define LULZBOT_STANDARD_X_MAX_POS         300
     #define LULZBOT_STANDARD_X_MIN_POS         -20
     #define LULZBOT_STANDARD_Y_MAX_POS         303
     #define LULZBOT_STANDARD_Y_MIN_POS         -20
+
+    #define LULZBOT_X_BED_SIZE                 280
+    #define LULZBOT_Y_BED_SIZE                 280
 #endif
 
 #if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
@@ -991,27 +1004,25 @@
 // Bed Probe w/ Rewipe
 #define LULZBOT_NUM_REWIPES      1
 #define LULZBOT_BED_PROBE_MIN   -3 // Limit on pushing into the bed
-#define LULZBOT_BED_PROBE_FAIL  -2 // At what point is a failure detected
 
 #define LULZBOT_PROBE_Z_WITH_REWIPE(speed) \
-    do_probe_move(LULZBOT_BED_PROBE_MIN, speed); /* probe; if we reach limit, the probe failed */ \
-    for(int rewipes = 1; current_position[Z_AXIS] < LULZBOT_BED_PROBE_FAIL; rewipes++) { \
-        SERIAL_ERRORLNPGM(MSG_REWIPE); \
-        LCD_MESSAGEPGM(MSG_REWIPE); \
-        do_blocking_move_to_z(10, MMM_TO_MMS(speed)); /* raise nozzle */ \
-        Nozzle::clean(0, 2, 0, 0);                    /* wipe nozzle */ \
-        do_probe_move(LULZBOT_BED_PROBE_MIN, speed);  /* reprobe */ \
+    /* do_probe_move returns true when it fails to hit an endstop, meaning we need to rewipe */ \
+    for(int rewipes = 0; do_probe_move(LULZBOT_BED_PROBE_MIN, speed); rewipes++) { \
         if(rewipes >= LULZBOT_NUM_REWIPES) {          /* max of tries */ \
             SERIAL_ERRORLNPGM("PROBE FAIL CLEAN NOZZLE"); /* cura listens for this message specifically */ \
-            LCD_MESSAGEPGM(MSG_LEVEL_FAIL);           /* use a more friendly message on the LCD */ \
+            LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);   /* use a more friendly message on the LCD */ \
             BUZZ(25, 880); BUZZ(50, 0);               /* play tone */ \
             BUZZ(25, 880); BUZZ(50, 0); \
             BUZZ(25, 880); BUZZ(50, 0); \
             do_blocking_move_to_z(100, MMM_TO_MMS(Z_PROBE_SPEED_FAST)); /* raise head */ \
             stop();                                   /* stop print job */ \
-            LCD_MESSAGEPGM(MSG_LEVEL_FAIL);           /* stop changes the message... */ \
+            LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);   /* stop changes the message... */ \
             return NAN;                               /* abort the leveling in progress */ \
         } \
+        SERIAL_ERRORLNPGM(MSG_REWIPE); \
+        LCD_MESSAGEPGM(MSG_REWIPE); \
+        do_blocking_move_to_z(10, MMM_TO_MMS(speed)); /* raise nozzle */ \
+        Nozzle::clean(0, 2, 0, 0);                    /* wipe nozzle */ \
     }
 
 #define LULZBOT_G92_Z(z) \
