@@ -162,10 +162,10 @@
 
 #if defined(LULZBOT_EXTRUDER_FAN_ON_PIN_6)
   #define FAN_PIN           6
-  //#define FAN1_PIN          8
+  #define FAN1_PIN          8
 #else
   #define FAN_PIN           8
-  //#define FAN1_PIN          6
+  #define FAN1_PIN          6
 #endif
 
 #define FAN2_PIN            2

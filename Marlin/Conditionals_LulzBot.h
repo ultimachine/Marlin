@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".1"
+#define LULZBOT_FW_VERSION ".2"
 
 // Select options based on printer model
 
@@ -482,6 +482,7 @@
      */
     #define LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD
     #define LULZBOT_HIDE_PID_CONFIG_IN_LCD
+    #define LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD
     #define LULZBOT_SCROLL_LONG_FILE_NAMES
 #endif
 

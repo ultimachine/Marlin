@@ -1220,10 +1220,10 @@ void kill_screen(const char* lcd_msg) {
         #endif
         MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_1ST_FAN_SPEED, &fanSpeeds[0], 0, 255);
       #endif
-      #if HAS_FAN1
+      #if HAS_FAN1 && !defined(LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD)
         MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED " 2", &fanSpeeds[1], 0, 255);
       #endif
-      #if HAS_FAN2
+      #if HAS_FAN2 && !defined(LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD)
         MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED " 3", &fanSpeeds[2], 0, 255);
       #endif
     #endif // FAN_COUNT > 0
@@ -3123,10 +3123,10 @@ void kill_screen(const char* lcd_msg) {
         #endif
         MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_1ST_FAN_SPEED, &fanSpeeds[0], 0, 255);
       #endif
-      #if HAS_FAN1
+      #if HAS_FAN1 && !defined(LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD)
         MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED " 2", &fanSpeeds[1], 0, 255);
       #endif
-      #if HAS_FAN2
+      #if HAS_FAN2 && !defined(LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD)
         MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED " 3", &fanSpeeds[2], 0, 255);
       #endif
     #endif // FAN_COUNT > 0

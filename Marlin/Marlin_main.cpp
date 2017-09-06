@@ -12725,7 +12725,6 @@ void prepare_move_to_destination() {
 #endif // BEZIER_CURVE_SUPPORT
 
 #if ENABLED(USE_CONTROLLER_FAN)
-
   void controllerFan() {
     static millis_t lastMotorOn = 0, // Last time a motor was turned on
                     nextMotorCheck = 0; // Last time the state was checked
