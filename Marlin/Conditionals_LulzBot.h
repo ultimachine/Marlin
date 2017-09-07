@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".3"
+#define LULZBOT_FW_VERSION ".4"
 
 // Select options based on printer model
 
@@ -62,7 +62,7 @@
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
-    #define LULZBOT_PRINTERCOUNTER
+    #define LULZBOT_PRINTCOUNTER
 #endif
 
 #if defined(LULZBOT_Gladiola_MiniLCD)
@@ -86,7 +86,7 @@
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
-    #define LULZBOT_PRINTERCOUNTER
+    #define LULZBOT_PRINTCOUNTER
 #endif
 
 #if defined(LULZBOT_Juniper_TAZ5)
@@ -120,7 +120,7 @@
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
-    #define LULZBOT_PRINTERCOUNTER
+    #define LULZBOT_PRINTCOUNTER
 #endif
 
 // Shared values

@@ -28,7 +28,17 @@ TAZ_TOOLHEADS="Tilapia_SingleExtruder Kanyu_Flexystruder Opah_Moarstruder Javeli
 # Prints out a usage summary
 #
 usage() {
-  echo "Usage: $0 [-s|--short-names] [--no-timestamps] [printer_model toolhead_name]"
+  echo
+  echo "Usage: $0 [-s|--short-names] [--no-timestamps] [-c|--config] [printer_model toolhead_name]"
+  echo
+  echo "   -s|--short-names     Omits LulzBot code names from generated .hex files"
+  echo
+  echo "      --no-timestamps   Does not embed a timestamp in the .hex file."
+  echo
+  echo "   -c|--config          Rather than compiling a .hex file, dump out the values"
+  echo "                        in 'Configuration.h' and 'Configuration_adv.h' that are"
+  echo "                        to be used for the specified printer and toolhead."
+  echo
   exit
 }
 
@@ -45,6 +55,20 @@ build_firmware() {
   echo
   (cd Marlin; make clean; make $MAKEOPTS AVR_TOOLS_PATH=${AVR_TOOLS_PATH}/ MODEL=${printer} TOOLHEAD=${toolhead}) || exit
   mv Marlin/applet/*.hex build
+}
+
+####
+# build_config <printer> <toolhead>
+#
+# Compiles Configuration.h and Configuration_adv.h for the specified printer and toolhead
+#
+build_config() {
+  printer=$1
+  toolhead=$2
+  echo
+  echo Generating config for ${printer} and ${toolhead}
+  echo
+  (cd Marlin; make clean; make $MAKEOPTS AVR_TOOLS_PATH=${AVR_TOOLS_PATH}/ MODEL=${printer} TOOLHEAD=${toolhead} config) || exit
 }
 
 ####
@@ -141,7 +165,7 @@ build_summary() {
   echo
   echo
   echo
-  echo Firmware hex files built in "`pwd`/build":
+  echo Generated files stored in "`pwd`/build":
   echo
   ls build
   echo
@@ -162,6 +186,10 @@ do
       SHORTNAMES=1
       shift
       ;;
+    --config|-c)
+      GENERATE_CONFIG=1
+      shift
+      ;;
     --*)
       usage
       ;;
@@ -179,7 +207,11 @@ mkdir build
 
 if [ $# -eq 2 ]
 then
-  build_firmware $1 $2
+  if [ $GENERATE_CONFIG ]; then
+    build_config $1 $2
+  else
+    build_firmware $1 $2
+  fi
 else
   build_for_mini
   build_for_taz

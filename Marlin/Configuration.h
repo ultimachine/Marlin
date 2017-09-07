@@ -1192,7 +1192,7 @@
  *
  * View the current statistics with M78.
  */
-#define PRINTCOUNTER LULZBOT_PRINTERCOUNTER
+#define PRINTCOUNTER LULZBOT_PRINTCOUNTER
 
 //=============================================================================
 //============================= LCD and SD support ============================
