@@ -726,6 +726,8 @@ void Temperature::manage_heater() {
 
   HOTEND_LOOP() {
 
+    LULZBOT_MIN_TEMP_WORKAROUND
+
     #if HEATER_IDLE_HANDLER
       if (!heater_idle_timeout_exceeded[e] && heater_idle_timeout_ms[e] && ELAPSED(ms, heater_idle_timeout_ms[e]))
         heater_idle_timeout_exceeded[e] = true;

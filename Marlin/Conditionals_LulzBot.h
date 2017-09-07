@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".2"
+#define LULZBOT_FW_VERSION ".3"
 
 // Select options based on printer model
 
@@ -124,10 +124,36 @@
 #endif
 
 // Shared values
-#define LULZBOT_STRING_CONFIG_H_AUTHOR        "(Aleph Objects Inc., LulzBot Diffusion)"
+#define LULZBOT_STRING_CONFIG_H_AUTHOR        "(Aleph Objects Inc., LulzBot Git Repository)"
 #define LULZBOT_BUFSIZE                       10
 #define LULZBOT_EEPROM_SETTINGS
 #define LULZBOT_EMERGENCY_PARSER
+
+// Marlin 1.1.5 no longer issues MIN_TEMP errors and appears to handle
+// thermal runaway via other means. However, since our users expect a
+// MIN_TEMP error when disconnecting their print head, this could be
+// perceived as a safety issue. This is a workaround in "temperature.cpp"
+// to re-enable that functionality.
+
+#define LULZBOT_MIN_TEMP_WORKAROUND \
+    static int delayBeforeStartMeasuring = OVERSAMPLENR; \
+        if(delayBeforeStartMeasuring > 0) { \
+            delayBeforeStartMeasuring--; \
+        } else { \
+            if (current_temperature[e] > HEATER_0_MAXTEMP) max_temp_error(0); \
+            if (current_temperature[e] < HEATER_0_MINTEMP) min_temp_error(0); \
+        }
+
+// Marlin 1.1.4 has changed the behavior of G92 so that
+// it changes software endstops, making it less useful
+// for making position adjustments after hitting an
+// endstop. We need the old behavior of G92 for the
+// Yellowfin start GCODE and it is also a useful
+// feature for custom height adjustments (something
+// requested in the forums). The following restores
+// the old behavior.
+
+#define LULZBOT_G92_BACKWARDS_COMPATIBILITY
 
 // Prior branches of the LulzBot firmware used G26
 // to reset a probe failed condition. Marlin upstrem
@@ -370,13 +396,6 @@
 #define LULZBOT_Z_PROBE_SPEED_FAST           (8*60)
 #define LULZBOT_Z_CLEARANCE_DEPLOY_PROBE      5
 #define LULZBOT_Z_CLEARANCE_BETWEEN_PROBES    5
-
-/* We use G92 for adjusting the coordinate space in the Yellowfin toolhead,
- * however upstream Marlin has made it so G92 adjusts the software endstops,
- * which makes G92 unusable for our use case. As an interim measure, revert
- * to the previous behavior of G29 using NO_WORKSPACE_OFFSETS
-*/
-#define LULZBOT_NO_WORKSPACE_OFFSETS
 
 /* On the Finch Aero toolhead, we need to disable the extruder
  * motor as it causes noise on the probe line on Foxglove Minis.

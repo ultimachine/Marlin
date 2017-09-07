@@ -5914,7 +5914,7 @@ inline void gcode_G92() {
         current_position[i] = parser.value_axis_units((AxisEnum)i);
         if (i != E_AXIS) didXYZ = true;
       #else
-        #if HAS_POSITION_SHIFT
+        #if HAS_POSITION_SHIFT && !defined(LULZBOT_G92_BACKWARDS_COMPATIBILITY)
           const float p = current_position[i];
         #endif
         const float v = parser.value_axis_units((AxisEnum)i);
@@ -5923,7 +5923,7 @@ inline void gcode_G92() {
 
         if (i != E_AXIS) {
           didXYZ = true;
-          #if HAS_POSITION_SHIFT
+          #if HAS_POSITION_SHIFT && !defined(LULZBOT_G92_BACKWARDS_COMPATIBILITY)
             position_shift[i] += v - p; // Offset the coordinate space
             update_software_endstops((AxisEnum)i);
 
