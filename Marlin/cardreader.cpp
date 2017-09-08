@@ -27,6 +27,7 @@
 #include "language.h"
 
 #include "Marlin.h"
+#include "Configuration.h"
 
 #if ENABLED(SDSUPPORT)
 
@@ -532,8 +533,13 @@ void CardReader::write_command(char *buf) {
 }
 
 void CardReader::checkautostart(bool force) {
+#if defined(LULZBOT_AUTOSTART_BUGFIX)
+  if (!force && (!autostart_stilltocheck || ! ELAPSED(millis(), next_autostart_ms)))
+    return;
+#else
   if (!force && (!autostart_stilltocheck || ELAPSED(millis(), next_autostart_ms)))
     return;
+#endif
 
   autostart_stilltocheck = false;
 

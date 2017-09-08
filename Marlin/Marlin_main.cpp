@@ -8802,13 +8802,22 @@ inline void gcode_M226() {
     const int pin_number = parser.value_int(),
               pin_state = parser.intval('S', -1); // required pin state - default is inverted
 
+#if defined(LULZBOT_NO_PIN_PROTECTION_ON_M226)
+    if (WITHIN(pin_state, -1, 1) && pin_number > -1) {
+#else
     if (WITHIN(pin_state, -1, 1) && pin_number > -1 && !pin_is_protected(pin_number)) {
+#endif
 
       int target = LOW;
 
       stepper.synchronize();
 
+#if !defined(LULZBOT_NO_PIN_PROTECTION_ON_M226)
       pinMode(pin_number, INPUT);
+#else
+      // Don't switch pin mode. Since we are disabling protection,
+      // we should only poll pins that already are inputs.
+#endif
       switch (pin_state) {
         case 1:
           target = HIGH;

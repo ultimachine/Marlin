@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".5"
+#define LULZBOT_FW_VERSION ".6"
 
 // Select options based on printer model
 
@@ -161,6 +161,12 @@
 // following maps G26 to M999 for equivalent behavior,
 // so long as UBL is disabled.
 #define LULZBOT_G26_BACKWARDS_COMPATIBILITY
+
+// Fix for auto0.g, which is broken
+#define LULZBOT_AUTOSTART_BUGFIX
+
+// Q&A wants to be able to use M226 on endstops switches
+#define LULZBOT_NO_PIN_PROTECTION_ON_M226
 
 // The following should be kept more or less like M999
 #define LULZBOT_G26_RESET_ACTION \
