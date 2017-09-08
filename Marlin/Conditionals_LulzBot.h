@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".4"
+#define LULZBOT_FW_VERSION ".5"
 
 // Select options based on printer model
 
@@ -184,8 +184,6 @@
 
 #define LULZBOT_PIDTEMPBED
 
-#define LULZBOT_MAX_BED_POWER                 206
-
 #define LULZBOT_THERMAL_PROTECTION_PERIOD     15     // Seconds
 #define LULZBOT_THERMAL_PROTECTION_HYSTERESIS 30     // Degrees Celsius
 
@@ -193,11 +191,16 @@
 #define LULZBOT_THERMAL_PROTECTION_BED_HYSTERESIS 10     // Degrees Celsius
 
 #if defined(LULZBOT_IS_MINI)
-    #define LULZBOT_WATCH_TEMP_PERIOD 20    // Seconds
-    #define LULZBOT_WATCH_TEMP_INCREASE 2   // Degrees Celsius
+    // Heater current: 24V/5.5 Ohms = 4.4A
+    #define LULZBOT_MAX_BED_POWER      255  // limits duty cycle to bed; 255=full current
+    #define LULZBOT_WATCH_TEMP_PERIOD   20  // Seconds
+    #define LULZBOT_WATCH_TEMP_INCREASE  2  // Degrees Celsius
 #elif defined(LULZBOT_IS_TAZ)
-    #define LULZBOT_WATCH_TEMP_PERIOD 40    // Seconds
-    #define LULZBOT_WATCH_TEMP_INCREASE 10   // Degrees Celsius
+    // Heater current: 24V/1.6 Ohms = 15A
+    // Set Max Bed Power to 80% for a safety margin on the 15A fuse.
+    #define LULZBOT_MAX_BED_POWER      206  // limits duty cycle to bed; 255=full current
+    #define LULZBOT_WATCH_TEMP_PERIOD   40  // Seconds
+    #define LULZBOT_WATCH_TEMP_INCREASE 10  // Degrees Celsius
 #endif
 
 // Motherboard specifics and custom pins for probing.
@@ -876,11 +879,11 @@
   #define LULZBOT_DEFAULT_bedKi                 65
   #define LULZBOT_DEFAULT_bedKd                 382
 
-// Modular two piece bed (TAZ 7+)
+// Modular two piece bed (Mini 2+)
 #elif defined(LULZBOT_MINI_BED) && defined(LULZBOT_TWO_PIECE_BED)
-  #define LULZBOT_DEFAULT_bedKp                 321.57
-  #define LULZBOT_DEFAULT_bedKi                 57.73
-  #define LULZBOT_DEFAULT_bedKd                 447.82
+  #define LULZBOT_DEFAULT_bedKp                 384.33
+  #define LULZBOT_DEFAULT_bedKi                  72.17
+  #define LULZBOT_DEFAULT_bedKd                 511.64
 #endif
 
 // Acceleration, feedrate, motor steps and motor currents for XYZ vary
