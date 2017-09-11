@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".6"
+#define LULZBOT_FW_VERSION ".7"
 
 // Select options based on printer model
 
@@ -940,7 +940,7 @@
     #define LULZBOT_Z_STEPS (Z_FULL_STEPS_PER_ROTATION * Z_MICROSTEPS * Z_MOTOR_GEAR_REDUCTION / double(Z_BELT_PITCH) / double(Z_PULLEY_TEETH))
 
     #undef  LULZBOT_DEFAULT_MAX_FEEDRATE
-    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 16, 25}      // (mm/sec)
+    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 8, 25}      // (mm/sec)
 
 #elif defined(LULZBOT_Juniper_TAZ5)
     #define DIGIPOT_MOTOR_CURRENT_Z               240
