@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".7"
+#define LULZBOT_FW_VERSION ".8"
 
 // Select options based on printer model
 
@@ -121,6 +121,14 @@
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
+#endif
+
+// The Makefile and build-lulzbot-firmware.sh has an option to generate
+// firmware without any identifying version or build timestamp. This is
+// used in internal testing to allow us to binary diff across .hex files.
+#if defined(LULZBOT_MASK_VERSION)
+    #undef  LULZBOT_FW_VERSION
+    #define LULZBOT_FW_VERSION ".xx"
 #endif
 
 // Shared values
@@ -792,7 +800,7 @@
 
 #elif defined(LULZBOT_Quiver_TAZ7)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
-    #define LULZBOT_STANDARD_Z_MAX_POS         290
+    #define LULZBOT_STANDARD_Z_MAX_POS         300
 #endif
 
 #define LULZBOT_X_MAX_POS (LULZBOT_STANDARD_X_MAX_POS - LULZBOT_TOOLHEAD_X_MAX_ADJ)

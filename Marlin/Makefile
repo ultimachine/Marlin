@@ -93,7 +93,7 @@ RELOC_WORKAROUND   ?= 1
 # The following added by AlephObjects for adjusting the name of the output
 # hex file
 VERSION=$(shell grep "define SHORT_BUILD_VERSION" Version.h | cut -d \" -f 2)
-REVISION=$(shell grep "define LULZBOT_FW" Conditionals_LulzBot.h | cut -d \" -f 2)
+REVISION=$(shell grep -m 1 "define LULZBOT_FW" Conditionals_LulzBot.h | cut -d \" -f 2)
 HASH = $(shell git rev-parse --verify HEAD --short)
 HEX_FILENAME=Marlin_$(MODEL)_$(TOOLHEAD)_$(VERSION)$(REVISION)_$(HASH)
 LULZBOT_EXTRAS=-DLULZBOT_$(MODEL) -DTOOLHEAD_$(TOOLHEAD) -Wfatal-errors
@@ -381,10 +381,18 @@ MV = mv -f
 CDEFS    = -DF_CPU=$(F_CPU) ${addprefix -D , $(DEFINES)}
 CXXDEFS  = $(CDEFS)
 
-#Disabling the timestamp is useful for diffing binaries between different builds.
+# Disabling the timestamp and/or timestamp in the .hex file is useful for
+# binary diffing between different builds of .hex files to detect unintended
+# changes.
 ifeq ($(NO_TIMESTAMP), 1)
-#CDEFS +=-D__DATE__="??? ?? ????" -D__TIME__="??:??:??"
-CDEFS +=-D__DATE__='"Aug 17 2017"' -D__TIME__='"08:59:30"'
+CDEFS +='-D__DATE__="??? ?? ????"'
+CDEFS +='-D__TIME__="??:??:??"'
+endif
+
+#Disabling the versions is useful for diffing binaries between different
+#versions
+ifeq ($(NO_VERSION), 1)
+CDEFS +='-DLULZBOT_MASK_VERSION'
 endif
 
 ifeq ($(HARDWARE_VARIANT), Teensy)
@@ -457,7 +465,7 @@ endif
 # Default target.
 all: sizeafter
 
-config:
+config: $(BUILD_DIR)
 	# This build target uses the C preprocessor to output a snapshot of the
 	# "Configuration.h" and "Configuration_adv.h" for the current printer
 	# and toolhead. This is useful for when Marlin developers ask for a copy
@@ -468,14 +476,16 @@ config:
 	cat Configuration.h >> /tmp/macros.cpp
 	sed -i 's/#define *\(\w*\)/pound_defined_\1/g; s/#ifndef CONFIGURATION_H/#ifndef FOO/g' /tmp/macros.cpp
 	$(CXX) $(ALL_CXXFLAGS) -E /tmp/macros.cpp -o /tmp/preprocessed.h
-	grep pound_defined /tmp/preprocessed.h | sed 's/ *pound_defined_\(\w*\)/#define \1/g' > ../build/Configuration.h
+	echo "/* Configuration.h */" > $(BUILD_DIR)/$(HEX_FILENAME).config
+	grep pound_defined /tmp/preprocessed.h | sed 's/ *pound_defined_\(\w*\)/#define \1/g' >>  $(BUILD_DIR)/$(HEX_FILENAME).config
 
 	# Dump the values defined in "Configuration_adv.h"
 	echo '#include "Marlin.h"' > /tmp/macros.cpp
 	cat Configuration_adv.h >> /tmp/macros.cpp
 	sed -i 's/#define *\(\w*\)/pound_defined_\1/g; s/#ifndef CONFIGURATION_ADV_H/#ifndef FOO/g' /tmp/macros.cpp
 	$(CXX) $(ALL_CXXFLAGS) -E /tmp/macros.cpp -o /tmp/preprocessed.h
-	grep pound_defined /tmp/preprocessed.h | sed 's/ *pound_defined_\(\w*\)/#define \1/g' > ../build/Configuration_adv.h
+	echo "/* Configuration_adv.h */" >>  $(BUILD_DIR)/$(HEX_FILENAME).config
+	grep pound_defined /tmp/preprocessed.h | sed 's/ *pound_defined_\(\w*\)/#define \1/g' >>  $(BUILD_DIR)/$(HEX_FILENAME).config
 
 build: $(BUILD_DIR) elf hex $(BUILD_DIR)/$(HEX_FILENAME).hex
 

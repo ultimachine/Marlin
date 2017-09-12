@@ -29,32 +29,56 @@ TAZ_TOOLHEADS="Tilapia_SingleExtruder Kanyu_Flexystruder Opah_Moarstruder Javeli
 #
 usage() {
   echo
-  echo "Usage: $0 [-s|--short-names] [--no-timestamps] [-c|--config] [printer_model toolhead_name]"
+  echo "Usage: $0 [-s|--short-names] [-h|--hash] [-c|--config] [printer_model toolhead_name]"
   echo
-  echo "   -s|--short-names     Omits LulzBot code names from generated .hex files"
+  echo "   -s|--short-names  Omits LulzBot code names from generated .hex files"
   echo
-  echo "      --no-timestamps   Does not embed a timestamp in the .hex file."
+  echo "   -h|--hash         Records md5sum of the .hex files. These files will be generated:"
+  echo "                       md5sums-full*    Sum w/  embedded version str and timestamp"
+  echo "                       md5sums-bare*    Sum w/o embedded version str and timestamp"
   echo
-  echo "   -c|--config          Rather than compiling a .hex file, dump out the values"
-  echo "                        in 'Configuration.h' and 'Configuration_adv.h' that are"
-  echo "                        to be used for the specified printer and toolhead."
+  echo "   -c|--config       Save the values of 'Configuration.h' and 'Configuration_adv.h'"
+  echo "                     that are used for the specified printer and toolhead."
   echo
   exit
 }
 
 ####
-# build_firmware <printer> <toolhead>
+# compile_firmware <printer> <toolhead> [makeopts]
 #
 # Compiles firmware for the specified printer and toolhead
 #
-build_firmware() {
-  printer=$1
-  toolhead=$2
+compile_firmware() {
+  printer=$1  ; shift 1
+  toolhead=$1 ; shift 1
+  (cd Marlin; make clean; make AVR_TOOLS_PATH=${AVR_TOOLS_PATH}/ MODEL=${printer} TOOLHEAD=${toolhead} $*) || exit
+}
+
+####
+# record_checksum <hex_file> <checksum-file-prefix>
+#
+# Records the md5sum of a hex file to the checksum file
+#
+record_checksum() {
+  HEX_NAME=`basename $1`
+  VERSION=`echo $HEX_NAME | sed -r "s/Marlin_(.+)_(.+)_(.+)_(.+)_(.+)_(.+).hex/\5-\6/"`
+  VARIANT=`echo $HEX_NAME | sed -r "s/Marlin_(.+)_(.+)_(.+)_(.+)_(.+)_(.+).hex/\1_\2 \3_\4/"`
+  cat $1 | md5sum | sed "s/-/$VARIANT/" >> ${2}-${VERSION}.txt
+}
+
+####
+# generate_bare_checksum <printer> <toolhead>
+#
+# Builds firmware without timestamp and version strings, and
+# saves md5sum to a file. These are useful to see if anything
+# actually changed between two versions.
+#
+generate_bare_checksum() {
   echo
-  echo Building for ${printer} and ${toolhead}
+  echo Generating bare checksum for $1 and $2
   echo
-  (cd Marlin; make clean; make $MAKEOPTS AVR_TOOLS_PATH=${AVR_TOOLS_PATH}/ MODEL=${printer} TOOLHEAD=${toolhead}) || exit
-  mv Marlin/applet/*.hex build
+  compile_firmware $1 $2 NO_TIMESTAMP=1 NO_VERSION=1
+  record_checksum Marlin/applet/*.hex build/md5sums-bare
 }
 
 ####
@@ -63,12 +87,33 @@ build_firmware() {
 # Compiles Configuration.h and Configuration_adv.h for the specified printer and toolhead
 #
 build_config() {
-  printer=$1
-  toolhead=$2
   echo
-  echo Generating config for ${printer} and ${toolhead}
+  echo Generating config for $1 and $2
   echo
-  (cd Marlin; make clean; make $MAKEOPTS AVR_TOOLS_PATH=${AVR_TOOLS_PATH}/ MODEL=${printer} TOOLHEAD=${toolhead} config) || exit
+  compile_firmware $1 $2 config
+}
+
+####
+# build_firmware <printer> <toolhead> <dest-dir>
+#
+# Compiles firmware for the specified printer and toolhead
+#
+build_firmware() {
+  if [ $MAKE_HASHES ]; then
+    generate_bare_checksum $1 $2
+  fi
+  echo
+  echo Building for $1 and $2
+  echo
+  compile_firmware $1 $2
+  if [ $MAKE_HASHES ]; then
+    record_checksum Marlin/applet/*.hex build/md5sums-full
+  fi
+  mv Marlin/applet/*.hex build
+  if [ $GENERATE_CONFIG ]; then
+    build_config $1 $2
+    mv Marlin/applet/*.config build
+  fi
 }
 
 ####
@@ -178,15 +223,15 @@ build_summary() {
 while true
 do
   case $1 in
-    --no-timestamps)
-      MAKEOPTS="NO_TIMESTAMP=1"
+    -h|--hash)
+      MAKE_HASHES=1
       shift
       ;;
-    --short-names|-s)
+    -s|--short-names)
       SHORTNAMES=1
       shift
       ;;
-    --config|-c)
+    -c|--config)
       GENERATE_CONFIG=1
       shift
       ;;
@@ -203,15 +248,11 @@ locate_avr_tools
 check_avr_tools
 
 rm -rf build
-mkdir build
+mkdir  build
 
 if [ $# -eq 2 ]
 then
-  if [ $GENERATE_CONFIG ]; then
-    build_config $1 $2
-  else
-    build_firmware $1 $2
-  fi
+  build_firmware $1 $2
 else
   build_for_mini
   build_for_taz
@@ -219,6 +260,7 @@ fi
 
 if [ $SHORTNAMES ]; then
   rename 's/Marlin_(.+)_(.+)_(.+)_(.+)_(.+)_(.+).hex/Marlin_$2_$4_$5_$6.hex/' build/*
+  rename 's/Marlin_(.+)_(.+)_(.+)_(.+)_(.+)_(.+).config/Marlin_$2_$4_$5_$6.config/' build/*
 fi
 
 build_summary
