@@ -766,7 +766,9 @@
 //#define NO_TIMEOUTS 1000 // Milliseconds
 
 // Some clients will have this feature soon. This could make the NO_TIMEOUTS unnecessary.
-//#define ADVANCED_OK
+#if defined(LULZBOT_ADVANCED_OK)
+#define ADVANCED_OK
+#endif
 
 // @section extras
 
@@ -808,10 +810,12 @@
  * Requires an LCD display.
  * This feature is required for the default FILAMENT_RUNOUT_SCRIPT.
  */
-//#define ADVANCED_PAUSE_FEATURE
+#if defined(LULZBOT_ADVANCED_PAUSE_FEATURE)
+#define ADVANCED_PAUSE_FEATURE
+#endif
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
-  #define PAUSE_PARK_X_POS 3                  // X position of hotend
-  #define PAUSE_PARK_Y_POS 3                  // Y position of hotend
+  #define PAUSE_PARK_X_POS LULZBOT_PAUSE_PARK_X_POS // X position of hotend
+  #define PAUSE_PARK_Y_POS LULZBOT_PAUSE_PARK_Y_POS // Y position of hotend
   #define PAUSE_PARK_Z_ADD 10                 // Z addition of hotend (lift)
   #define PAUSE_PARK_XY_FEEDRATE 100          // X and Y axes feedrate in mm/s (also used for delta printers Z axis)
   #define PAUSE_PARK_Z_FEEDRATE 5             // Z axis feedrate in mm/s (not used for delta printers)
@@ -836,8 +840,8 @@
   #define FILAMENT_CHANGE_NUMBER_OF_ALERT_BEEPS 5 // Number of alert beeps before printer goes quiet
   #define PAUSE_PARK_NO_STEPPER_TIMEOUT       // Enable to have stepper motors hold position during filament change
                                               // even if it takes longer than DEFAULT_STEPPER_DEACTIVE_TIME.
-  //#define PARK_HEAD_ON_PAUSE                // Go to filament change position on pause, return to print position on resume
-  //#define HOME_BEFORE_FILAMENT_CHANGE       // Ensure homing has been completed prior to parking for filament change
+  #define PARK_HEAD_ON_PAUSE LULZBOT_PARK_HEAD_ON_PAUSE // Go to filament change position on pause, return to print position on resume
+  #define HOME_BEFORE_FILAMENT_CHANGE LULZBOT_HOME_BEFORE_FILAMENT_CHANGE // Ensure homing has been completed prior to parking for filament change
 #endif
 
 // @section tmc
@@ -1230,7 +1234,9 @@
 /**
  * Auto-report temperatures with M155 S<seconds>
  */
+#if defined(LULZBOT_AUTO_REPORT_TEMPERATURES)
 #define AUTO_REPORT_TEMPERATURES
+#endif
 
 /**
  * Include capabilities in M115 output

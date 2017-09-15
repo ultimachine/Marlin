@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".8"
+#define LULZBOT_FW_VERSION ".9"
 
 // Select options based on printer model
 
@@ -50,6 +50,7 @@
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_BAUDRATE 115200
+    #define LULZBOT_UUID "351487b6-ca9a-4c1a-8765-d668b1da6585"
 #endif
 
 #if defined(LULZBOT_Hibiscus_Mini2)
@@ -63,6 +64,7 @@
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
 #endif
 
 #if defined(LULZBOT_Gladiola_MiniLCD)
@@ -73,6 +75,7 @@
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_BAUDRATE 115200
+    #define LULZBOT_UUID "083f68f1-028e-494c-98e1-f2e0dfaee9a5"
 #endif
 
 #if defined(LULZBOT_Hibiscus_Mini2LCD)
@@ -87,6 +90,7 @@
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "80fed4d6-4d15-4512-a02e-61b1dc4fb072"
 #endif
 
 #if defined(LULZBOT_Juniper_TAZ5)
@@ -95,6 +99,7 @@
     #define LULZBOT_TAZ_BED
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_UUID "c3255c96-4097-4884-8ed0-ded2ff9bae61"
 #endif
 
 #if defined(LULZBOT_Oliveoil_TAZ6)
@@ -107,6 +112,7 @@
     #define LULZBOT_USE_HOME_BUTTON
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_UUID "845f003c-aebd-4e53-a6b9-7d0984fde609"
 #endif
 
 #if defined(LULZBOT_Quiver_TAZ7)
@@ -121,6 +127,7 @@
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "a952577d-8722-483a-999d-acdc9e772b7b"
 #endif
 
 // The Makefile and build-lulzbot-firmware.sh has an option to generate
@@ -136,6 +143,9 @@
 #define LULZBOT_BUFSIZE                       10
 #define LULZBOT_EEPROM_SETTINGS
 #define LULZBOT_EMERGENCY_PARSER
+#define LULZBOT_NOZZLE_PARK_FEATURE
+#define LULZBOT_AUTO_REPORT_TEMPERATURES
+#define LULZBOT_ADVANCED_OK
 
 // Marlin 1.1.5 no longer issues MIN_TEMP errors and appears to handle
 // thermal runaway via other means. However, since our users expect a
@@ -534,8 +544,6 @@
 /*********************************************** MINI TOOLHEADS *******************************************/
 
 #if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aerostruder)
-    #define LULZBOT_TOOLHEAD_VER               VERSION_STRING
-    #define LULZBOT_UUID                       "351487b6-ca9a-4c1a-8765-d668b1da6585"
     #define LULZBOT_EXTRUDERS                  1
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         0
     #define LULZBOT_TOOLHEAD_X_MIN_ADJ         0
@@ -553,6 +561,7 @@
 #if defined(TOOLHEAD_Gladiola_SingleExtruder)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Single Extruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
+    #define LULZBOT_M115_EXTRUDER_TYPE             "SingleExtruder"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
     #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Gladiola_SingleExtruder */
@@ -560,6 +569,7 @@
 #if defined(TOOLHEAD_Albatross_Flexystruder)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Flexystruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
+    #define LULZBOT_M115_EXTRUDER_TYPE             "Flexystruder"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
     #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Albatross_Flexystruder */
@@ -568,6 +578,7 @@
     // Prototype Aero toolhead for Mini
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Aerostruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
+    #define LULZBOT_M115_EXTRUDER_TYPE             "Aerostruder"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
     #define LULZBOT_E3D_Titan_Aero
 #endif /* TOOLHEAD_Finch_Aerostruder */
@@ -575,8 +586,6 @@
 /*********************************************** TAZ TOOLHEADS *******************************************/
 
 #if defined(TOOLHEAD_Tilapia_SingleExtruder) || defined(TOOLHEAD_Angelfish_Aerostruder)
-    #define LULZBOT_TOOLHEAD_VER                    VERSION_STRING
-    #define LULZBOT_UUID                            "845f003c-aebd-4e53-a6b9-7d0984fde609"
     #define LULZBOT_EXTRUDERS                  1
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         0
     #define LULZBOT_TOOLHEAD_X_MIN_ADJ         0
@@ -591,9 +600,9 @@
 #endif /* TOOLHEAD_Tilapia_SingleExtruder || TOOLHEAD_Angelfish_Aerostruder */
 
 #if defined(TOOLHEAD_Tilapia_SingleExtruder)
-    #define LULZBOT_LCD_TOOLHEAD_NAME              "Single Extruder"
+    #define LULZBOT_LCD_TOOLHEAD_NAME          "Single Extruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_BUILD_VARIANT              " LulzBot"
+    #define LULZBOT_M115_EXTRUDER_TYPE         "SingleExtruder"
     #define DIGIPOT_MOTOR_CURRENT_E            135,135  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    false
     #define LULZBOT_AO_Hexagon
@@ -601,22 +610,20 @@
 
 #if defined(TOOLHEAD_Angelfish_Aerostruder)
     // Prototype Aero for TAZ
-    #define LULZBOT_LCD_TOOLHEAD_NAME              "Aerostruder"
-//          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_BUILD_VARIANT              " LulzBot Aerostruder"
+    #define LULZBOT_LCD_TOOLHEAD_NAME          "Aerostruder"
+//          16 chars max                       ^^^^^^^^^^^^^^^
+    #define LULZBOT_M115_EXTRUDER_TYPE         "Aerostruder"
     #define DIGIPOT_MOTOR_CURRENT_E            160  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    false
     #define LULZBOT_E3D_Titan_Aero
 #endif /* TOOLHEAD_Angelfish_Aerostruder */
 
 #if defined(TOOLHEAD_Kanyu_Flexystruder)
-    #define LULZBOT_TOOLHEAD_VER               VERSION_STRING" Flexystruder"
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Flexystruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_BUILD_VARIANT              " LulzBot Flexy"
+    #define LULZBOT_M115_EXTRUDER_TYPE         "Flexystruder"
     #define DIGIPOT_MOTOR_CURRENT_E            67  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
     #define LULZBOT_EXTRUDERS                  1
-    #define LULZBOT_UUID                       "564bab1c-704c-4225-b329-ac1a093d2638"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    true
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         12
     #define LULZBOT_TOOLHEAD_X_MIN_ADJ         7
@@ -632,15 +639,13 @@
 #endif /* TOOLHEAD_Kanyu_Flexystruder */
 
 #if defined(TOOLHEAD_Opah_Moarstruder)
-    #define LULZBOT_TOOLHEAD_VER               VERSION_STRING
     #define LULZBOT_LCD_TOOLHEAD_NAME              "MOARstruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_BUILD_VARIANT              " LulzBot MOAR"
+    #define LULZBOT_M115_EXTRUDER_TYPE         "MOARstruder"
     #define LULZBOT_DEFAULT_ACCELERATION       250
     #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION 250
     #define DIGIPOT_MOTOR_CURRENT_E            135  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
     #define LULZBOT_EXTRUDERS                  1
-    #define LULZBOT_UUID                       "d651819d-4a79-4b73-bc5b-ae1fe1aab36b"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    true
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         10
     #define LULZBOT_TOOLHEAD_X_MIN_ADJ         0
@@ -656,12 +661,9 @@
 #endif /* TOOLHEAD_Opah_Moarstruder */
 
 #if defined(TOOLHEAD_Javelin_DualExtruderV2) || defined(TOOLHEAD_Longfin_FlexyDually) || defined(TOOLHEAD_Yellowfin_DualExtruderV3) || defined(TOOLHEAD_Devel_ServoDual)
-    #define LULZBOT_TOOLHEAD_VER               VERSION_STRING" Dual"
-    #define LULZBOT_BUILD_VARIANT              " LulzBot Dual"
     #define LULZBOT_EXTRUDER_FAN_ON_PIN_6      // For backwards compatibility with TAZ 4
     #define DIGIPOT_MOTOR_CURRENT_E            160, 160  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
     #define LULZBOT_EXTRUDERS                  2
-    #define LULZBOT_UUID                       "c5077702-4ecd-4532-beaf-6acf94acc404"
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         12
     #define LULZBOT_TOOLHEAD_X_MIN_ADJ         2
     #define LULZBOT_TOOLHEAD_Y_MAX_ADJ         0
@@ -680,6 +682,7 @@
 #if defined(TOOLHEAD_Javelin_DualExtruderV2)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Dual Extruder 2"
 //          16 chars max                            ^^^^^^^^^^^^^^^
+    #define LULZBOT_M115_EXTRUDER_TYPE         "DualExtruder v2"
     #define LULZBOT_TOOLHEAD_WIPE_X1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
@@ -690,6 +693,7 @@
 #if defined(TOOLHEAD_Longfin_FlexyDually)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "FlexyDually v2"
 //          16 chars max                            ^^^^^^^^^^^^^^^
+    #define LULZBOT_M115_EXTRUDER_TYPE         "FlexyDually v2"
     #define LULZBOT_TOOLHEAD_WIPE_X1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
@@ -702,12 +706,14 @@
     // Prototype Dual v3 for TAZ.
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Dual Extruder 3"
 //          16 chars max                            ^^^^^^^^^^^^^^^
+    #define LULZBOT_M115_EXTRUDER_TYPE         "DualExtruder v3"
 #endif /* TOOLHEAD_Yellowfin_DualExtruderV3 */
 
 #if defined(TOOLHEAD_Devel_ServoDual)
     // Experimental dual nozzle using a servo
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Servo McStruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
+    #define LULZBOT_M115_EXTRUDER_TYPE             "ServoMcStruder"
     #define LULZBOT_NUM_SERVOS                     1
     #define LULZBOT_SWITCHING_NOZZLE
 #endif /* TOOLHEAD_Devel_ServoDual */
@@ -809,6 +815,16 @@
 #define LULZBOT_Y_MIN_POS (LULZBOT_STANDARD_Y_MIN_POS - LULZBOT_TOOLHEAD_Y_MIN_ADJ)
 #define LULZBOT_Z_MAX_POS (LULZBOT_STANDARD_Z_MAX_POS - LULZBOT_TOOLHEAD_Z_MAX_ADJ)
 #define LULZBOT_Z_MIN_POS (LULZBOT_STANDARD_Z_MIN_POS - LULZBOT_TOOLHEAD_Z_MIN_ADJ)
+
+/**************************** ADVANCED PAUSE FEATURE ****************************/
+
+#if defined(LULZBOT_USE_LCD_DISPLAY)
+    #define LULZBOT_ADVANCED_PAUSE_FEATURE
+    #define LULZBOT_HOME_BEFORE_FILAMENT_CHANGE
+    #define LULZBOT_PARK_HEAD_ON_PAUSE
+    #define LULZBOT_PAUSE_PARK_X_POS                 10
+    #define LULZBOT_PAUSE_PARK_Y_POS                 LULZBOT_Y_MAX_POS - 10
+#endif
 
 /*********************************** WIPER PAD **********************************/
 
@@ -1034,7 +1050,7 @@
 
 // Customize version string
 
-#define LULZBOT_DETAILED_BUILD_VERSION SHORT_BUILD_VERSION LULZBOT_FW_VERSION " (LulzBot " LULZBOT_CUSTOM_MACHINE_NAME " " LULZBOT_LCD_TOOLHEAD_NAME ")"
+#define LULZBOT_DETAILED_BUILD_VERSION " FIRMWARE_VERSION:" SHORT_BUILD_VERSION LULZBOT_FW_VERSION " EXTRUDER_TYPE:" LULZBOT_M115_EXTRUDER_TYPE
 #define LULZBOT_STRING_DISTRIBUTION_DATE __DATE__ __TIME__
 #define LULZBOT_SOURCE_CODE_URL "https://code.alephobjects.com/diffusion/MARLIN"
 

@@ -235,7 +235,7 @@ do
       GENERATE_CONFIG=1
       shift
       ;;
-    --*)
+    -*|--*)
       usage
       ;;
     *)
@@ -259,7 +259,7 @@ else
 fi
 
 if [ $SHORTNAMES ]; then
-  rename 's/Marlin_(.+)_(.+)_(.+)_(.+)_(.+)_(.+).hex/Marlin_$2_$4_$5_$6.hex/' build/*
+  rename 's/Marlin_(.+)_(.+)_(.+)_(.+)_(.+)_(.+).hex/Marlin_$2_$4_$5_$6.hex/'       build/*
   rename 's/Marlin_(.+)_(.+)_(.+)_(.+)_(.+)_(.+).config/Marlin_$2_$4_$5_$6.config/' build/*
 fi
 
