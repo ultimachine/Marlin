@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".9"
+#define LULZBOT_FW_VERSION ".10"
 
 // Select options based on printer model
 
@@ -677,6 +677,7 @@
     #define LULZBOT_TEMP_SENSOR_1              5
     #define LULZBOT_AO_Hexagon
     #define LULZBOT_NO_MOVE_ON_TOOLHEAD_CHANGE
+    #define LULZBOT_DISTINCT_E_FACTORS
 #endif /* TOOLHEAD_Javelin_DualExtruderV2 || TOOLHEAD_Longfin_FlexyDually || TOOLHEAD_Yellowfin_DualExtruderV3 */
 
 #if defined(TOOLHEAD_Javelin_DualExtruderV2)
@@ -699,7 +700,6 @@
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ      48
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    true
-    #define LULZBOT_DISTINCT_E_FACTORS
 #endif /* TOOLHEAD_Longfin_FlexyDually */
 
 #if defined(TOOLHEAD_Yellowfin_DualExtruderV3)
