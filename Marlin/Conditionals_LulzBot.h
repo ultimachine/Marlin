@@ -39,12 +39,13 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".10"
+#define LULZBOT_FW_VERSION ".11"
 
 // Select options based on printer model
 
 #if defined(LULZBOT_Gladiola_Mini)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_AUTOLEVELING
@@ -54,8 +55,8 @@
 #endif
 
 #if defined(LULZBOT_Hibiscus_Mini2)
-    // Prototype Mini w/ Z-Belt
-    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini 2"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini 2"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_TWO_PIECE_BED
@@ -68,7 +69,8 @@
 #endif
 
 #if defined(LULZBOT_Gladiola_MiniLCD)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini LCD"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini LCD"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_LCD_DISPLAY
@@ -80,7 +82,8 @@
 
 #if defined(LULZBOT_Hibiscus_Mini2LCD)
     // Prototype Mini w/ Z-Belt
-    #define LULZBOT_CUSTOM_MACHINE_NAME "Mini 2 LCD"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini 2 LCD"
     #define LULZBOT_IS_MINI
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_MINI_BED
@@ -94,7 +97,8 @@
 #endif
 
 #if defined(LULZBOT_Juniper_TAZ5)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "TAZ 5"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot TAZ 5"
+    #define LULZBOT_LCD_MACHINE_NAME "TAZ 5"
     #define LULZBOT_IS_TAZ
     #define LULZBOT_TAZ_BED
     #define LULZBOT_USE_LCD_DISPLAY
@@ -103,7 +107,8 @@
 #endif
 
 #if defined(LULZBOT_Oliveoil_TAZ6)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "TAZ 6"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot TAZ 6"
+    #define LULZBOT_LCD_MACHINE_NAME "TAZ 6"
     #define LULZBOT_IS_TAZ
     #define LULZBOT_TAZ_BED
     #define LULZBOT_USE_LCD_DISPLAY
@@ -116,8 +121,8 @@
 #endif
 
 #if defined(LULZBOT_Quiver_TAZ7)
-    // Prototype TAZ w/ Z-Belt
-    #define LULZBOT_CUSTOM_MACHINE_NAME "TAZ 7"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot TAZ 7"
+    #define LULZBOT_LCD_MACHINE_NAME "TAZ 7"
     #define LULZBOT_IS_TAZ
     #define LULZBOT_TAZ_BED
     #define LULZBOT_TWO_PIECE_BED
@@ -140,7 +145,6 @@
 
 // Shared values
 #define LULZBOT_STRING_CONFIG_H_AUTHOR        "(Aleph Objects Inc., LulzBot Git Repository)"
-#define LULZBOT_BUFSIZE                       10
 #define LULZBOT_EEPROM_SETTINGS
 #define LULZBOT_EMERGENCY_PARSER
 #define LULZBOT_NOZZLE_PARK_FEATURE
@@ -1038,7 +1042,7 @@
     do { \
         u8g.drawBitmapP(0,0,CEILING(CUSTOM_BOOTSCREEN_BMPWIDTH, 8),CUSTOM_BOOTSCREEN_BMPHEIGHT,custom_start_bmp); \
         u8g.setFont(u8g_font_6x13); \
-        u8g.drawStr(61,17,LULZBOT_CUSTOM_MACHINE_NAME); \
+        u8g.drawStr(61,17,LULZBOT_LCD_MACHINE_NAME); \
         u8g.setFont(u8g_font_04b_03); \
         u8g.drawStr(62,28,LULZBOT_LCD_TOOLHEAD_NAME); \
         u8g.setFont(u8g_font_5x8); \
