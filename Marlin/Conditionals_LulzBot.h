@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".11"
+#define LULZBOT_FW_VERSION ".12"
 
 // Select options based on printer model
 
@@ -936,7 +936,7 @@
     #define LULZBOT_DEFAULT_ACCELERATION          2000
     #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION   2000
 
-    #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.43
+    #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.377
 
 #elif defined(LULZBOT_IS_TAZ)
     #define DIGIPOT_MOTOR_CURRENT_XY              175
@@ -950,7 +950,8 @@
     #if not defined(LULZBOT_DEFAULT_TRAVEL_ACCELERATION)
         #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION 500
     #endif
-    #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER -1.5
+
+    #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER -1.200
 #endif
 
 #if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
