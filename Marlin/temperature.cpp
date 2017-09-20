@@ -334,7 +334,7 @@ void PID_autotune(float temp, int extruder, int ncycles)
       SERIAL_PROTOCOLLNPGM("PID Autotune finished! Put the last Kp, Ki and Kd constants from above into Configuration.h");
       return;
     }
-    lcd_update();
+    lcd_update(); //commented out by Josh, 8/19/2015
   }
 }
 
@@ -562,7 +562,7 @@ void manage_heater()
 
   #if TEMP_SENSOR_BED != 0
   
-    #ifdef THERMAL_RUNAWAY_PROTECTION_PERIOD && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0
+    #ifdef THERMAL_RUNAWAY_PROTECTION_BED_PERIOD && THERMAL_RUNAWAY_PROTECTION_BED_PERIOD > 0
       thermal_runaway_protection(&thermal_runaway_bed_state_machine, &thermal_runaway_bed_timer, current_temperature_bed, target_temperature_bed, 9, THERMAL_RUNAWAY_PROTECTION_BED_PERIOD, THERMAL_RUNAWAY_PROTECTION_BED_HYSTERESIS);
     #endif
 
@@ -909,6 +909,7 @@ void tp_init()
   // Use timer0 for temperature measurement
   // Interleave temperature interrupt with millies interrupt
   OCR0B = 128;
+ // OCR0B = 512; //a test to decrease the temperature management, and thus LCD update, frequency; Josh, 8/19/2015
   TIMSK0 |= (1<<OCIE0B);  
   
   // Wait for temperature measurement to settle
@@ -1013,7 +1014,7 @@ void setWatch()
 #endif 
 }
 
-#if defined (THERMAL_RUNAWAY_PROTECTION_PERIOD) && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0
+#if (defined (THERMAL_RUNAWAY_PROTECTION_PERIOD) && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0) || (defined (THERMAL_RUNAWAY_PROTECTION_BED_PERIOD) && THERMAL_RUNAWAY_PROTECTION_BED_PERIOD > 0)
 void thermal_runaway_protection(int *state, unsigned long *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc)
 {
 /*
@@ -1066,7 +1067,7 @@ void thermal_runaway_protection(int *state, unsigned long *timer, float temperat
           disable_e1();
           disable_e2();
           manage_heater();
-          lcd_update();
+          lcd_update(); //commented out by Josh 8/19/2015
         }
       }
       break;
@@ -1537,7 +1538,7 @@ ISR(TIMER0_COMPB_vect)
         ADMUX = ((1 << REFS0) | (TEMP_0_PIN & 0x07));
         ADCSRA |= 1<<ADSC; // Start conversion
       #endif
-      lcd_buttons_update();
+      lcd_buttons_update(); //commented out by Josh, 8/19/2015
       temp_state = 1;
       break;
     case 1: // Measure TEMP_0
@@ -1559,7 +1560,7 @@ ISR(TIMER0_COMPB_vect)
         ADMUX = ((1 << REFS0) | (TEMP_BED_PIN & 0x07));
         ADCSRA |= 1<<ADSC; // Start conversion
       #endif
-      lcd_buttons_update();
+      lcd_buttons_update();  //commented out by Josh, 8/19/2015
       temp_state = 3;
       break;
     case 3: // Measure TEMP_BED
@@ -1578,7 +1579,7 @@ ISR(TIMER0_COMPB_vect)
         ADMUX = ((1 << REFS0) | (TEMP_1_PIN & 0x07));
         ADCSRA |= 1<<ADSC; // Start conversion
       #endif
-      lcd_buttons_update();
+      lcd_buttons_update();  //commented out by Josh, 8/19/2015
       temp_state = 5;
       break;
     case 5: // Measure TEMP_1
@@ -1597,7 +1598,7 @@ ISR(TIMER0_COMPB_vect)
         ADMUX = ((1 << REFS0) | (TEMP_2_PIN & 0x07));
         ADCSRA |= 1<<ADSC; // Start conversion
       #endif
-      lcd_buttons_update();
+    lcd_buttons_update();  //commented out by Josh, 8/19/2015
       temp_state = 7;
       break;
     case 7: // Measure TEMP_2
@@ -1617,7 +1618,7 @@ ISR(TIMER0_COMPB_vect)
       ADMUX = ((1 << REFS0) | (FILWIDTH_PIN & 0x07)); 
       ADCSRA |= 1<<ADSC; // Start conversion 
      #endif 
-     lcd_buttons_update();       
+    lcd_buttons_update();       //commented out by Josh, 8/19/2015
      temp_state = 9; 
      break; 
     case 9:   //Measure FILWIDTH 

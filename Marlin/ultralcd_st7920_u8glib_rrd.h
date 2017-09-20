@@ -19,7 +19,7 @@
 #define WIDTH 128
 #define HEIGHT 64
 
-#include <U8glib.h>
+#include "U8glib.h"
 
 static void ST7920_SWSPI_SND_8BIT(uint8_t val)
 {

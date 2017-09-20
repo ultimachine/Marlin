@@ -27,13 +27,13 @@
 #define EN_B (1<<BLEN_B)
 #define EN_C (1<<BLEN_C)
 #define encrot0 0
-#define encrot1 2
+#define encrot1 1 //was 2 - set by Josh on 7/28/2015
 #define encrot2 3
-#define encrot3 1
+#define encrot3 2 //was 1 - set by Josh on 7/28/2015
 #define LCD_CLICKED (buttons&EN_C)
 #endif
 
-#include <U8glib.h>
+#include "U8glib.h"
 #include "DOGMbitmaps.h"
 #include "dogm_font_data_marlin.h"
 #include "ultralcd.h"
@@ -124,19 +124,19 @@ static void lcd_implementation_init()
 			u8g.drawBitmapP(0,0,START_BMPBYTEWIDTH,START_BMPHEIGHT,start_bmp);
 			// Welcome message
 			u8g.setFont(u8g_font_6x10_marlin);
-			u8g.drawStr(62,10,"MARLIN"); 
+		//	u8g.drawStr(62,10,"MARLIN"); 
 			u8g.setFont(u8g_font_5x8);
-			u8g.drawStr(62,19,"V1.0.0 RC2-mm");
+		//	u8g.drawStr(62,19,"V1.0.2");
 			u8g.setFont(u8g_font_6x10_marlin);
-			u8g.drawStr(62,28,"by ErikZalm");
-			u8g.drawStr(62,41,"DOGM128 LCD");
+		//	u8g.drawStr(62,28,"by ErikZalm");
+		//	u8g.drawStr(62,41,"DOGM128 LCD");
 			u8g.setFont(u8g_font_5x8);
-			u8g.drawStr(62,48,"enhancements");
+		//	u8g.drawStr(62,48,"enhancements");
 			u8g.setFont(u8g_font_5x8);
-			u8g.drawStr(62,55,"by STB, MM");
-			u8g.drawStr(62,61,"uses u");
-			u8g.drawStr90(92,57,"8");
-			u8g.drawStr(100,61,"glib");
+		//	u8g.drawStr(62,55,"by STB, MM");
+		//	u8g.drawStr(62,61,"uses u");
+		//	u8g.drawStr90(92,57,"8");
+		//	u8g.drawStr(100,61,"glib");
 	   } while( u8g.nextPage() );
 }
 

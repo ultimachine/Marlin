@@ -314,6 +314,7 @@ FORCE_INLINE void trapezoid_generator_reset() {
 // It pops blocks from the block_buffer and executes them by pulsing the stepper pins appropriately.
 ISR(TIMER1_COMPA_vect)
 {
+ // WRITE(ISR_signal, HIGH);
   // If there is no current block, attempt to pop one from the buffer
   if (current_block == NULL) {
     // Anything in the buffer?
@@ -758,6 +759,8 @@ ISR(TIMER1_COMPA_vect)
       plan_discard_current_block();
     }
   }
+  if (TCNT1 >= OCR1A) TCNT1 = 175; //simple test recommended by jsc, tested by MG|Josh, to eliminate the mid-step-signal-set glitch;8/3/2015
+//WRITE(ISR_signal, LOW);
 }
 
 #ifdef ADVANCE
@@ -1027,7 +1030,7 @@ void st_synchronize()
     while( blocks_queued()) {
     manage_heater();
     manage_inactivity();
-    lcd_update();
+    // lcd_update(); //commented out by Josh, 8/20/2015
   }
 }
 

@@ -655,8 +655,10 @@
     #define LED_PIN            13
   #endif
 
-  #if MB(RAMPS_13_EFB) || MB(RAMPS_13_EFF) || MB(AZTEEG_X3) || MB(AZTEEG_X3_PRO)
+  #if MB(RAMPS_13_EFB) || MB(RAMPS_13_EFF) || MB(AZTEEG_X3)
     #define FAN_PIN            9 // (Sprinter config)
+  #elif MB(AZTEEG_X3_PRO)
+    #define FAN_PIN            11 // Last Heater Pin on board
   #else
     #define FAN_PIN            4 // IO pin. Buffer needed
   #endif
@@ -2361,7 +2363,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define X_STEP_PIN 37
 #define X_DIR_PIN 48
 #define X_MIN_PIN 12
-#define X_MAX_PIN 24
+#define X_MAX_PIN -1 //was 24 - set to -1 to disable it, so we can use pin 24 for the ISR signal pin
 #define X_ENABLE_PIN 29
 #define X_MS1_PIN 40
 #define X_MS2_PIN 41
@@ -2369,7 +2371,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define Y_STEP_PIN 36
 #define Y_DIR_PIN 49
 #define Y_MIN_PIN 11
-#define Y_MAX_PIN 23
+#define Y_MAX_PIN -1 //was 23 - set to -1 to disable it, so we can use pin 23 for the LCD signal pin (well, or ISR)
 #define Y_ENABLE_PIN 28
 #define Y_MS1_PIN 69
 #define Y_MS2_PIN 39
@@ -2425,7 +2427,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define KILL_PIN 80
   #ifdef NEWPANEL
    //arduino pin which triggers an piezzo beeper
-    #define BEEPER 79      // Beeper on AUX-4
+    #define BEEPER -1      // Beeper on AUX-4
     #define LCD_PINS_RS 70
     #define LCD_PINS_ENABLE 71
     #define LCD_PINS_D4 72
@@ -2451,7 +2453,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
     #define encrot3 1
   #else //old style panel with shift register
     //arduino pin witch triggers an piezzo beeper
-    #define BEEPER 33    No Beeper added
+    #define BEEPER -1    No Beeper added
     //buttons are attached to a shift register
     // Not wired this yet
     // #define SHIFT_CLK 38
@@ -2484,6 +2486,9 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
     #define BLEN_A 0
   #endif
 #endif //ULTRA_LCD
+
+#define ISR_signal 23 // set pin 24 on RAMBo (X MAX signal pin on the board itself) to "ISR_signal" for signaling the state of the ISR
+#define LCD_signal 24 //use the XMAX signal pin for the LCD update signal, YMAX signal pin for ISR_signal
 
 #ifdef FILAMENT_SENSOR
   //Filip added pin for Filament sensor analog input 

@@ -38,7 +38,7 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 // wrong data being written to the variables.
 // ALSO:  always make sure the variables in the Store and retrieve sections are in the same order.
 
-#define EEPROM_VERSION "V13"
+#define EEPROM_VERSION "V14" //updated to V14, so all my tests values actually make it into EEPROM - 1/12/2016 Josh
 
 #ifdef EEPROM_SETTINGS
 void Config_StoreSettings() 

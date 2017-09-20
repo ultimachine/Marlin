@@ -61,7 +61,7 @@
 #include <SPI.h>
 #endif
 
-#define VERSION_STRING  "1.0.0"
+#define VERSION_STRING  "1.0.2"
 
 // look here for descriptions of G-codes: http://linuxcnc.org/handbook/gcode/g-code.html
 // http://objects.reprap.org/wiki/Mendel_User_Manual:_RepRapGCodes
@@ -593,7 +593,7 @@ void setup()
   {
     fromsd[i] = false;
   }
-
+  analogWrite(6,255); //commented out on 1/12/2016 by Josh, to test the automatic fans off below 50*C functionality of firmware
   // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
   Config_RetrieveSettings();
 
@@ -605,7 +605,7 @@ void setup()
   servo_init();
   
 
-  lcd_init();
+  lcd_init(); //commented out by Josh, 8/20/2015
   _delay_ms(1000);	// wait 1sec to display the splash screen
 
   #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
@@ -667,7 +667,7 @@ void loop()
   manage_heater();
   manage_inactivity();
   checkHitEndstops();
-  lcd_update();
+  lcd_update();  //commented out by Josh, 8/20/2015
 }
 
 void get_command()
@@ -2592,6 +2592,11 @@ Sigma_Exit:
       case 107: //M107 Fan Off
         fanSpeed = 0;
         break;
+         case 108: //M108 extruder/electronics case Fan On
+        if (code_seen('S')){
+            analogWrite(6,code_value());
+        }
+        break; //commented out M108 to prevent trying to change the fan speed live, while the automatic fans off under 50*C test is implemented - 1/12/2016 Josh
     #endif //FAN_PIN
     #ifdef BARICUDA
       // PWM for HEATER_1_PIN

@@ -1,4 +1,19 @@
 /* -*- c++ -*- */
+/*
+
+2/18/2016
+
+Firmware for M2 hardware revision E - Z Max endstop, four corner leveling.
+Geeetech RRDSC LCD enabled - will run and perform fine with LCD not connected.
+Electronics case and Extruder fans will turn on briefly when the printer powers up, then turn off and remain off
+as long as the Extruder is below 50°C.
+
+For use with Arduino IDE version 1.5.5 .
+
+Changes: 2/18/2016 v100 - first full version, locking in all changes up to this point.
+
+*/
+
 
 /*
     Reprap firmware based on Sprinter and grbl.
@@ -41,7 +56,7 @@
     #include <Wire.h>
     #include <LiquidTWI2.h>
   #elif defined(DOGLCD)
-    #include <U8glib.h> // library for graphics LCD by Oli Kraus (https://code.google.com/p/u8glib/)
+    #include "U8glib.h" // library for graphics LCD by Oli Kraus (https://code.google.com/p/u8glib/)
   #else
     #include <LiquidCrystal.h> // library for character LCD
   #endif

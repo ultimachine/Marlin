@@ -1345,6 +1345,7 @@ void lcd_setcontrast(uint8_t value)
 /* Warning: This function is called from interrupt context */
 void lcd_buttons_update()
 {
+	//WRITE(LCD_signal, HIGH); //added by Josh to test the LCD button update frequency
 #ifdef NEWPANEL
     uint8_t newbutton=0;
     if(READ(BTN_EN1)==0)  newbutton|=EN_A;
@@ -1422,6 +1423,7 @@ void lcd_buttons_update()
         }
     }
     lastEncoderBits = enc;
+	//WRITE(LCD_signal, LOW); //added by Josh to test the LCD button update frequency
 }
 
 bool lcd_detected(void)
