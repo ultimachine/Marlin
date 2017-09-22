@@ -924,13 +924,13 @@
 #if ENABLED(HAVE_TMC2130)
 
   // CHOOSE YOUR MOTORS HERE, THIS IS MANDATORY
-  #define X_IS_TMC2130
+  //#define X_IS_TMC2130
   //#define X2_IS_TMC2130
-  #define Y_IS_TMC2130
+  //#define Y_IS_TMC2130
   //#define Y2_IS_TMC2130
-  #define Z_IS_TMC2130
+  //#define Z_IS_TMC2130
   //#define Z2_IS_TMC2130
-  #define E0_IS_TMC2130
+  //#define E0_IS_TMC2130
   //#define E1_IS_TMC2130
   //#define E2_IS_TMC2130
   //#define E3_IS_TMC2130
@@ -940,7 +940,7 @@
    * Stepper driver settings
    */
 
-  #define R_SENSE           0.22  // R_sense resistor for SilentStepStick2130
+  #define R_SENSE           0.11  // R_sense resistor for SilentStepStick2130
   #define HOLD_MULTIPLIER    0.5  // Scales down the holding current from run current
   #define INTERPOLATE          1  // Interpolate X/Y/Z_MICROSTEPS to 256
 
@@ -962,8 +962,8 @@
   //#define Z2_CURRENT      1000
   //#define Z2_MICROSTEPS     16
 
-  #define E0_CURRENT        1000
-  #define E0_MICROSTEPS       16
+  //#define E0_CURRENT      1000
+  //#define E0_MICROSTEPS     16
 
   //#define E1_CURRENT      1000
   //#define E1_MICROSTEPS     16
@@ -1010,7 +1010,7 @@
    * STEALTHCHOP needs to be enabled.
    * M913 X/Y/Z/E to live tune the setting
    */
-  #define HYBRID_THRESHOLD
+  //#define HYBRID_THRESHOLD
 
   #define X_HYBRID_THRESHOLD     100  // [mm/s]
   #define X2_HYBRID_THRESHOLD    100

@@ -53,21 +53,30 @@
   #define E0_MICROSTEPS       16
 #endif
 
-// TMC2130 Diag Pins (currently just for reference)
-#define X_DIAG_PIN      64
-#define Y_DIAG_PIN      69
-#define Z_DIAG_PIN      68
-#define E0_DIAG_PIN     65
+//
+// TMC2130 Diag pins reference
+//
+// X_DIAG_PIN      64
+// Y_DIAG_PIN      69
+// Z_DIAG_PIN      68
+// E0_DIAG_PIN     65
+
+//
+// Einsy-Rambo connectors reference
+// X-MIN          12
+// Y-MIN          11
+// Z-PROBE        10
+//
 
 //
 // Limit Switches
 //
-#define X_MIN_PIN          64 //12
-#define X_MAX_PIN          -1
-#define Y_MIN_PIN          69 //11
-#define Y_MAX_PIN          -1
-#define Z_MIN_PIN          68 //10
-#define Z_MAX_PIN          -1
+#define X_MIN_PIN          64 //Diag pin for sensorless homing
+#define X_MAX_PIN          64 //Diag pin for sensorless homing
+#define Y_MIN_PIN          69 //Diag pin for sensorless homing
+#define Y_MAX_PIN          69 //Diag pin for sensorless homing
+#define Z_MIN_PIN          10 //Z-PROBE connector
+#define Z_MAX_PIN          11 //Temporary connection to Y-MIN connector until SENSORLESS HOMING is implemented for Z axis
 
 //
 // Z Probe (when not Z_MIN_PIN)
