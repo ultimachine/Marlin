@@ -348,14 +348,16 @@
 // @section homing
 
 //homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
-#define X_HOME_BUMP_MM 5
-#define Y_HOME_BUMP_MM 5
+#define X_HOME_BUMP_MM LULZBOT_X_HOME_BUMP_MM
+#define Y_HOME_BUMP_MM LULZBOT_Y_HOME_BUMP_MM
 #define Z_HOME_BUMP_MM 2
 #define HOMING_BUMP_DIVISOR {2, 2, 4}  // Re-Bump Speed Divisor (Divides the Homing Feedrate)
 #define QUICK_HOME LULZBOT_QUICKHOME  //if this is defined, if both x and y are to be homed, a diagonal move will be performed initially.
 
 // When G28 is called, this option will make Y home before X
-//#define HOME_Y_BEFORE_X
+#if defined(LULZBOT_HOME_Y_BEFORE_X)
+#define HOME_Y_BEFORE_X
+#endif
 
 // @section machine
 
@@ -950,13 +952,13 @@
   #define HOLD_MULTIPLIER    0.5  // Scales down the holding current from run current
   #define INTERPOLATE          1  // Interpolate X/Y/Z_MICROSTEPS to 256
 
-  #define X_CURRENT         1000  // rms current in mA. Multiply by 1.41 for peak current.
+  #define X_CURRENT           1000  // rms current in mA. Multiply by 1.41 for peak current.
   #define X_MICROSTEPS        16  // 0..256
 
-  #define Y_CURRENT         1000
+  #define Y_CURRENT           1000
   #define Y_MICROSTEPS        16
 
-  #define Z_CURRENT         1000
+  #define Z_CURRENT           1000
   #define Z_MICROSTEPS        16
 
   //#define X2_CURRENT      1000
@@ -968,8 +970,8 @@
   //#define Z2_CURRENT      1000
   //#define Z2_MICROSTEPS     16
 
-  //#define E0_CURRENT      1000
-  //#define E0_MICROSTEPS     16
+  #define E0_CURRENT          1000
+  #define E0_MICROSTEPS       16
 
   //#define E1_CURRENT      1000
   //#define E1_MICROSTEPS     16
@@ -1042,11 +1044,13 @@
    * It is advised to set X/Y_HOME_BUMP_MM to 0.
    * M914 X/Y to live tune the setting
    */
-  //#define SENSORLESS_HOMING
+  #if defined(LULZBOT_SENSORLESS_HOMING)
+  #define SENSORLESS_HOMING
+  #endif
 
   #if ENABLED(SENSORLESS_HOMING)
-    #define X_HOMING_SENSITIVITY  19
-    #define Y_HOMING_SENSITIVITY  19
+    #define X_HOMING_SENSITIVITY  1
+    #define Y_HOMING_SENSITIVITY  1
   #endif
 
   /**

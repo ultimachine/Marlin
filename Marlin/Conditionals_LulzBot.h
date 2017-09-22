@@ -18,6 +18,7 @@
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
     !defined(LULZBOT_Hibiscus_Mini2) && \
+    !defined(LULZBOT_Gladiola_MiniEinsy) && \
     !defined(LULZBOT_Gladiola_MiniLCD) && \
     !defined(LULZBOT_Hibiscus_Mini2LCD) && \
     !defined(LULZBOT_Juniper_TAZ5) && \
@@ -39,7 +40,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".12"
+#define LULZBOT_FW_VERSION ".13"
 
 // Select options based on printer model
 
@@ -66,6 +67,19 @@
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
+#endif
+
+#if defined(LULZBOT_Gladiola_MiniEinsy)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy"
+    #define LULZBOT_IS_MINI
+    //#define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_BAUDRATE 115200
+    #define LULZBOT_UUID "4479bf92-7e47-4c2c-be95-64dd01bd413b"
 #endif
 
 #if defined(LULZBOT_Gladiola_MiniLCD)
@@ -237,7 +251,13 @@
     #undef LULZBOT_USE_HOME_BUTTON
 #endif
 
-#if defined(LULZBOT_IS_MINI)
+#if defined(LULZBOT_Gladiola_MiniEinsy)
+    // Experimental Mini retrofitted with EinsyRambo from UltiMachine
+    #define LULZBOT_MOTHERBOARD                   BOARD_EINSYRAMBO
+    #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN  // Digital pin 6
+    #define LULZBOT_HAVE_TMC2130
+
+#elif defined(LULZBOT_IS_MINI)
     #define LULZBOT_MOTHERBOARD                   BOARD_MINIRAMBO
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN  // Digital pin 6
 
@@ -260,52 +280,16 @@
 #endif
 
 #define LULZBOT_USE_CONTROLLER_FAN
-#define LULZBOT_USE_XMIN_PLUG
-#define LULZBOT_USE_YMIN_PLUG
-#define LULZBOT_USE_ZMIN_PLUG
 
-// Z-Max Endstops were introduced on the Mini and TAZ 6
-#if defined(LULZBOT_USE_MAX_ENDSTOPS)
-    #define LULZBOT_USE_XMAX_PLUG
-    #define LULZBOT_USE_YMAX_PLUG
-    #define LULZBOT_USE_ZMAX_PLUG
-#endif
-
-#define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
-#define LULZBOT_ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
-
-// Workaround for bug in Marlin 1.1.5 where motion is stopped a X or Y = 0
-#define LULZBOT_MIN_SOFTWARE_ENDSTOPS_DISABLED
-
-// The RAMBO does not support interrupts on all pins
-// so leave the ENDSTOP_INTERRUPTS_FEATURE disabled
-
-//#define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
-
-/* Endstop settings are determined by printer model, except for the
- * X_MAX which varies by toolhead. */
-
-#if defined(LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS)
-    // TAZ 6+ and Huerfano Mini onwards use normally closed endstops.
-    // This is safer, as a loose connector or broken wire will halt
-    // the axis
-    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       false
-    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       false
-    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       false
-    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       false
+#if defined(LULZBOT_Gladiola_MiniEinsy)
+    #define LULZBOT_INVERT_X_DIR                  true
+    #define LULZBOT_INVERT_Y_DIR                  false
+    #define LULZBOT_INVERT_Z_DIR                  true
 #else
-    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
-    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
-    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
-    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_INVERT_X_DIR                  false
+    #define LULZBOT_INVERT_Y_DIR                  true
+    #define LULZBOT_INVERT_Z_DIR                  false
 #endif
-
-#define LULZBOT_Z_MIN_ENDSTOP_INVERTING           true
-#define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING     true
-
-#define LULZBOT_INVERT_X_DIR                      false
-#define LULZBOT_INVERT_Y_DIR                      true
-#define LULZBOT_INVERT_Z_DIR                      false
 #define LULZBOT_INVERT_E0_DIR                     true
 #define LULZBOT_INVERT_E1_DIR                     true
 
@@ -431,7 +415,7 @@
 /* On the Finch Aero toolhead, we need to disable the extruder
  * motor as it causes noise on the probe line on Foxglove Minis.
  */
-#if defined(LULZBOT_IS_MINI) && defined(TOOLHEAD_Finch_Aerostruder)
+#if (defined(LULZBOT_IS_MINI) && defined(TOOLHEAD_Finch_Aerostruder)) || defined(LULZBOT_Gladiola_MiniEinsy)
     #define LULZBOT_EXTRUDER_MOTOR_SHUTOFF_ON_PROBE(probing) \
         if(probing) { \
             disable_E0(); \
@@ -452,7 +436,7 @@
  *   Z_MIN_PIN corresponds to the Z-Home push button.
  *   Z_MIN_PROBE_PIN are the bed washers.
  */
-#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
+#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED) && !defined(LULZBOT_Gladiola_MiniEinsy)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
         if(enable) { \
             /* Set as inputs with pull-up resistor */ \
@@ -486,6 +470,7 @@
             endstops.enable_z_probe(false); \
         } \
     }
+    #error Foo
 #else
     #define LULZBOT_ENABLE_PROBE_PINS(enable)
 #endif
@@ -559,7 +544,7 @@
     #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ       0
-    #define PWM_MOTOR_CURRENT_E               1250
+    #define LULZBOT_MOTOR_CURRENT_E               1250
 #endif /* TOOLHEAD_Gladiola_SingleExtruder || TOOLHEAD_Albatross_Flexystruder || TOOLHEAD_Finch_Aerostruder */
 
 #if defined(TOOLHEAD_Gladiola_SingleExtruder)
@@ -792,7 +777,7 @@
     #define LULZBOT_Y_BED_SIZE                 280
 #endif
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
+#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Gladiola_MiniEinsy)
     #define LULZBOT_STANDARD_Z_MIN_POS          -2
     #define LULZBOT_STANDARD_Z_MAX_POS         159
 
@@ -819,6 +804,95 @@
 #define LULZBOT_Y_MIN_POS (LULZBOT_STANDARD_Y_MIN_POS - LULZBOT_TOOLHEAD_Y_MIN_ADJ)
 #define LULZBOT_Z_MAX_POS (LULZBOT_STANDARD_Z_MAX_POS - LULZBOT_TOOLHEAD_Z_MAX_ADJ)
 #define LULZBOT_Z_MIN_POS (LULZBOT_STANDARD_Z_MIN_POS - LULZBOT_TOOLHEAD_Z_MIN_ADJ)
+
+/**************************** ENDSTOP CONFIGURATION ****************************/
+
+#if defined(LULZBOT_SENSORLESS_HOMING)
+    #define LULZBOT_USE_XMIN_PLUG // Uses Stallguard
+    //#define LULZBOT_USE_XMAX_PLUG // Uses Stallguard
+    //#define LULZBOT_USE_YMIN_PLUG // Uses Stallguard
+    #define LULZBOT_USE_YMAX_PLUG // Uses Stallguard
+    #define LULZBOT_USE_ZMIN_PLUG
+    #define LULZBOT_USE_ZMAX_PLUG
+#else
+    #define LULZBOT_USE_XMIN_PLUG
+    #define LULZBOT_USE_YMIN_PLUG
+    #define LULZBOT_USE_ZMIN_PLUG
+#endif
+
+// Z-Max Endstops were introduced on the Mini and TAZ 6
+#if defined(LULZBOT_USE_MAX_ENDSTOPS)
+    #define LULZBOT_USE_XMAX_PLUG
+    #define LULZBOT_USE_YMAX_PLUG
+    #define LULZBOT_USE_ZMAX_PLUG
+#endif
+
+#define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
+#define LULZBOT_ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
+
+// Workaround for bug in Marlin 1.1.5 where motion is stopped a X or Y = 0
+#define LULZBOT_MIN_SOFTWARE_ENDSTOPS_DISABLED
+
+// The RAMBO does not support interrupts on all pins
+// so leave the ENDSTOP_INTERRUPTS_FEATURE disabled
+
+//#define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
+
+/* Endstop settings are determined by printer model, except for the
+ * X_MAX which varies by toolhead. */
+
+#if defined(LULZBOT_SENSORLESS_HOMING)
+    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       false
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING       false
+    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       false
+    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       false
+
+    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING true
+
+    // The following does not seem to work when both
+    // MAX and MIN are using Stallguard:
+    //#define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
+
+    // Fix for issue where repeated endstop reports cause Cura
+    // to fail to connect.
+    #define LULZBOT_SUPPRESS_CHATTY_ENDSTOPS
+
+    // For some reason, Quickhome is not reliable with sensorless homing
+    #undef LULZBOT_QUICKHOME
+
+#elif defined(LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS)
+    // TAZ 6+ and Huerfano Mini onwards use normally closed endstops.
+    // This is safer, as a loose connector or broken wire will halt
+    // the axis
+    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       false
+    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       false
+    #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING true
+
+    // LULZBOT_X_MAX_ENDSTOP_INVERTING varies by toolhead
+    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       false
+    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       false
+#else
+    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING true
+
+    // LULZBOT_X_MAX_ENDSTOP_INVERTING varies by toolhead
+    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
+#endif
+
+#if defined(LULZBOT_SENSORLESS_HOMING)
+    #define LULZBOT_X_HOME_BUMP_MM                0
+    #define LULZBOT_Y_HOME_BUMP_MM                0
+
+#else
+    #define LULZBOT_X_HOME_BUMP_MM                5
+    #define LULZBOT_Y_HOME_BUMP_MM                5
+#endif
 
 /**************************** ADVANCED PAUSE FEATURE ****************************/
 
@@ -924,7 +998,7 @@
 // by printer model (steps and motor currents for E vary by toolhead).
 
 #if defined(LULZBOT_IS_MINI)
-    #define PWM_MOTOR_CURRENT_XY                  1300
+    #define LULZBOT_MOTOR_CURRENT_XY                  1300
     #define LULZBOT_XY_STEPS                      100.5
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 8, 40}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
@@ -954,12 +1028,12 @@
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER -1.200
 #endif
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
-    #define PWM_MOTOR_CURRENT_Z                   1630
+#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Gladiola_MiniEinsy)
+    #define LULZBOT_MOTOR_CURRENT_Z                   1630
     #define LULZBOT_Z_STEPS                       1600
 
 #elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
-    #define PWM_MOTOR_CURRENT_Z                   1000
+    #define LULZBOT_MOTOR_CURRENT_Z                   1000
     // Prototype Z-Belt Mini
     #define Z_FULL_STEPS_PER_ROTATION             200
     #define Z_MICROSTEPS                          16
@@ -991,11 +1065,11 @@
     #define LULZBOT_Z_STEPS                       1790.08264463
 #endif
 
-#if defined(PWM_MOTOR_CURRENT_XY) && defined(PWM_MOTOR_CURRENT_Z) && defined(PWM_MOTOR_CURRENT_E)
+#if defined(LULZBOT_MOTOR_CURRENT_XY) && defined(LULZBOT_MOTOR_CURRENT_Z) && defined(LULZBOT_MOTOR_CURRENT_E)
     #define LULZBOT_PWM_MOTOR_CURRENT { \
-        PWM_MOTOR_CURRENT_XY, \
-        PWM_MOTOR_CURRENT_Z, \
-        PWM_MOTOR_CURRENT_E \
+        LULZBOT_MOTOR_CURRENT_XY, \
+        LULZBOT_MOTOR_CURRENT_Z, \
+        LULZBOT_MOTOR_CURRENT_E \
     } // Values in milliamps
 
 #elif defined(DIGIPOT_MOTOR_CURRENT_XY) && defined(DIGIPOT_MOTOR_CURRENT_Z) && defined(DIGIPOT_MOTOR_CURRENT_E)

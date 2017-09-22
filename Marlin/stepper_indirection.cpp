@@ -126,7 +126,6 @@
 // TMC2130 Driver objects and inits
 //
 #if ENABLED(HAVE_TMC2130)
-
   #include <SPI.h>
   #include <TMC2130Stepper.h>
   #include "enum.h"

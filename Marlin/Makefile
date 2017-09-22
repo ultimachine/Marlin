@@ -89,6 +89,9 @@ U8GLIB             ?= 1
 #	  https://www.stix.id.au/wiki/AVR_relocation_truncations_workaround
 RELOC_WORKAROUND   ?= 1
 
+# this defines whether to include the Trinamic TMC2630Stepper
+TMC2630            ?= 1
+
 ############
 # The following added by AlephObjects for adjusting the name of the output
 # hex file
@@ -293,6 +296,10 @@ ifeq ($(U8GLIB), 1)
 VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib
 VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib/utility
 endif
+ifeq ($(TMC2630), 1)
+VPATH += $(ARDUINO_INSTALL_DIR)/libraries/TMC2130Stepper
+VPATH += $(ARDUINO_INSTALL_DIR)/libraries/TMC2130Stepper/source
+endif
 
 ifeq ($(HARDWARE_VARIANT), arduino)
 HARDWARE_SUB_VARIANT ?= mega
@@ -319,7 +326,7 @@ CXXSRC = WMath.cpp WString.cpp Print.cpp Marlin_main.cpp \
 	temperature.cpp cardreader.cpp configuration_store.cpp \
 	watchdog.cpp SPI.cpp servo.cpp Tone.cpp ultralcd.cpp digipot_mcp4451.cpp \
 	dac_mcp4728.cpp vector_3.cpp least_squares_fit.cpp endstops.cpp stopwatch.cpp utility.cpp \
-	printcounter.cpp nozzle.cpp serial.cpp gcode.cpp Max7219_Debug_LEDs.cpp
+	printcounter.cpp nozzle.cpp serial.cpp gcode.cpp Max7219_Debug_LEDs.cpp stepper_indirection.cpp
 ifeq ($(NEOPIXEL), 1)
 CXXSRC += Adafruit_NeoPixel.cpp
 endif
@@ -342,6 +349,10 @@ endif
 ifeq ($(RELOC_WORKAROUND), 1)
 LD_PREFIX=-nodefaultlibs
 LD_SUFFIX=-lm -lgcc -lc -lgcc
+endif
+
+ifeq ($(TMC2630), 1)
+CXXSRC += TMC2130Stepper.cpp TMC2130Stepper_CHOPCONF.cpp TMC2130Stepper_COOLCONF.cpp TMC2130Stepper_DRV_STATUS.cpp TMC2130Stepper_GCONF.cpp TMC2130Stepper_IHOLD_IRUN.cpp TMC2130Stepper_PWMCONF.cpp
 endif
 
 #Check for Arduino 1.0.0 or higher and use the correct source files for that version
