@@ -934,7 +934,7 @@
     #define PWM_MOTOR_CURRENT_XY                  1300
     #define LULZBOT_XY_STEPS                      100.5
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 8, 40}      // (mm/sec)
-    #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
+    #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,1000}
 
     #define LULZBOT_DEFAULT_XJERK                 12.0
     #define LULZBOT_DEFAULT_YJERK                 12.0
