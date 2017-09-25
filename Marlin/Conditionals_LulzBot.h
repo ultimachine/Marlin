@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".12"
+#define LULZBOT_FW_VERSION ".13"
 
 // Select options based on printer model
 
@@ -501,6 +501,13 @@
 #define LULZBOT_FAN_KICKSTART_TIME          100
 #define LULZBOT_FAN_MIN_PWM                  70
 #define LULZBOT_HOST_KEEPALIVE_FEATURE_DISABLED
+
+// For the Pelonis C4010L24BPLB1b-7 fan, we need a relative low
+// PWM frequency of about 122Hz PWM for the fan to be speed
+// controlled, this can only be accomplished via software PWM
+// with a scaling factor of four.
+#define LULZBOT_FAN_SOFT_PWM
+#define LULZBOT_SOFT_PWM_SCALE 4
 
 #if defined(LULZBOT_USE_LCD_DISPLAY)
     #define LULZBOT_REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
