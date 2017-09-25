@@ -541,6 +541,7 @@
     #define LULZBOT_HIDE_PID_CONFIG_IN_LCD
     #define LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD
     #define LULZBOT_SCROLL_LONG_FILE_NAMES
+    #define LULZBOT_REORDERED_MENUS
 #endif
 
 /*********************************************** COMMON TOOLHEADS PARAMETERS *****************************/

@@ -889,22 +889,120 @@ void kill_screen(const char* lcd_msg) {
 
   /**
    *
-   * Extra menu item to show LulzBot firmware version
-   *
-   */
-  #if defined(LULZBOT_SHOW_CUSTOM_BOOTSCREEN)
-  void lcd_show_custom_bootscreen() {
-    if (lcd_clicked) { defer_return_to_status = false; return lcd_goto_previous_menu(); }
-    lcd_custom_bootscreen();
-  }
-  #endif
-
-  /**
-   *
    * "Main" menu
    *
    */
 
+#if defined(LULZBOT_REORDERED_MENUS)
+  void lcd_configuration_menu();
+  void lcd_movement_menu();
+  void lcd_enqueue_filament_change();
+  void lcd_show_custom_bootscreen();
+  static void lcd_store_settings();
+  static void lcd_load_settings();
+
+  void lcd_main_menu() {
+    #if ENABLED(SDSUPPORT)
+      /* If we are printing, the menu will only show options related to pausing/stopping */
+      if (card.cardOK && card.isFileOpen()) {
+        START_MENU();
+        MENU_BACK(MSG_WATCH);
+        if (card.sdprinting)
+          MENU_ITEM(function, MSG_PAUSE_PRINT, lcd_sdcard_pause);
+        else
+          MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_resume);
+        MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_stop);
+        if (!thermalManager.tooColdToExtrude(active_extruder)) {
+          MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_enqueue_filament_change);
+        }
+        END_MENU();
+        return;
+      }
+    #endif // SDSUPPORT
+
+    START_MENU();
+    MENU_BACK(MSG_WATCH);
+
+    if (!thermalManager.tooColdToExtrude(active_extruder)) {
+      MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_enqueue_filament_change);
+    }
+
+    MENU_ITEM(submenu, _UxGT("Movement"), lcd_movement_menu);
+    MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
+    MENU_ITEM(submenu, _UxGT("Configuration"), lcd_configuration_menu);
+
+    #if ENABLED(SDSUPPORT)
+      if (card.cardOK) {
+        if(!card.isFileOpen()) {
+          MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
+        }
+      } else {
+        MENU_ITEM(submenu, MSG_NO_CARD, lcd_sdcard_menu);
+        #if !PIN_EXISTS(SD_DETECT)
+          MENU_ITEM(gcode, MSG_INIT_SDCARD, PSTR("M21")); // Manually initialize the SD-card via user interface
+        #endif
+      }
+    #endif // SDSUPPORT
+
+    MENU_ITEM(submenu, MSG_INFO_MENU, lcd_show_custom_bootscreen);
+
+    #if defined(LULZBOT_PRINTERCOUNTER)
+    MENU_ITEM(submenu, MSG_INFO_STATS_MENU, lcd_info_stats_menu);          // Printer Statistics >
+    #endif
+
+    END_MENU();
+  }
+
+
+
+  /**
+   *
+   * LulzBot "Movement" submenu
+   *
+   */
+
+  void lcd_movement_menu() {
+    START_MENU();
+    MENU_BACK(MSG_MAIN);
+    MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
+    if (!thermalManager.tooColdToExtrude(active_extruder)) {
+      MENU_ITEM(gcode, MSG_BED_LEVELING, PSTR(LULZBOT_MENU_BED_LEVELING_GCODE));
+    }
+    MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
+    MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);
+    END_MENU();
+  }
+
+  /**
+   *
+   * LulzBot "Configuration" submenu
+   *
+   */
+
+  void lcd_configuration_menu() {
+    START_MENU();
+    MENU_BACK(MSG_MAIN);
+    MENU_ITEM(submenu, _UxGT("Advanced Settings"), lcd_control_motion_menu);
+
+    #if ENABLED(EEPROM_SETTINGS)
+      MENU_ITEM(function, MSG_STORE_EEPROM, lcd_store_settings);
+      MENU_ITEM(function, MSG_LOAD_EEPROM, lcd_load_settings);
+      MENU_ITEM(gcode, MSG_RESTORE_FAILSAFE, PSTR("M502\nM500")); // TODO: Add "Are You Sure?" step
+    #endif
+
+    END_MENU();
+  }
+
+  /**
+   *
+   * Extra menu item to show LulzBot firmware version
+   *
+   */
+  void lcd_show_custom_bootscreen() {
+    if (lcd_clicked) { defer_return_to_status = false; return lcd_goto_previous_menu(); }
+    lcd_custom_bootscreen();
+  }
+#else
   void lcd_main_menu() {
     START_MENU();
     MENU_BACK(MSG_WATCH);
@@ -938,12 +1036,6 @@ void kill_screen(const char* lcd_msg) {
       MENU_ITEM(submenu, MSG_PREPARE, lcd_prepare_menu);
     }
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
-    #if defined(LULZBOT_SHOW_CUSTOM_BOOTSCREEN)
-    MENU_ITEM(submenu, MSG_INFO_MENU, lcd_show_custom_bootscreen);
-    #endif
-    #if defined(LULZBOT_PRINTERCOUNTER)
-    MENU_ITEM(submenu, MSG_INFO_STATS_MENU, lcd_info_stats_menu);          // Printer Statistics >
-    #endif
 
     #if ENABLED(SDSUPPORT)
       if (card.cardOK) {
@@ -975,7 +1067,7 @@ void kill_screen(const char* lcd_msg) {
 
     END_MENU();
   }
-
+#endif // LULZBOT_REORDERED_MENUS
   /**
    *
    * "Tune" submenu items
@@ -2896,7 +2988,12 @@ void kill_screen(const char* lcd_msg) {
 
   void lcd_move_menu() {
     START_MENU();
+
+    #if defined(LULZBOT_REORDERED_MENUS)
+    MENU_BACK(_UxGT("Movement"));
+    #else
     MENU_BACK(MSG_PREPARE);
+    #endif
 
     if (_MOVE_XYZ_ALLOWED) {
       if (_MOVE_XY_ALLOWED) {
@@ -3082,7 +3179,11 @@ void kill_screen(const char* lcd_msg) {
     //
     // ^ Control
     //
+    #if defined(LULZBOT_REORDERED_MENUS)
+    MENU_BACK(MSG_MAIN);
+    #else
     MENU_BACK(MSG_CONTROL);
+    #endif
 
     //
     // Nozzle:
@@ -3192,6 +3293,9 @@ void kill_screen(const char* lcd_msg) {
 
     #endif // PIDTEMP
 
+    #if defined(LULZBOT_REORDERED_MENUS)
+    MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
+    #else
     //
     // Preheat Material 1 conf
     //
@@ -3201,6 +3305,8 @@ void kill_screen(const char* lcd_msg) {
     // Preheat Material 2 conf
     //
     MENU_ITEM(submenu, MSG_PREHEAT_2_SETTINGS, lcd_control_temperature_preheat_material2_settings_menu);
+    #endif // LULZBOT_REORDERED_MENUS
+
     END_MENU();
   }
 
@@ -3423,7 +3529,12 @@ void kill_screen(const char* lcd_msg) {
 
   void lcd_control_motion_menu() {
     START_MENU();
+
+    #if defined(LULZBOT_REORDERED_MENUS)
+    MENU_BACK(_UxGT("Advanced Settings"));
+    #else
     MENU_BACK(MSG_CONTROL);
+    #endif
 
     #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
       MENU_ITEM(submenu, MSG_ZPROBE_ZOFFSET, lcd_babystep_zoffset);
