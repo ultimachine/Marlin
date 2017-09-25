@@ -546,11 +546,6 @@
 /*********************************************** COMMON TOOLHEADS PARAMETERS *****************************/
 
 #define LULZBOT_DEFAULT_EJERK                10.0
-#if defined(LULZBOT_IS_TAZ)
-    #define LULZBOT_E_STEPS                  830
-#elif defined(LULZBOT_IS_MINI)
-    #define LULZBOT_E_STEPS                  833
-#endif
 
 /*********************************************** MINI TOOLHEADS *******************************************/
 
@@ -575,6 +570,7 @@
     #define LULZBOT_M115_EXTRUDER_TYPE             "SingleExtruder"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
     #define LULZBOT_AO_Hexagon
+    #define LULZBOT_E_STEPS                        833
 #endif /* TOOLHEAD_Gladiola_SingleExtruder */
 
 #if defined(TOOLHEAD_Albatross_Flexystruder)
@@ -583,6 +579,7 @@
     #define LULZBOT_M115_EXTRUDER_TYPE             "Flexystruder"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
     #define LULZBOT_AO_Hexagon
+        #define LULZBOT_E_STEPS                    833
 #endif /* TOOLHEAD_Albatross_Flexystruder */
 
 #if defined(TOOLHEAD_Finch_Aerostruder)
@@ -592,6 +589,7 @@
     #define LULZBOT_M115_EXTRUDER_TYPE             "Aerostruder"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
     #define LULZBOT_E3D_Titan_Aero
+    #define LULZBOT_E_STEPS                        420
 #endif /* TOOLHEAD_Finch_Aerostruder */
 
 /*********************************************** TAZ TOOLHEADS *******************************************/
@@ -617,6 +615,7 @@
     #define DIGIPOT_MOTOR_CURRENT_E            135,135  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    false
     #define LULZBOT_AO_Hexagon
+    #define LULZBOT_E_STEPS                    830
 #endif /* TOOLHEAD_Tilapia_SingleExtruder */
 
 #if defined(TOOLHEAD_Angelfish_Aerostruder)
@@ -627,6 +626,7 @@
     #define DIGIPOT_MOTOR_CURRENT_E            160  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    false
     #define LULZBOT_E3D_Titan_Aero
+    #define LULZBOT_E_STEPS                    420
 #endif /* TOOLHEAD_Angelfish_Aerostruder */
 
 #if defined(TOOLHEAD_Kanyu_Flexystruder)
@@ -647,6 +647,7 @@
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ       0
     #define LULZBOT_AO_Hexagon
+    #define LULZBOT_E_STEPS                    830
 #endif /* TOOLHEAD_Kanyu_Flexystruder */
 
 #if defined(TOOLHEAD_Opah_Moarstruder)
@@ -669,6 +670,7 @@
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ       0
     #define LULZBOT_Moarstruder
+    #define LULZBOT_E_STEPS                    830
 #endif /* TOOLHEAD_Opah_Moarstruder */
 
 #if defined(TOOLHEAD_Javelin_DualExtruderV2) || defined(TOOLHEAD_Longfin_FlexyDually) || defined(TOOLHEAD_Yellowfin_DualExtruderV3) || defined(TOOLHEAD_Devel_ServoDual)
@@ -686,7 +688,6 @@
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ       0
     #define LULZBOT_TEMP_SENSOR_1              5
-    #define LULZBOT_AO_Hexagon
     #define LULZBOT_NO_MOVE_ON_TOOLHEAD_CHANGE
     #define LULZBOT_DISTINCT_E_FACTORS
 #endif /* TOOLHEAD_Javelin_DualExtruderV2 || TOOLHEAD_Longfin_FlexyDually || TOOLHEAD_Yellowfin_DualExtruderV3 */
@@ -700,6 +701,8 @@
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ      48
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    true
+    #define LULZBOT_E_STEPS                    830
+    #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Javelin_DualExtruderV2 */
 
 #if defined(TOOLHEAD_Longfin_FlexyDually)
@@ -711,6 +714,8 @@
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ      48
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    true
+    #define LULZBOT_E_STEPS                  830
+    #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Longfin_FlexyDually */
 
 #if defined(TOOLHEAD_Yellowfin_DualExtruderV3)
@@ -718,23 +723,6 @@
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Dual Extruder 3"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_M115_EXTRUDER_TYPE         "DualExtruder v3"
-#endif /* TOOLHEAD_Yellowfin_DualExtruderV3 */
-
-#if defined(TOOLHEAD_Devel_ServoDual)
-    // Experimental dual nozzle using a servo
-    #define LULZBOT_LCD_TOOLHEAD_NAME              "Servo McStruder"
-//          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_M115_EXTRUDER_TYPE             "ServoMcStruder"
-    #define LULZBOT_NUM_SERVOS                     1
-    #define LULZBOT_SWITCHING_EXTRUDER_NO_REVERSE
-    #define LULZBOT_SWITCHING_EXTRUDER
-    #define LULZBOT_SWITCHING_NOZZLE
-    #define LULZBOT_SWITCHING_SERVO_ANGLES   { 0, 67 }
-    #undef  LULZBOT_E_STEPS
-    #define LULZBOT_E_STEPS                  420
-#endif /* TOOLHEAD_Devel_ServoDual */
-
-#if defined(TOOLHEAD_Yellowfin_DualExtruderV3) || defined(TOOLHEAD_Devel_ServoDual)
     #undef  LULZBOT_AFTER_Z_HOME_Z_RAISE
     #define LULZBOT_AFTER_Z_HOME_Z_RAISE           16
     #undef  LULZBOT_AFTER_Z_HOME_Z_ORIGIN
@@ -763,10 +751,23 @@
     #define LULZBOT_SWAP_EXTRUDERS
     #undef  LULZBOT_INVERT_E1_DIR
     #define LULZBOT_INVERT_E1_DIR                 false
-    #undef  LULZBOT_E_STEPS
     #define LULZBOT_E_STEPS                        760
     #define LULZBOT_E3D_SOMEstruder_x2
 #endif /* TOOLHEAD_Yellowfin_DualExtruderV3 */
+
+#if defined(TOOLHEAD_Devel_ServoDual)
+    // Experimental dual nozzle using a servo
+    #define LULZBOT_LCD_TOOLHEAD_NAME              "Servo McStruder"
+//          16 chars max                            ^^^^^^^^^^^^^^^
+    #define LULZBOT_M115_EXTRUDER_TYPE             "ServoMcStruder"
+    #define LULZBOT_NUM_SERVOS                     1
+    #define LULZBOT_SWITCHING_EXTRUDER_NO_REVERSE
+    #define LULZBOT_SWITCHING_EXTRUDER
+    #define LULZBOT_SWITCHING_NOZZLE
+    #define LULZBOT_SWITCHING_SERVO_ANGLES   { 0, 67 }
+    #define LULZBOT_E_STEPS                      420
+    #define LULZBOT_AO_Hexagon
+#endif /* TOOLHEAD_Devel_ServoDual */
 
 /*********************************** AXIS TRAVEL LIMITS *******************************************/
 
