@@ -726,7 +726,12 @@
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_M115_EXTRUDER_TYPE             "ServoMcStruder"
     #define LULZBOT_NUM_SERVOS                     1
+    #define LULZBOT_SWITCHING_EXTRUDER_NO_REVERSE
+    #define LULZBOT_SWITCHING_EXTRUDER
     #define LULZBOT_SWITCHING_NOZZLE
+    #define LULZBOT_SWITCHING_SERVO_ANGLES   { 0, 67 }
+    #undef  LULZBOT_E_STEPS
+    #define LULZBOT_E_STEPS                  420
 #endif /* TOOLHEAD_Devel_ServoDual */
 
 #if defined(TOOLHEAD_Yellowfin_DualExtruderV3) || defined(TOOLHEAD_Devel_ServoDual)
@@ -1019,7 +1024,7 @@
 
 // default steps per unit for LulzBot TAZ.
 
-#if defined(LULZBOT_DISTINCT_E_FACTORS) && LULZBOT_EXTRUDERS == 2
+#if defined(LULZBOT_DISTINCT_E_FACTORS) && LULZBOT_EXTRUDERS == 2 && !defined(LULZBOT_SWITCHING_EXTRUDER)
     #define LULZBOT_DEFAULT_AXIS_STEPS_PER_UNIT   {LULZBOT_XY_STEPS,LULZBOT_XY_STEPS,LULZBOT_Z_STEPS,LULZBOT_E_STEPS,LULZBOT_E_STEPS}
 #else
     #define LULZBOT_DEFAULT_AXIS_STEPS_PER_UNIT   {LULZBOT_XY_STEPS,LULZBOT_XY_STEPS,LULZBOT_Z_STEPS,LULZBOT_E_STEPS}

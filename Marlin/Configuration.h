@@ -161,10 +161,12 @@
 #endif
 
 // A dual extruder that uses a single stepper motor
-//#define SWITCHING_EXTRUDER
+#if defined(LULZBOT_SWITCHING_EXTRUDER)
+#define SWITCHING_EXTRUDER
+#endif
 #if ENABLED(SWITCHING_EXTRUDER)
   #define SWITCHING_EXTRUDER_SERVO_NR 0
-  #define SWITCHING_EXTRUDER_SERVO_ANGLES { 0, 90 } // Angles for E0, E1[, E2, E3]
+  #define SWITCHING_EXTRUDER_SERVO_ANGLES LULZBOT_SWITCHING_SERVO_ANGLES // Angles for E0, E1[, E2, E3]
   #if EXTRUDERS > 3
     #define SWITCHING_EXTRUDER_E23_SERVO_NR 1
   #endif
@@ -172,11 +174,11 @@
 
 // A dual-nozzle that uses a servomotor to raise/lower one of the nozzles
 #if defined(LULZBOT_SWITCHING_NOZZLE)
-#define SWITCHING_NOZZLE
+#define SWITCHING_NOZZLE LULZBOT_SWITCHING_NOZZLE
 #endif
 #if ENABLED(SWITCHING_NOZZLE)
   #define SWITCHING_NOZZLE_SERVO_NR 0
-  #define SWITCHING_NOZZLE_SERVO_ANGLES { 0, 90 }   // Angles for E0, E1
+  #define SWITCHING_NOZZLE_SERVO_ANGLES LULZBOT_SWITCHING_SERVO_ANGLES // Angles for E0, E1
   //#define HOTEND_OFFSET_Z { 0.0, 0.0 }
 #endif
 

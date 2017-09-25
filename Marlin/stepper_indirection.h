@@ -416,7 +416,11 @@
  * Extruder indirection for the single E axis
  */
 #if ENABLED(SWITCHING_EXTRUDER)
-  #if EXTRUDERS == 2
+  #if defined(LULZBOT_SWITCHING_EXTRUDER_NO_REVERSE)
+    #define E_STEP_WRITE(v) E0_STEP_WRITE(v)
+    #define NORM_E_DIR() E0_DIR_WRITE( INVERT_E0_DIR)
+    #define  REV_E_DIR() E0_DIR_WRITE(!INVERT_E0_DIR)
+  #elif EXTRUDERS == 2
     #define E_STEP_WRITE(v) E0_STEP_WRITE(v)
     #define NORM_E_DIR() E0_DIR_WRITE(current_block->active_extruder ?  INVERT_E0_DIR : !INVERT_E0_DIR)
     #define  REV_E_DIR() E0_DIR_WRITE(current_block->active_extruder ? !INVERT_E0_DIR :  INVERT_E0_DIR)
