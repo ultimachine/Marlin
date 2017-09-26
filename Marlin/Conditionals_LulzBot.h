@@ -39,7 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".14"
+#define LULZBOT_FW_VERSION ".15"
 
 // Select options based on printer model
 
@@ -260,48 +260,6 @@
 #endif
 
 #define LULZBOT_USE_CONTROLLER_FAN
-#define LULZBOT_USE_XMIN_PLUG
-#define LULZBOT_USE_YMIN_PLUG
-#define LULZBOT_USE_ZMIN_PLUG
-
-// Z-Max Endstops were introduced on the Mini and TAZ 6
-#if defined(LULZBOT_USE_MAX_ENDSTOPS)
-    #define LULZBOT_USE_XMAX_PLUG
-    #define LULZBOT_USE_YMAX_PLUG
-    #define LULZBOT_USE_ZMAX_PLUG
-#endif
-
-#define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
-#define LULZBOT_ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
-
-// Workaround for bug in Marlin 1.1.5 where motion is stopped a X or Y = 0
-#define LULZBOT_MIN_SOFTWARE_ENDSTOPS_DISABLED
-
-// The RAMBO does not support interrupts on all pins
-// so leave the ENDSTOP_INTERRUPTS_FEATURE disabled
-
-//#define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
-
-/* Endstop settings are determined by printer model, except for the
- * X_MAX which varies by toolhead. */
-
-#if defined(LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS)
-    // TAZ 6+ and Huerfano Mini onwards use normally closed endstops.
-    // This is safer, as a loose connector or broken wire will halt
-    // the axis
-    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       false
-    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       false
-    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       false
-    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       false
-#else
-    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
-    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
-    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
-    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
-#endif
-
-#define LULZBOT_Z_MIN_ENDSTOP_INVERTING           true
-#define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING     true
 
 #define LULZBOT_INVERT_X_DIR                      false
 #define LULZBOT_INVERT_Y_DIR                      true
@@ -562,7 +520,7 @@
     #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ       0
-    #define PWM_MOTOR_CURRENT_E               1250
+    #define LULZBOT_MOTOR_CURRENT_E         1250 // mA
 #endif /* TOOLHEAD_Gladiola_SingleExtruder || TOOLHEAD_Albatross_Flexystruder || TOOLHEAD_Finch_Aerostruder */
 
 #if defined(TOOLHEAD_Gladiola_SingleExtruder)
@@ -613,7 +571,7 @@
     #define LULZBOT_LCD_TOOLHEAD_NAME          "Single Extruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_M115_EXTRUDER_TYPE         "SingleExtruder"
-    #define DIGIPOT_MOTOR_CURRENT_E            135,135  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+    #define LULZBOT_MOTOR_CURRENT_E            750 // mA
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    false
     #define LULZBOT_AO_Hexagon
     #define LULZBOT_E_STEPS                    830
@@ -624,7 +582,7 @@
     #define LULZBOT_LCD_TOOLHEAD_NAME          "Aerostruder"
 //          16 chars max                       ^^^^^^^^^^^^^^^
     #define LULZBOT_M115_EXTRUDER_TYPE         "Aerostruder"
-    #define DIGIPOT_MOTOR_CURRENT_E            160  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+    #define LULZBOT_MOTOR_CURRENT_E            875 // mA
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    false
     #define LULZBOT_E3D_Titan_Aero
     #define LULZBOT_E_STEPS                    420
@@ -634,7 +592,7 @@
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Flexystruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_M115_EXTRUDER_TYPE         "Flexystruder"
-    #define DIGIPOT_MOTOR_CURRENT_E            67  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+    #define LULZBOT_MOTOR_CURRENT_E            410 // mA
     #define LULZBOT_EXTRUDERS                  1
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    true
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         12
@@ -657,7 +615,7 @@
     #define LULZBOT_M115_EXTRUDER_TYPE         "MOARstruder"
     #define LULZBOT_DEFAULT_ACCELERATION       250
     #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION 250
-    #define DIGIPOT_MOTOR_CURRENT_E            135  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+    #define LULZBOT_MOTOR_CURRENT_E            750 // mA
     #define LULZBOT_EXTRUDERS                  1
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    true
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         10
@@ -676,7 +634,8 @@
 
 #if defined(TOOLHEAD_Javelin_DualExtruderV2) || defined(TOOLHEAD_Longfin_FlexyDually) || defined(TOOLHEAD_Yellowfin_DualExtruderV3) || defined(TOOLHEAD_Devel_ServoDual)
     #define LULZBOT_EXTRUDER_FAN_ON_PIN_6      // For backwards compatibility with TAZ 4
-    #define DIGIPOT_MOTOR_CURRENT_E            160, 160  // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+    #define LULZBOT_MOTOR_CURRENT_E0           875 // mA
+    #define LULZBOT_MOTOR_CURRENT_E1           875 // mA
     #define LULZBOT_EXTRUDERS                  2
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         12
     #define LULZBOT_TOOLHEAD_X_MIN_ADJ         2
@@ -806,7 +765,7 @@
     #define LULZBOT_Y_BED_SIZE                 280
 #endif
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
+#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Gladiola_MiniEinsy)
     #define LULZBOT_STANDARD_Z_MIN_POS          -2
     #define LULZBOT_STANDARD_Z_MAX_POS         159
 
@@ -833,6 +792,56 @@
 #define LULZBOT_Y_MIN_POS (LULZBOT_STANDARD_Y_MIN_POS - LULZBOT_TOOLHEAD_Y_MIN_ADJ)
 #define LULZBOT_Z_MAX_POS (LULZBOT_STANDARD_Z_MAX_POS - LULZBOT_TOOLHEAD_Z_MAX_ADJ)
 #define LULZBOT_Z_MIN_POS (LULZBOT_STANDARD_Z_MIN_POS - LULZBOT_TOOLHEAD_Z_MIN_ADJ)
+
+/**************************** ENDSTOP CONFIGURATION ****************************/
+
+#define LULZBOT_USE_XMIN_PLUG
+#define LULZBOT_USE_YMIN_PLUG
+#define LULZBOT_USE_ZMIN_PLUG
+
+// Z-Max Endstops were introduced on the Mini and TAZ 6
+#if defined(LULZBOT_USE_MAX_ENDSTOPS)
+    #define LULZBOT_USE_XMAX_PLUG
+    #define LULZBOT_USE_YMAX_PLUG
+    #define LULZBOT_USE_ZMAX_PLUG
+#endif
+
+#define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
+#define LULZBOT_ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
+
+// Workaround for bug in Marlin 1.1.5 where motion is stopped a X or Y = 0
+#define LULZBOT_MIN_SOFTWARE_ENDSTOPS_DISABLED
+
+// The RAMBO does not support interrupts on all pins
+// so leave the ENDSTOP_INTERRUPTS_FEATURE disabled
+
+//#define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
+
+/* Endstop settings are determined by printer model, except for the
+ * X_MAX which varies by toolhead. */
+
+#if defined(LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS)
+    // TAZ 6+ and Huerfano Mini onwards use normally closed endstops.
+    // This is safer, as a loose connector or broken wire will halt
+    // the axis
+    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       false
+    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       false
+    #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING true
+
+    // LULZBOT_X_MAX_ENDSTOP_INVERTING varies by toolhead
+    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       false
+    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       false
+#else
+    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING true
+
+    // LULZBOT_X_MAX_ENDSTOP_INVERTING varies by toolhead
+    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
+#endif
 
 /**************************** ADVANCED PAUSE FEATURE ****************************/
 
@@ -938,7 +947,7 @@
 // by printer model (steps and motor currents for E vary by toolhead).
 
 #if defined(LULZBOT_IS_MINI)
-    #define PWM_MOTOR_CURRENT_XY                  1300
+    #define LULZBOT_MOTOR_CURRENT_XY             1300   // mA
     #define LULZBOT_XY_STEPS                      100.5
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 8, 40}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,1000}
@@ -953,7 +962,7 @@
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.377
 
 #elif defined(LULZBOT_IS_TAZ)
-    #define DIGIPOT_MOTOR_CURRENT_XY              175
+    #define LULZBOT_MOTOR_CURRENT_XY              950     // mA
     #define LULZBOT_XY_STEPS                      100.5
     #define LULZBOT_DEFAULT_XJERK                 8.0
     #define LULZBOT_DEFAULT_YJERK                 8.0
@@ -968,13 +977,11 @@
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER -1.200
 #endif
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
-    #define PWM_MOTOR_CURRENT_Z                   1630
+#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Gladiola_MiniEinsy)
+    #define LULZBOT_MOTOR_CURRENT_Z               1630                   // mA
     #define LULZBOT_Z_STEPS                       1600
 
 #elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
-    #define PWM_MOTOR_CURRENT_Z                   1000
-    // Prototype Z-Belt Mini
     #define Z_FULL_STEPS_PER_ROTATION             200
     #define Z_MICROSTEPS                          16
     #define Z_BELT_PITCH                          2
@@ -982,44 +989,58 @@
     #define Z_MOTOR_GEAR_REDUCTION                26.8512396694
     #define LULZBOT_Z_STEPS (Z_FULL_STEPS_PER_ROTATION * Z_MICROSTEPS * Z_MOTOR_GEAR_REDUCTION / double(Z_BELT_PITCH) / double(Z_PULLEY_TEETH))
 
+    #define LULZBOT_MOTOR_CURRENT_Z               1000                   // mA
     #undef  LULZBOT_DEFAULT_MAX_FEEDRATE
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 8, 25}      // (mm/sec)
 
 #elif defined(LULZBOT_Juniper_TAZ5)
-    #define DIGIPOT_MOTOR_CURRENT_Z               240
+    #define LULZBOT_MOTOR_CURRENT_Z               1275                   // mA
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 3, 25}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
     #define LULZBOT_Z_STEPS                       1600
 
 #elif defined(LULZBOT_Oliveoil_TAZ6)
-    #define DIGIPOT_MOTOR_CURRENT_Z               200
+    #define LULZBOT_MOTOR_CURRENT_Z               1075                   // mA
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 3, 25}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
     #define LULZBOT_Z_STEPS                       1600
 
 #elif defined(LULZBOT_Quiver_TAZ7)
-    #define DIGIPOT_MOTOR_CURRENT_Z               175
     // Prototype Z-belt driven TAZ 7
-    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 10, 25}   // (mm/sec)
+    #define LULZBOT_MOTOR_CURRENT_Z               950                    // mA
+    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 10, 25}     // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,10,10000}
     #define LULZBOT_Z_STEPS                       1790.08264463
 #endif
 
-#if defined(PWM_MOTOR_CURRENT_XY) && defined(PWM_MOTOR_CURRENT_Z) && defined(PWM_MOTOR_CURRENT_E)
-    #define LULZBOT_PWM_MOTOR_CURRENT { \
-        PWM_MOTOR_CURRENT_XY, \
-        PWM_MOTOR_CURRENT_Z, \
-        PWM_MOTOR_CURRENT_E \
-    } // Values in milliamps
+#if defined(LULZBOT_IS_MINI)
+        #define LULZBOT_PWM_MOTOR_CURRENT { \
+            LULZBOT_MOTOR_CURRENT_XY, \
+            LULZBOT_MOTOR_CURRENT_Z, \
+            LULZBOT_MOTOR_CURRENT_E \
+        } // Values in milliamps
 
-#elif defined(DIGIPOT_MOTOR_CURRENT_XY) && defined(DIGIPOT_MOTOR_CURRENT_Z) && defined(DIGIPOT_MOTOR_CURRENT_E)
-    #define LULZBOT_DIGIPOT_MOTOR_CURRENT { \
-        DIGIPOT_MOTOR_CURRENT_XY, \
-        DIGIPOT_MOTOR_CURRENT_XY, \
-        DIGIPOT_MOTOR_CURRENT_Z, \
-        DIGIPOT_MOTOR_CURRENT_E \
-    } // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+#elif defined(LULZBOT_IS_TAZ)
+    // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+    #define DIGIPOT_CURRENT(mA) ((mA-750)/5+135)
 
+    #if LULZBOT_EXTRUDERS == 2
+        #define LULZBOT_DIGIPOT_MOTOR_CURRENT { \
+            DIGIPOT_CURRENT(LULZBOT_MOTOR_CURRENT_XY), \
+            DIGIPOT_CURRENT(LULZBOT_MOTOR_CURRENT_XY), \
+            DIGIPOT_CURRENT(LULZBOT_MOTOR_CURRENT_Z), \
+            DIGIPOT_CURRENT(LULZBOT_MOTOR_CURRENT_E0), \
+            DIGIPOT_CURRENT(LULZBOT_MOTOR_CURRENT_E1) \
+        } // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+    #else
+        #define LULZBOT_DIGIPOT_MOTOR_CURRENT { \
+            DIGIPOT_CURRENT(LULZBOT_MOTOR_CURRENT_XY), \
+            DIGIPOT_CURRENT(LULZBOT_MOTOR_CURRENT_XY), \
+            DIGIPOT_CURRENT(LULZBOT_MOTOR_CURRENT_Z), \
+            DIGIPOT_CURRENT(LULZBOT_MOTOR_CURRENT_E), \
+            DIGIPOT_CURRENT(LULZBOT_MOTOR_CURRENT_E) \
+        } // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+    #endif
 #else
     #error Motor currents not defined
 #endif
