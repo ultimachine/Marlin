@@ -893,7 +893,7 @@ void kill_screen(const char* lcd_msg) {
    *
    */
 
-#if defined(LULZBOT_REORDERED_MENUS) && defined(LULZBOT_USE_LCD)
+#if defined(LULZBOT_REORDERED_MENUS) && defined(LULZBOT_USE_LCD_DISPLAY)
   void lcd_configuration_menu();
   void lcd_movement_menu();
   void lcd_enqueue_filament_change();
