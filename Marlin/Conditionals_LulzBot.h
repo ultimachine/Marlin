@@ -1,19 +1,19 @@
 #ifndef CONDITIONALS_LULZBOT
 #define CONDITIONALS_LULZBOT
 
-/* We define the LULZBOT_ values based on which printer or toolhead variants we are compiling
- * for, these constants are then placed where appropriate in the following files:
+/* We define LULZBOT_ macros based on which printer or toolhead we are
+ * building for, these macros are then placed where appropriate in the
+ * Marlin source.
  *
- *    - Configuration.h
- *    - Configuration_adv.h
- *    - pins.h
- *    - Default_Version.h
- *
- * Using our own set of constants and limiting modification to Marlin's files makes it easier to
- * merge from upstream. All values are prefixed with LULZBOT_ so that it is easy to see what
- * was changed and where. If a setting is commented out, we define a LULZBOT_{SETTING}_DISABLED
- * here, just so we have a record of things that got disabled.
+ * Using our own set of macros and limiting changes to Marlin's files
+ * to one-liners makes it easier to merge from upstream. All macros are
+ * prefixed with LULZBOT_ so that it is easy to see what was changed and
+ * where. If a default setting is commented out in Marlin, we define
+ * LULZBOT_{SETTING}_DISABLED here, so we have a record of things that
+ * got disabled.
  */
+
+#define LULZBOT_FW_VERSION ".15" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -39,9 +39,7 @@
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
 
-#define LULZBOT_FW_VERSION ".15"
-
-// Select options based on printer model
+/*********************** PRINTER MODEL CHARACTERISTICS **************************/
 
 #if defined(LULZBOT_Gladiola_Mini)
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
@@ -135,36 +133,15 @@
     #define LULZBOT_UUID "a952577d-8722-483a-999d-acdc9e772b7b"
 #endif
 
-// The Makefile and build-lulzbot-firmware.sh has an option to generate
-// firmware without any identifying version or build timestamp. This is
-// used in internal testing to allow us to binary diff across .hex files.
-#if defined(LULZBOT_MASK_VERSION)
-    #undef  LULZBOT_FW_VERSION
-    #define LULZBOT_FW_VERSION ".xx"
-#endif
+/**************************** GENERAL CONFIGURATION *****************************/
 
-// Shared values
-#define LULZBOT_STRING_CONFIG_H_AUTHOR        "(Aleph Objects Inc., LulzBot Git Repository)"
+#define LULZBOT_STRING_CONFIG_H_AUTHOR "(Aleph Objects Inc., LulzBot Git Repository)"
 #define LULZBOT_EEPROM_SETTINGS
 #define LULZBOT_EMERGENCY_PARSER
 #define LULZBOT_NOZZLE_PARK_FEATURE
 #define LULZBOT_AUTO_REPORT_TEMPERATURES
 #define LULZBOT_ADVANCED_OK
-
-// Marlin 1.1.5 no longer issues MIN_TEMP errors and appears to handle
-// thermal runaway via other means. However, since our users expect a
-// MIN_TEMP error when disconnecting their print head, this could be
-// perceived as a safety issue. This is a workaround in "temperature.cpp"
-// to re-enable that functionality.
-
-#define LULZBOT_MIN_TEMP_WORKAROUND \
-    static int delayBeforeStartMeasuring = OVERSAMPLENR; \
-        if(delayBeforeStartMeasuring > 0) { \
-            delayBeforeStartMeasuring--; \
-        } else { \
-            if (current_temperature[e] > HEATER_0_MAXTEMP) max_temp_error(0); \
-            if (current_temperature[e] < HEATER_0_MINTEMP) min_temp_error(0); \
-        }
+#define LULZBOT_HOST_KEEPALIVE_FEATURE_DISABLED
 
 // Marlin 1.1.4 has changed the behavior of G92 so that
 // it changes software endstops, making it less useful
@@ -184,54 +161,18 @@
 // so long as UBL is disabled.
 #define LULZBOT_G26_BACKWARDS_COMPATIBILITY
 
+// The following should be kept more or less like M999
+#define LULZBOT_G26_RESET_ACTION \
+  Running = true; \
+  lcd_reset_alert_level();
+
 // Fix for auto0.g, which is broken
 #define LULZBOT_AUTOSTART_BUGFIX
 
 // Q&A wants to be able to use M226 on endstops switches
 #define LULZBOT_NO_PIN_PROTECTION_ON_M226
 
-// The following should be kept more or less like M999
-#define LULZBOT_G26_RESET_ACTION \
-  Running = true; \
-  lcd_reset_alert_level();
-
-// Temperature settings
-
-#define LULZBOT_TEMP_SENSOR_0                 5
-#define LULZBOT_TEMP_SENSOR_BED               7
-#define LULZBOT_TEMP_RESIDENCY_TIME           1
-#define LULZBOT_TEMP_HYSTERESIS               10
-#define LULZBOT_TEMP_WINDOW                   10
-
-#define LULZBOT_TEMP_BED_RESIDENCY_TIME       1
-#define LULZBOT_TEMP_BED_HYSTERESIS           5
-#define LULZBOT_TEMP_BED_WINDOW               5
-
-#define LULZBOT_HEATER_MAXTEMP                305
-#define LULZBOT_EXTRUDE_MINTEMP               120
-
-#define LULZBOT_PIDTEMPBED
-
-#define LULZBOT_THERMAL_PROTECTION_PERIOD     15     // Seconds
-#define LULZBOT_THERMAL_PROTECTION_HYSTERESIS 30     // Degrees Celsius
-
-#define LULZBOT_THERMAL_PROTECTION_BED_PERIOD     15     // Seconds
-#define LULZBOT_THERMAL_PROTECTION_BED_HYSTERESIS 10     // Degrees Celsius
-
-#if defined(LULZBOT_IS_MINI)
-    // Heater current: 24V/5.5 Ohms = 4.4A
-    #define LULZBOT_MAX_BED_POWER      255  // limits duty cycle to bed; 255=full current
-    #define LULZBOT_WATCH_TEMP_PERIOD   20  // Seconds
-    #define LULZBOT_WATCH_TEMP_INCREASE  2  // Degrees Celsius
-#elif defined(LULZBOT_IS_TAZ)
-    // Heater current: 24V/1.6 Ohms = 15A
-    // Set Max Bed Power to 80% for a safety margin on the 15A fuse.
-    #define LULZBOT_MAX_BED_POWER      206  // limits duty cycle to bed; 255=full current
-    #define LULZBOT_WATCH_TEMP_PERIOD   40  // Seconds
-    #define LULZBOT_WATCH_TEMP_INCREASE 10  // Degrees Celsius
-#endif
-
-// Motherboard specifics and custom pins for probing.
+/******************** MOTHERBOARD AND PIN CONFIGURATION ***********************/
 
 #if defined(TOOLHEAD_Devel_ServoDual)
     #undef LULZBOT_USE_HOME_BUTTON
@@ -259,7 +200,7 @@
     #define LULZBOT_Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
 #endif
 
-#define LULZBOT_USE_CONTROLLER_FAN
+/*********************** HOMING & AXIS DIRECTIONS ******************************/
 
 #define LULZBOT_INVERT_X_DIR                      false
 #define LULZBOT_INVERT_Y_DIR                      true
@@ -305,19 +246,6 @@
     #define LULZBOT_HOMING_FEEDRATE_Z             (3*60)  // mm/m
 #endif // LULZBOT_TAZ_BED
 
-#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
-    #define LULZBOT_LEFT_PROBE_BED_POSITION        0
-    #define LULZBOT_RIGHT_PROBE_BED_POSITION     164
-    #define LULZBOT_BACK_PROBE_BED_POSITION      162
-    #define LULZBOT_FRONT_PROBE_BED_POSITION      -6
-
-#elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_TAZ_BED)
-    #define LULZBOT_LEFT_PROBE_BED_POSITION       -9
-    #define LULZBOT_RIGHT_PROBE_BED_POSITION     288
-    #define LULZBOT_BACK_PROBE_BED_POSITION      289
-    #define LULZBOT_FRONT_PROBE_BED_POSITION      -9
-#endif
-
 // Only the TAZ 6 has a Z-homing button
 #if defined(LULZBOT_USE_HOME_BUTTON)
     #define LULZBOT_Z_SAFE_HOMING
@@ -336,6 +264,42 @@
 #else
     #define LULZBOT_Z_HOMING_HEIGHT               0
 #endif  // LULZBOT_USE_HOME_BUTTON
+
+#define LULZBOT_G92_Z(z) \
+      stepper.synchronize(); \
+      current_position[Z_AXIS] = z; \
+      SYNC_PLAN_POSITION_KINEMATIC();
+
+#define LULZBOT_G0_Z(z) \
+      do_blocking_move_to_z(z);
+
+// On a TAZ, we need to raise the print head after homing to clear the button;
+// On the yellowfin we also need to reset the origin to account for the Z home riser.
+
+#if defined(LULZBOT_USE_HOME_BUTTON)
+    #define LULZBOT_AFTER_Z_HOME_ACTION \
+        if(home_all || homeZ) { \
+          LULZBOT_G92_Z(LULZBOT_AFTER_Z_HOME_Z_ORIGIN); \
+          LULZBOT_G0_Z(LULZBOT_AFTER_Z_HOME_Z_RAISE); \
+        }
+#else
+    #define LULZBOT_AFTER_Z_HOME_ACTION
+#endif
+
+/*********************** AUTOLEVELING / BED PROBE *******************************/
+
+#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
+    #define LULZBOT_LEFT_PROBE_BED_POSITION        0
+    #define LULZBOT_RIGHT_PROBE_BED_POSITION     164
+    #define LULZBOT_BACK_PROBE_BED_POSITION      162
+    #define LULZBOT_FRONT_PROBE_BED_POSITION      -6
+
+#elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_TAZ_BED)
+    #define LULZBOT_LEFT_PROBE_BED_POSITION       -9
+    #define LULZBOT_RIGHT_PROBE_BED_POSITION     288
+    #define LULZBOT_BACK_PROBE_BED_POSITION      289
+    #define LULZBOT_FRONT_PROBE_BED_POSITION      -9
+#endif
 
 #if defined(LULZBOT_USE_AUTOLEVELING)
     #define LULZBOT_NOZZLE_CLEAN_FEATURE
@@ -456,57 +420,11 @@
       return; \
     }
 
-#define LULZBOT_FAN_KICKSTART_TIME          100
-#define LULZBOT_FAN_MIN_PWM                  70
-#define LULZBOT_HOST_KEEPALIVE_FEATURE_DISABLED
-
-// For the Pelonis C4010L24BPLB1b-7 fan, we need a relative low
-// PWM frequency of about 122Hz PWM for the fan to be speed
-// controlled, this can only be accomplished via software PWM
-// with a scaling factor of four.
-#define LULZBOT_FAN_SOFT_PWM
-#define LULZBOT_SOFT_PWM_SCALE 4
-
-#if defined(LULZBOT_USE_LCD_DISPLAY)
-    #define LULZBOT_REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
-    #define LULZBOT_SDSUPPORT
-    #define LULZBOT_XYZ_HOLLOW_FRAME_DISABLE
-    #define LULZBOT_MENU_HOLLOW_FRAME_DISABLE
-    #define LULZBOT_USE_SMALL_INFOFONT
-    #if defined(LULZBOT_USE_AUTOLEVELING)
-        #define LULZBOT_BABYSTEPPING
-        #define LULZBOT_BABYSTEP_ZPROBE_OFFSET
-        #define LULZBOT_MENU_BED_LEVELING_GCODE "G28 XY\nM109 S175\nG28 Z\nM109 R145\nG12\nG29\nM104 S0"
-    #endif
-    #define LULZBOT_SHOW_CUSTOM_BOOTSCREEN
-    #define LULZBOT_ENCODER_PULSES_PER_STEP 2
-    #define LULZBOT_ENCODER_STEPS_PER_MENU_ITEM 1
-    #define LULZBOT_COOLING_MESSAGES
-    #if defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Hibiscus_Mini2LCD)
-        // In the experimental Gladiola_MiniLCD, the encoder direction is reversed.
-        #define LULZBOT_REVERSE_ENCODER_DIRECTION
-    #endif
-    /* Marlin shows three extruders on a dual:
-     *   Extruder    - The active nozzle (varies)
-     *   Extruder 1  - The primary extruder
-     *   Extruder 2  - The secondary extruder
-     *
-     * The following causes the active nozzle to be
-     * hidden as seeing three nozzles may be
-     * confusing to users.
-     */
-    #define LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD
-    #define LULZBOT_HIDE_PID_CONFIG_IN_LCD
-    #define LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD
-    #define LULZBOT_SCROLL_LONG_FILE_NAMES
-    #define LULZBOT_REORDERED_MENUS
-#endif
-
-/*********************************************** COMMON TOOLHEADS PARAMETERS *****************************/
+/*************************** COMMON TOOLHEADS PARAMETERS ***********************/
 
 #define LULZBOT_DEFAULT_EJERK                10.0
 
-/*********************************************** MINI TOOLHEADS *******************************************/
+/**************************** MINI TOOLHEADS ***********************************/
 
 #if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aerostruder)
     #define LULZBOT_EXTRUDERS                  1
@@ -551,7 +469,7 @@
     #define LULZBOT_E_STEPS                        420
 #endif /* TOOLHEAD_Finch_Aerostruder */
 
-/*********************************************** TAZ TOOLHEADS *******************************************/
+/******************************** TAZ TOOLHEADS ********************************/
 
 #if defined(TOOLHEAD_Tilapia_SingleExtruder) || defined(TOOLHEAD_Angelfish_Aerostruder)
     #define LULZBOT_EXTRUDERS                  1
@@ -702,8 +620,8 @@
     #if defined(LULZBOT_USE_HOME_BUTTON)
         #undef  LULZBOT_Z_SAFE_HOMING_X_POINT
         #undef  LULZBOT_Z_SAFE_HOMING_Y_POINT
-        #define LULZBOT_Z_SAFE_HOMING_X_POINT        (-22)    // X point for Z homing when homing all axis (G28)
-        #define LULZBOT_Z_SAFE_HOMING_Y_POINT        (265)    // Y point for Z homing when homing all axis (G28)
+        #define LULZBOT_Z_SAFE_HOMING_X_POINT    (-22)    // X point for Z homing when homing all axis (G28)
+        #define LULZBOT_Z_SAFE_HOMING_Y_POINT    (265)    // Y point for Z homing when homing all axis (G28)
     #endif /* LULZBOT_USE_HOME_BUTTON */
     #undef  LULZBOT_TOOLHEAD_X_MAX_ADJ
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ             10
@@ -729,7 +647,161 @@
     #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Devel_ServoDual */
 
-/*********************************** AXIS TRAVEL LIMITS *******************************************/
+/************************ CUSTOMIZE VERSION STRING ***************************/
+
+// The Makefile and build-lulzbot-firmware.sh has an option to generate
+// firmware without any identifying version or build timestamp. This is
+// used in internal testing to allow us to binary diff across .hex files.
+#if defined(LULZBOT_MASK_VERSION)
+    #undef  LULZBOT_FW_VERSION
+    #define LULZBOT_FW_VERSION ".xx"
+#endif
+
+#define LULZBOT_DETAILED_BUILD_VERSION " FIRMWARE_VERSION:" SHORT_BUILD_VERSION LULZBOT_FW_VERSION " EXTRUDER_TYPE:" LULZBOT_M115_EXTRUDER_TYPE
+#define LULZBOT_STRING_DISTRIBUTION_DATE __DATE__ __TIME__
+#define LULZBOT_SOURCE_CODE_URL "https://code.alephobjects.com/diffusion/MARLIN"
+
+/*************************** TEMPERATURE SETTINGS *****************************/
+
+#define LULZBOT_TEMP_SENSOR_0                 5
+#define LULZBOT_TEMP_SENSOR_BED               7
+#define LULZBOT_TEMP_RESIDENCY_TIME           1
+#define LULZBOT_TEMP_HYSTERESIS               10
+#define LULZBOT_TEMP_WINDOW                   10
+
+#define LULZBOT_TEMP_BED_RESIDENCY_TIME       1
+#define LULZBOT_TEMP_BED_HYSTERESIS           5
+#define LULZBOT_TEMP_BED_WINDOW               5
+
+#define LULZBOT_HEATER_MAXTEMP                305
+#define LULZBOT_EXTRUDE_MINTEMP               120
+
+#define LULZBOT_THERMAL_PROTECTION_PERIOD     15     // Seconds
+#define LULZBOT_THERMAL_PROTECTION_HYSTERESIS 30     // Degrees Celsius
+
+#define LULZBOT_THERMAL_PROTECTION_BED_PERIOD     15     // Seconds
+#define LULZBOT_THERMAL_PROTECTION_BED_HYSTERESIS 10     // Degrees Celsius
+
+#if defined(LULZBOT_IS_MINI)
+    // Heater current: 24V/5.5 Ohms = 4.4A
+    #define LULZBOT_MAX_BED_POWER      255  // limits duty cycle to bed; 255=full current
+    #define LULZBOT_WATCH_TEMP_PERIOD   20  // Seconds
+    #define LULZBOT_WATCH_TEMP_INCREASE  2  // Degrees Celsius
+#elif defined(LULZBOT_IS_TAZ)
+    // Heater current: 24V/1.6 Ohms = 15A
+    // Set Max Bed Power to 80% for a safety margin on the 15A fuse.
+    #define LULZBOT_MAX_BED_POWER      206  // limits duty cycle to bed; 255=full current
+    #define LULZBOT_WATCH_TEMP_PERIOD   40  // Seconds
+    #define LULZBOT_WATCH_TEMP_INCREASE 10  // Degrees Celsius
+#endif
+
+// Marlin 1.1.5 no longer issues MIN_TEMP errors and appears to handle
+// thermal runaway via other means. However, since our users expect a
+// MIN_TEMP error when disconnecting their print head, this could be
+// perceived as a safety issue. This is a workaround in "temperature.cpp"
+// to re-enable that functionality.
+
+#define LULZBOT_MIN_TEMP_WORKAROUND \
+    static int delayBeforeStartMeasuring = OVERSAMPLENR; \
+        if(delayBeforeStartMeasuring > 0) { \
+            delayBeforeStartMeasuring--; \
+        } else { \
+            if (current_temperature[e] > HEATER_0_MAXTEMP) max_temp_error(0); \
+            if (current_temperature[e] < HEATER_0_MINTEMP) min_temp_error(0); \
+        }
+
+/******************************** HEATING ELEMENTS *****************************/
+
+#define LULZBOT_PIDTEMP
+#define LULZBOT_PIDTEMPBED
+
+// Hotend variants
+
+#if defined(LULZBOT_Moarstruder)
+    // LulzBot MOARstruder (40v)
+    #define LULZBOT_DEFAULT_Kp 55.64
+    #define LULZBOT_DEFAULT_Ki 6.79
+    #define LULZBOT_DEFAULT_Kd 113.94
+#endif /* LULZBOT_Moarstruder */
+
+#if defined(LULZBOT_E3D_SOMEstruder_x2)
+    // Side-by-side LulzBot E3D SOMEstruder (24v) on Yellowfin Dual
+    #define LULZBOT_DEFAULT_Kp 47.45
+    #define LULZBOT_DEFAULT_Ki 4.83
+    #define LULZBOT_DEFAULT_Kd 116.63
+#endif /* LULZBOT_E3D_SOMEstruder_x2 */
+
+#if defined(LULZBOT_AO_Hexagon)
+    // LulzBot AO-Hexagon (24v)
+    #define LULZBOT_DEFAULT_Kp 28.79
+    #define LULZBOT_DEFAULT_Ki 1.91
+    #define LULZBOT_DEFAULT_Kd 108.51
+#endif /* LULZBOT_AO_Hexagon */
+
+#if defined(LULZBOT_E3D_Titan_Aero)
+    // LulzBot V6 block with E3D Titan Aero
+    #define LULZBOT_DEFAULT_Kp 19.83
+    #define LULZBOT_DEFAULT_Ki  1.53
+    #define LULZBOT_DEFAULT_Kd 64.16
+#endif /* LULZBOT_E3D_Titan_Aero */
+
+// Heated bed variants
+
+//24V 360W silicone heater from NPH on 3mm borosilicate (TAZ 2.2+)
+#if defined(LULZBOT_TAZ_BED) && !defined(LULZBOT_TWO_PIECE_BED)
+  #define LULZBOT_DEFAULT_bedKp                 162
+  #define LULZBOT_DEFAULT_bedKi                 17
+  #define LULZBOT_DEFAULT_bedKd                 378
+
+// Modular two piece bed (TAZ 7+)
+#elif defined(LULZBOT_TAZ_BED) && defined(LULZBOT_TWO_PIECE_BED)
+  #define LULZBOT_DEFAULT_bedKp                 286.02
+  #define LULZBOT_DEFAULT_bedKi                 54.55
+  #define LULZBOT_DEFAULT_bedKd                 374.90
+
+//24V 360W silicone heater from NPH on 3mm borosilicate (TAZ 2.2+)
+#elif defined(LULZBOT_MINI_BED) && !defined(LULZBOT_TWO_PIECE_BED)
+  #define LULZBOT_DEFAULT_bedKp                 294
+  #define LULZBOT_DEFAULT_bedKi                 65
+  #define LULZBOT_DEFAULT_bedKd                 382
+
+// Modular two piece bed (Mini 2+)
+#elif defined(LULZBOT_MINI_BED) && defined(LULZBOT_TWO_PIECE_BED)
+  #define LULZBOT_DEFAULT_bedKp                 384.33
+  #define LULZBOT_DEFAULT_bedKi                  72.17
+  #define LULZBOT_DEFAULT_bedKd                 511.64
+#endif
+
+/****************************** FAN CONFIGURATION ******************************/
+
+// For the Pelonis C4010L24BPLB1b-7 fan, we need a relative low
+// PWM frequency of about 122Hz in order for the fan to turn.
+// By default, FAST_PWM_FAN appears to PWM at ~31kHz, but if we
+// set a prescale of 4, it divides this by 256 to get us down to
+// the frequency we need.
+
+#define LULZBOT_FAST_PWM_FAN
+#define LULZBOT_FAST_PWM_SCALE                    4
+
+#define LULZBOT_FAN_KICKSTART_TIME              100
+#define LULZBOT_FAN_MIN_PWM                      70
+
+#define LULZBOT_USE_CONTROLLER_FAN
+#if defined(LULZBOT_IS_MINI)
+    // The Mini fan runs rather loud at full speed.
+    #define LULZBOT_CONTROLLERFAN_SPEED         120
+#else
+    #define LULZBOT_CONTROLLERFAN_SPEED         255
+#endif
+
+// As of Marlin 1.1.5, FAST_PWM_FAN adjusts the frequencies for
+// all fans except the controller fan. This workaround allows
+// the controller fan PWM freq to be adjusted to 122Hz (this
+// may not be necessary, but since the Pelonis fan likes 122Hz,
+// we are trying to keep all the fan frequencies at that).
+#define LULZBOT_FAST_PWM_CONTROLLER_FAN_WORKAROUND
+
+/******************************* AXIS TRAVEL LIMITS *****************************/
 
 /* Define min and max travel limits based on the printer model using a standard
  * toolhead, then define adjustments from the standard for alternative toolheads.
@@ -884,67 +956,34 @@
     1 \
 }
 
-/*********************************** HEATING ELEMENTS ****************************/
+/*************************** REWIPE FUNCTIONALITY *******************************/
 
-/* HOTEND Variants */
+#define LULZBOT_NUM_REWIPES      1
+#define LULZBOT_BED_PROBE_MIN   -3 // Limit on pushing into the bed
 
-#if defined(LULZBOT_Moarstruder)
-    // LulzBot MOARstruder (40v)
-    #define LULZBOT_DEFAULT_Kp 55.64
-    #define LULZBOT_DEFAULT_Ki 6.79
-    #define LULZBOT_DEFAULT_Kd 113.94
-#endif /* LULZBOT_Moarstruder */
+#define LULZBOT_PROBE_Z_WITH_REWIPE(speed) \
+    /* do_probe_move returns true when it fails to hit an endstop, meaning we need to rewipe */ \
+    for(int rewipes = 0; do_probe_move(LULZBOT_BED_PROBE_MIN, speed); rewipes++) { \
+        if(rewipes >= LULZBOT_NUM_REWIPES) {          /* max of tries */ \
+            SERIAL_ERRORLNPGM("PROBE FAIL CLEAN NOZZLE"); /* cura listens for this message specifically */ \
+            LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);   /* use a more friendly message on the LCD */ \
+            BUZZ(25, 880); BUZZ(50, 0);               /* play tone */ \
+            BUZZ(25, 880); BUZZ(50, 0); \
+            BUZZ(25, 880); BUZZ(50, 0); \
+            do_blocking_move_to_z(100, MMM_TO_MMS(Z_PROBE_SPEED_FAST)); /* raise head */ \
+            stop();                                   /* stop print job */ \
+            LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);   /* stop changes the message... */ \
+            return NAN;                               /* abort the leveling in progress */ \
+        } \
+        SERIAL_ERRORLNPGM(MSG_REWIPE); \
+        LCD_MESSAGEPGM(MSG_REWIPE); \
+        do_blocking_move_to_z(10, MMM_TO_MMS(speed)); /* raise nozzle */ \
+        Nozzle::clean(0, 2, 0, 0);                    /* wipe nozzle */ \
+    }
 
-#if defined(LULZBOT_E3D_SOMEstruder_x2)
-    // Side-by-side LulzBot E3D SOMEstruder (24v) on Yellowfin Dual
-    #define LULZBOT_DEFAULT_Kp 47.45
-    #define LULZBOT_DEFAULT_Ki 4.83
-    #define LULZBOT_DEFAULT_Kd 116.63
-#endif /* LULZBOT_E3D_SOMEstruder_x2 */
+/************ ACCELERATION, FEEDRATES, XYZ MOTOR STEPS AND CURRENTS ************/
 
-#if defined(LULZBOT_AO_Hexagon)
-    // LulzBot AO-Hexagon (24v)
-    #define LULZBOT_DEFAULT_Kp 28.79
-    #define LULZBOT_DEFAULT_Ki 1.91
-    #define LULZBOT_DEFAULT_Kd 108.51
-#endif /* LULZBOT_AO_Hexagon */
-
-#if defined(LULZBOT_E3D_Titan_Aero)
-    // LulzBot V6 block with E3D Titan Aero
-    #define LULZBOT_DEFAULT_Kp 19.83
-    #define LULZBOT_DEFAULT_Ki  1.53
-    #define LULZBOT_DEFAULT_Kd 64.16
-#endif /* LULZBOT_E3D_Titan_Aero */
-
-// Heated bed parameters
-
-//24V 360W silicone heater from NPH on 3mm borosilicate (TAZ 2.2+)
-#if defined(LULZBOT_TAZ_BED) && !defined(LULZBOT_TWO_PIECE_BED)
-  #define LULZBOT_DEFAULT_bedKp                 162
-  #define LULZBOT_DEFAULT_bedKi                 17
-  #define LULZBOT_DEFAULT_bedKd                 378
-
-// Modular two piece bed (TAZ 7+)
-#elif defined(LULZBOT_TAZ_BED) && defined(LULZBOT_TWO_PIECE_BED)
-  #define LULZBOT_DEFAULT_bedKp                 286.02
-  #define LULZBOT_DEFAULT_bedKi                 54.55
-  #define LULZBOT_DEFAULT_bedKd                 374.90
-
-//24V 360W silicone heater from NPH on 3mm borosilicate (TAZ 2.2+)
-#elif defined(LULZBOT_MINI_BED) && !defined(LULZBOT_TWO_PIECE_BED)
-  #define LULZBOT_DEFAULT_bedKp                 294
-  #define LULZBOT_DEFAULT_bedKi                 65
-  #define LULZBOT_DEFAULT_bedKd                 382
-
-// Modular two piece bed (Mini 2+)
-#elif defined(LULZBOT_MINI_BED) && defined(LULZBOT_TWO_PIECE_BED)
-  #define LULZBOT_DEFAULT_bedKp                 384.33
-  #define LULZBOT_DEFAULT_bedKi                  72.17
-  #define LULZBOT_DEFAULT_bedKd                 511.64
-#endif
-
-// Acceleration, feedrate, motor steps and motor currents for XYZ vary
-// by printer model (steps and motor currents for E vary by toolhead).
+// Values for XYZ vary by printer model, values for E vary by toolhead.
 
 #if defined(LULZBOT_IS_MINI)
     #define LULZBOT_MOTOR_CURRENT_XY             1300   // mA
@@ -1045,15 +1084,69 @@
     #error Motor currents not defined
 #endif
 
-// default steps per unit for LulzBot TAZ.
-
 #if defined(LULZBOT_DISTINCT_E_FACTORS) && LULZBOT_EXTRUDERS == 2 && !defined(LULZBOT_SWITCHING_EXTRUDER)
     #define LULZBOT_DEFAULT_AXIS_STEPS_PER_UNIT   {LULZBOT_XY_STEPS,LULZBOT_XY_STEPS,LULZBOT_Z_STEPS,LULZBOT_E_STEPS,LULZBOT_E_STEPS}
 #else
     #define LULZBOT_DEFAULT_AXIS_STEPS_PER_UNIT   {LULZBOT_XY_STEPS,LULZBOT_XY_STEPS,LULZBOT_Z_STEPS,LULZBOT_E_STEPS}
 #endif
 
-// Gralco's customized Z Offset overlay (also requires dogm_bitmaps_Lulzbot.h)
+/*********************************** LCD OPTIONS *******************************/
+
+#if defined(LULZBOT_USE_LCD_DISPLAY)
+    #define LULZBOT_REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
+    #define LULZBOT_SDSUPPORT
+    #define LULZBOT_XYZ_HOLLOW_FRAME_DISABLE
+    #define LULZBOT_MENU_HOLLOW_FRAME_DISABLE
+    #define LULZBOT_USE_SMALL_INFOFONT
+    #if defined(LULZBOT_USE_AUTOLEVELING)
+        #define LULZBOT_BABYSTEPPING
+        #define LULZBOT_BABYSTEP_ZPROBE_OFFSET
+        #define LULZBOT_MENU_BED_LEVELING_GCODE "G28 XY\nM109 S175\nG28 Z\nM109 R145\nG12\nG29\nM104 S0"
+    #endif
+    #define LULZBOT_SHOW_CUSTOM_BOOTSCREEN
+    #define LULZBOT_ENCODER_PULSES_PER_STEP 2
+    #define LULZBOT_ENCODER_STEPS_PER_MENU_ITEM 1
+    #define LULZBOT_COOLING_MESSAGES
+    #if defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Hibiscus_Mini2LCD)
+        // In the experimental Gladiola_MiniLCD, the encoder direction is reversed.
+        #define LULZBOT_REVERSE_ENCODER_DIRECTION
+    #endif
+    /* Marlin shows three extruders on a dual:
+     *   Extruder    - The active nozzle (varies)
+     *   Extruder 1  - The primary extruder
+     *   Extruder 2  - The secondary extruder
+     *
+     * The following causes the active nozzle to be
+     * hidden as seeing three nozzles may be
+     * confusing to users.
+     */
+    #define LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD
+    #define LULZBOT_HIDE_PID_CONFIG_IN_LCD
+    #define LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD
+    #define LULZBOT_SCROLL_LONG_FILE_NAMES
+    #define LULZBOT_REORDERED_MENUS
+#endif
+
+/***************************** CUSTOM SPLASH SCREEN *****************************/
+
+#define LULZBOT_CUSTOM_BOOTSCREEN() \
+    u8g.firstPage(); \
+    do { \
+        u8g.drawBitmapP(0,0,CEILING(CUSTOM_BOOTSCREEN_BMPWIDTH, 8),CUSTOM_BOOTSCREEN_BMPHEIGHT,custom_start_bmp); \
+        u8g.setFont(u8g_font_6x13); \
+        u8g.drawStr(61,17,LULZBOT_LCD_MACHINE_NAME); \
+        u8g.setFont(u8g_font_04b_03); \
+        u8g.drawStr(62,28,LULZBOT_LCD_TOOLHEAD_NAME); \
+        u8g.setFont(u8g_font_5x8); \
+        u8g.drawStr(63,41,"LulzBot.com"); \
+        u8g.setFont(u8g_font_5x8); \
+        u8g.drawStr(62,62,"v"); \
+        u8g.drawStr(67,62,SHORT_BUILD_VERSION LULZBOT_FW_VERSION); \
+    } while( u8g.nextPage() );
+
+/************************* Z-OFFSET LCD ADJUSTMENT ******************************/
+
+// Gralco's customized Z Offset LCD overlay (also requires dogm_bitmaps_Lulzbot.h)
 
 #define LULZBOT_ZOFFSET_OVERLAY(zprobe_zoffset) \
     static int dir = 0; \
@@ -1072,72 +1165,7 @@
     u8g.drawBitmapP(right + 20, 48 - dir, 2, 13, up_arrow_bmp); \
     u8g.drawBitmapP(left  + 20, 49 - dir, 2, 13, down_arrow_bmp);
 
-// Customized splash screen
-#define LULZBOT_CUSTOM_BOOTSCREEN() \
-    u8g.firstPage(); \
-    do { \
-        u8g.drawBitmapP(0,0,CEILING(CUSTOM_BOOTSCREEN_BMPWIDTH, 8),CUSTOM_BOOTSCREEN_BMPHEIGHT,custom_start_bmp); \
-        u8g.setFont(u8g_font_6x13); \
-        u8g.drawStr(61,17,LULZBOT_LCD_MACHINE_NAME); \
-        u8g.setFont(u8g_font_04b_03); \
-        u8g.drawStr(62,28,LULZBOT_LCD_TOOLHEAD_NAME); \
-        u8g.setFont(u8g_font_5x8); \
-        u8g.drawStr(63,41,"LulzBot.com"); \
-        u8g.setFont(u8g_font_5x8); \
-        u8g.drawStr(62,62,"v"); \
-        u8g.drawStr(67,62,SHORT_BUILD_VERSION LULZBOT_FW_VERSION); \
-    } while( u8g.nextPage() );
-
-// Customize version string
-
-#define LULZBOT_DETAILED_BUILD_VERSION " FIRMWARE_VERSION:" SHORT_BUILD_VERSION LULZBOT_FW_VERSION " EXTRUDER_TYPE:" LULZBOT_M115_EXTRUDER_TYPE
-#define LULZBOT_STRING_DISTRIBUTION_DATE __DATE__ __TIME__
-#define LULZBOT_SOURCE_CODE_URL "https://code.alephobjects.com/diffusion/MARLIN"
-
-// Bed Probe w/ Rewipe
-#define LULZBOT_NUM_REWIPES      1
-#define LULZBOT_BED_PROBE_MIN   -3 // Limit on pushing into the bed
-
-#define LULZBOT_PROBE_Z_WITH_REWIPE(speed) \
-    /* do_probe_move returns true when it fails to hit an endstop, meaning we need to rewipe */ \
-    for(int rewipes = 0; do_probe_move(LULZBOT_BED_PROBE_MIN, speed); rewipes++) { \
-        if(rewipes >= LULZBOT_NUM_REWIPES) {          /* max of tries */ \
-            SERIAL_ERRORLNPGM("PROBE FAIL CLEAN NOZZLE"); /* cura listens for this message specifically */ \
-            LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);   /* use a more friendly message on the LCD */ \
-            BUZZ(25, 880); BUZZ(50, 0);               /* play tone */ \
-            BUZZ(25, 880); BUZZ(50, 0); \
-            BUZZ(25, 880); BUZZ(50, 0); \
-            do_blocking_move_to_z(100, MMM_TO_MMS(Z_PROBE_SPEED_FAST)); /* raise head */ \
-            stop();                                   /* stop print job */ \
-            LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);   /* stop changes the message... */ \
-            return NAN;                               /* abort the leveling in progress */ \
-        } \
-        SERIAL_ERRORLNPGM(MSG_REWIPE); \
-        LCD_MESSAGEPGM(MSG_REWIPE); \
-        do_blocking_move_to_z(10, MMM_TO_MMS(speed)); /* raise nozzle */ \
-        Nozzle::clean(0, 2, 0, 0);                    /* wipe nozzle */ \
-    }
-
-#define LULZBOT_G92_Z(z) \
-      stepper.synchronize(); \
-      current_position[Z_AXIS] = z; \
-      SYNC_PLAN_POSITION_KINEMATIC();
-
-#define LULZBOT_G0_Z(z) \
-      do_blocking_move_to_z(z);
-
-// On a TAZ, we need to raise the print head after homing to clear the button;
-// On the yellowfin we also need to reset the origin to account for the Z home riser.
-
-#if defined(LULZBOT_USE_HOME_BUTTON)
-    #define LULZBOT_AFTER_Z_HOME_ACTION \
-        if(home_all || homeZ) { \
-          LULZBOT_G92_Z(LULZBOT_AFTER_Z_HOME_Z_ORIGIN); \
-          LULZBOT_G0_Z(LULZBOT_AFTER_Z_HOME_Z_RAISE); \
-        }
-#else
-    #define LULZBOT_AFTER_Z_HOME_ACTION
-#endif
+/*************************** Z-OFFSET AUTO-SAVE  ********************************/
 
 /* Historically, the Lulzbot firmware would save the Z-Offset into the EEPROM
  * each time it is changed. The latest Marlin made this more difficult since they
