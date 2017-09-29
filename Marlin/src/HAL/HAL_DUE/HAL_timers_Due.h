@@ -51,6 +51,7 @@
 #define HAL_TICKS_PER_US       (HAL_STEPPER_TIMER_RATE/1000000)
 
 #define TEMP_TIMER_FREQUENCY   1000
+#define STEPPER_TIMER_PRESCALE 1.0 //needed for MINIMUM_STEPPER_PULSE feature in Configuration_adv.h (DRV8825 drivers and probably others)
 
 #define ENABLE_STEPPER_DRIVER_INTERRUPT() HAL_timer_enable_interrupt (STEP_TIMER_NUM)
 #define DISABLE_STEPPER_DRIVER_INTERRUPT()  HAL_timer_disable_interrupt (STEP_TIMER_NUM)

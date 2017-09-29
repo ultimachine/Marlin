@@ -455,7 +455,7 @@ void Stepper::isr() {
     #if STEP_PULSE_CYCLES > CYCLES_EATEN_BY_CODE
       static uint32_t pulse_start;
       #ifdef CPU_32_BIT
-        pulse_start = HAL_timer_get_current_count(STEPPER_TIMER);
+        pulse_start = HAL_timer_get_current_count(STEP_TIMER_NUM);
       #else
         pulse_start = TCNT0;
       #endif
@@ -492,8 +492,8 @@ void Stepper::isr() {
     #if STEP_PULSE_CYCLES > CYCLES_EATEN_BY_CODE
       #ifdef CPU_32_BIT
         // MINIMUM_STEPPER_PULSE = 0... pulse width = 820ns, 1... 1.5μs, 2... 2.24μs, 3... 3.34μs, 4... 4.08μs, 5... 5.18μs
-        while (HAL_timer_get_current_count(STEPPER_TIMER) - pulse_start < (STEP_PULSE_CYCLES - CYCLES_EATEN_BY_CODE) / STEPPER_TIMER_PRESCALE) { /* nada */ }
-        pulse_start = HAL_timer_get_current_count(STEPPER_TIMER);
+        while (HAL_timer_get_current_count(STEP_TIMER_NUM) - pulse_start < (STEP_PULSE_CYCLES - CYCLES_EATEN_BY_CODE) / STEPPER_TIMER_PRESCALE) { /* nada */ }
+        pulse_start = HAL_timer_get_current_count(STEP_TIMER_NUM);
       #else
         while ((uint32_t)(TCNT0 - pulse_start) < STEP_PULSE_CYCLES - CYCLES_EATEN_BY_CODE) { /* nada */ }
       #endif
@@ -534,7 +534,7 @@ void Stepper::isr() {
     #ifdef CPU_32_BIT
       // For a minimum pulse time wait before stopping low pulses
       #if STEP_PULSE_CYCLES > CYCLES_EATEN_BY_CODE
-        if (i < step_loops - 1) while (HAL_timer_get_current_count(STEPPER_TIMER) - pulse_start < (STEP_PULSE_CYCLES - CYCLES_EATEN_BY_CODE) / STEPPER_TIMER_PRESCALE) { /* nada */ }
+        if (i < step_loops - 1) while (HAL_timer_get_current_count(STEP_TIMER_NUM) - pulse_start < (STEP_PULSE_CYCLES - CYCLES_EATEN_BY_CODE) / STEPPER_TIMER_PRESCALE) { /* nada */ }
       #endif
     #endif
   }
@@ -1255,6 +1255,24 @@ void Stepper::report_positions() {
         //digitalPotWrite(digipot_ch[i], digipot_motor_current[i]);
         digipot_current(i, digipot_motor_current[i]);
       }
+    #elif PIN_EXISTS(MOTOR_CURRENT_PWM_X)
+        //SET_OUTPUT(MOTOR_CURRENT_PWM_X_PIN);
+        //SET_OUTPUT(MOTOR_CURRENT_PWM_Y_PIN);
+        //SET_OUTPUT(MOTOR_CURRENT_PWM_Z_PIN);
+        //SET_OUTPUT(MOTOR_CURRENT_PWM_E0_PIN);
+        //SET_OUTPUT(MOTOR_CURRENT_PWM_E1_PIN);
+        /*
+        digipot_current(0, motor_current_setting[0]);
+        digipot_current(1, motor_current_setting[1]);
+        digipot_current(2, motor_current_setting[2]);
+        digipot_current(3, motor_current_setting[3]);
+        digipot_current(4, motor_current_setting[4]);
+        */
+        analogWrite(MOTOR_CURRENT_PWM_X_PIN,  100);
+        analogWrite(MOTOR_CURRENT_PWM_Y_PIN,  100);
+        analogWrite(MOTOR_CURRENT_PWM_Z_PIN,  100);
+        analogWrite(MOTOR_CURRENT_PWM_E0_PIN, 100);
+        analogWrite(MOTOR_CURRENT_PWM_E1_PIN, 100);
     #elif HAS_MOTOR_CURRENT_PWM
       #if PIN_EXISTS(MOTOR_CURRENT_PWM_XY)
         SET_OUTPUT(MOTOR_CURRENT_PWM_XY_PIN);
@@ -1277,6 +1295,14 @@ void Stepper::report_positions() {
     #if HAS_DIGIPOTSS
       const uint8_t digipot_ch[] = DIGIPOT_CHANNELS;
       digitalPotWrite(digipot_ch[driver], current);
+    #elif PIN_EXISTS(MOTOR_CURRENT_PWM_X_PIN)
+      switch(driver) {
+        case 0: analogWrite(MOTOR_CURRENT_PWM_X_PIN,  255L * current / MOTOR_CURRENT_PWM_RANGE); break;
+        case 1: analogWrite(MOTOR_CURRENT_PWM_Y_PIN,  255L * current / MOTOR_CURRENT_PWM_RANGE); break;
+        case 2: analogWrite(MOTOR_CURRENT_PWM_Z_PIN,  255L * current / MOTOR_CURRENT_PWM_RANGE); break;
+        case 3: analogWrite(MOTOR_CURRENT_PWM_E0_PIN, 255L * current / MOTOR_CURRENT_PWM_RANGE); break;
+        case 4: analogWrite(MOTOR_CURRENT_PWM_E1_PIN, 255L * current / MOTOR_CURRENT_PWM_RANGE); break;
+      }
     #elif HAS_MOTOR_CURRENT_PWM
       #define _WRITE_CURRENT_PWM(P) analogWrite(P, 255L * current / (MOTOR_CURRENT_PWM_RANGE))
       switch (driver) {
@@ -1319,6 +1345,19 @@ void Stepper::report_positions() {
     #if HAS_MICROSTEPS_E1
       SET_OUTPUT(E1_MS1_PIN);
       SET_OUTPUT(E1_MS2_PIN);
+    #endif
+
+    #if PIN_EXISTS(X_MS3_PIN)
+      SET_OUTPUT(X_MS3_PIN);
+      SET_OUTPUT(Y_MS3_PIN);
+      SET_OUTPUT(Z_MS3_PIN);
+      SET_OUTPUT(E0_MS3_PIN);
+      SET_OUTPUT(E1_MS3_PIN);
+      digitalWrite(X_MS3_PIN,HIGH);
+      digitalWrite(Y_MS3_PIN,HIGH);
+      digitalWrite(Z_MS3_PIN,HIGH);
+      digitalWrite(E0_MS3_PIN,HIGH);
+      digitalWrite(E1_MS3_PINs,HIGH);
     #endif
     static const uint8_t microstep_modes[] = MICROSTEP_MODES;
     for (uint16_t i = 0; i < COUNT(microstep_modes); i++)
