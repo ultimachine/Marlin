@@ -543,7 +543,7 @@
 
 // The hardware watchdog should reset the microcontroller disabling all outputs,
 // in case the firmware gets stuck and doesn't do temperature regulation.
-#define USE_WATCHDOG
+//#define USE_WATCHDOG
 
 #if ENABLED(USE_WATCHDOG)
   // If you have a watchdog reboot in an ArduinoMega2560 then the device will hang forever, as a watchdog reset will leave the watchdog on.
@@ -659,7 +659,7 @@
 
 // The minimum pulse width (in µs) for stepping a stepper.
 // Set this if you find stepping unreliable, or if using a very fast CPU.
-#define MINIMUM_STEPPER_PULSE 2 // (µs) The smallest stepper pulse allowed
+#define MINIMUM_STEPPER_PULSE 0 // (µs) The smallest stepper pulse allowed
 
 // @section temperature
 
@@ -845,7 +845,7 @@
  * the hardware SPI interface on your board and define the required CS pins
  * in your `pins_MYBOARD.h` file. (e.g., RAMPS 1.4 uses AUX3 pins `X_CS_PIN 53`, `Y_CS_PIN 49`, etc.).
  */
-//#define HAVE_TMC2130
+#define HAVE_TMC2130
 
 #if ENABLED(HAVE_TMC2130)
   #define STEALTHCHOP
@@ -883,15 +883,15 @@
 
   #define X_MAX_CURRENT     1000  // rms current in mA
   #define X_MICROSTEPS        16  // FULLSTEP..256
-  #define X_CHIP_SELECT       40  // Pin
+  #define X_CHIP_SELECT       X_CS_PIN
 
   #define Y_MAX_CURRENT     1000
   #define Y_MICROSTEPS        16
-  #define Y_CHIP_SELECT       42
+  #define Y_CHIP_SELECT       Y_CS_PIN
 
   #define Z_MAX_CURRENT     1000
   #define Z_MICROSTEPS        16
-  #define Z_CHIP_SELECT       65
+  #define Z_CHIP_SELECT       Z_CS_PIN
 
   //#define X2_MAX_CURRENT  1000
   //#define X2_MICROSTEPS     16
@@ -905,13 +905,13 @@
   //#define Z2_MICROSTEPS     16
   //#define Z2_CHIP_SELECT    -1
 
-  //#define E0_MAX_CURRENT  1000
-  //#define E0_MICROSTEPS     16
-  //#define E0_CHIP_SELECT    -1
+  #define E0_MAX_CURRENT  1000
+  #define E0_MICROSTEPS     16
+  #define E0_CHIP_SELECT    E0_CS_PIN
 
-  //#define E1_MAX_CURRENT  1000
-  //#define E1_MICROSTEPS     16
-  //#define E1_CHIP_SELECT    -1
+  #define E1_MAX_CURRENT  1000
+  #define E1_MICROSTEPS     16
+  #define E1_CHIP_SELECT    E1_CS_PIN
 
   //#define E2_MAX_CURRENT  1000
   //#define E2_MICROSTEPS     16

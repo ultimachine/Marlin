@@ -148,6 +148,8 @@
   #include "pins_MINIRAMBO.h"
 #elif MB(ARCHIM)
   #include "pins_ARCHIM.h"
+#elif MB(ARCHIM2)
+  #include "pins_ARCHIM2.h"
 #elif MB(ELEFU_3)
   #include "pins_ELEFU_3.h"
 #elif MB(5DPRINT)
