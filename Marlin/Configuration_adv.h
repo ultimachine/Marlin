@@ -776,21 +776,21 @@
  * in your `pins_MYBOARD.h` file. (e.g., RAMPS 1.4 uses AUX3 pins `X_CS_PIN 53`, `Y_CS_PIN 49`, etc.).
  */
 
-//#define HAVE_TMC2130DRIVER
+#define HAVE_TMC2130DRIVER
 
 #if ENABLED(HAVE_TMC2130DRIVER)
 
-  //#define TMC2130_ADVANCED_CONFIGURATION
+  #define TMC2130_ADVANCED_CONFIGURATION
 
   // CHOOSE YOUR MOTORS HERE, THIS IS MANDATORY
-  //#define X_IS_TMC2130
+  #define X_IS_TMC2130
   //#define X2_IS_TMC2130
-  //#define Y_IS_TMC2130
+  #define Y_IS_TMC2130
   //#define Y2_IS_TMC2130
-  //#define Z_IS_TMC2130
+  #define Z_IS_TMC2130
   //#define Z2_IS_TMC2130
-  //#define E0_IS_TMC2130
-  //#define E1_IS_TMC2130
+  #define E0_IS_TMC2130
+  #define E1_IS_TMC2130
   //#define E2_IS_TMC2130
   //#define E3_IS_TMC2130
 
@@ -828,8 +828,8 @@
 
     /* VELOCITY-DEPENDENT DRIVE FEATURES */
 
-    #define GLOBAL_IHOLD             22 // [0-31] 0: min, 31: max
-    #define GLOBAL_IRUN              31 // [0-31] 0: min, 31: max
+    #define GLOBAL_IHOLD             07 // [0-31] 0: min, 31: max
+    #define GLOBAL_IRUN              14 // [0-31] 0: min, 31: max
     #define GLOBAL_IHOLDDELAY        15 // [0-15] 0: min, 15: about 4 seconds
     //#define GLOBAL_TPOWERDOWN         0 // [0-255] 0: min, 255: about 4 seconds
     //#define GLOBAL_TPWMTHRS           0 // [0-1048576] e.g. 20 corresponds with 2000 steps/s

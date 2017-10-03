@@ -8142,6 +8142,10 @@ void process_next_command() {
         case 122: // M122: Diagnose, used to debug TMC2130
           gcode_M122();
           break;
+        case 123: // M123: Manual init tmc2130
+          MYSERIAL.println("Manual init tmc2130");
+          tmc2130_init();
+          break;
       #endif
 
       #if ENABLED(ULTIPANEL)
