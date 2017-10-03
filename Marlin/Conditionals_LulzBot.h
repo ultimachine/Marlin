@@ -13,10 +13,11 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".16" // Change this with each update
+#define LULZBOT_FW_VERSION ".17" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
+    !defined(LULZBOT_Gladiola_MiniEinsy) && \
     !defined(LULZBOT_Hibiscus_Mini2) && \
     !defined(LULZBOT_Gladiola_MiniLCD) && \
     !defined(LULZBOT_Hibiscus_Mini2LCD) && \
@@ -50,6 +51,19 @@
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_BAUDRATE 115200
     #define LULZBOT_UUID "351487b6-ca9a-4c1a-8765-d668b1da6585"
+#endif
+
+#if defined(LULZBOT_Gladiola_MiniEinsy)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_BAUDRATE 115200
+    #define LULZBOT_UUID "4479bf92-7e47-4c2c-be95-64dd01bd413b"
 #endif
 
 #if defined(LULZBOT_Hibiscus_Mini2)
@@ -178,7 +192,79 @@
     #undef LULZBOT_USE_HOME_BUTTON
 #endif
 
-#if defined(LULZBOT_IS_MINI)
+#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_EINSYRAMBO)
+    // Experimental Mini retrofitted with EinsyRambo from UltiMachine
+    #define LULZBOT_MOTHERBOARD                   BOARD_EINSYRAMBO
+    #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN  // Digital pin 6
+    #define LULZBOT_HAVE_TMC2130
+
+    // EinsyRambo uses a 220 mOhm sense resistor
+    #define LULZBOT_R_SENSE                       0.22
+
+    //#define LULZBOT_STEALTHCHOP
+    // According to Jason at UltiMachine, setting the lower the
+    // stealth freq the cooler the motor drivers will operate.
+    #define LULZBOT_STEALTH_FREQ                  0
+
+    // Make the diag pin active low so because diag0 and diag1 are
+    // connected to the same pin in the processor.
+    #define LULZBOT_TMC_DIAG_ACTIVE_LOW
+
+    #define LULZBOT_TMC_INIT(st) \
+        /* The EinsyRambo connects both diag pins to the same */ \
+        /* microcontroller pin and provides a pull up resistor, */ \
+        /* so configure the pin as active low. */ \
+        st.diag0_active_high(0); \
+        st.diag1_active_high(0); \
+        st.diag1_stall(1); \
+
+    #define LULZBOT_STALLGUARD_REPORT \
+        static int nextSgReport = 100; \
+        if(planner.blocks_queued()) { \
+            if(nextSgReport-- == 0) { \
+                nextSgReport = 100; \
+                uint32_t DRVSTATUS = stepperX.DRV_STATUS(); \
+                uint16_t SG_RESULT = DRVSTATUS & 0b111111111; \
+                bool stst      = (DRVSTATUS >> 31) & 0b1; \
+                bool olb       = (DRVSTATUS >> 30) & 0b1; \
+                bool ola       = (DRVSTATUS >> 29) & 0b1; \
+                bool s2gb      = (DRVSTATUS >> 28) & 0b1; \
+                bool s2ga      = (DRVSTATUS >> 27) & 0b1; \
+                bool otpw      = (DRVSTATUS >> 26) & 0b1; \
+                bool ot        = (DRVSTATUS >> 25) & 0b1; \
+                bool fsactive  = (DRVSTATUS >> 15) & 0b1; \
+                SERIAL_PROTOCOLPGM("Stepper X: "); \
+                SERIAL_PROTOCOLPGM("SG_RESULT:"); \
+                SERIAL_PROTOCOLLN(SG_RESULT); \
+                if(stst)  SERIAL_PROTOCOLPGM("standstill "); \
+                if(olb)   SERIAL_PROTOCOLPGM("olb "); \
+                if(ola)   SERIAL_PROTOCOLPGM("ola "); \
+                if(s2gb)  SERIAL_PROTOCOLPGM("s2gb "); \
+                if(s2ga)  SERIAL_PROTOCOLPGM("s2ga "); \
+                if(otpw)  SERIAL_PROTOCOLPGM("otpw "); \
+                if(ot)    SERIAL_PROTOCOLPGM("ot "); \
+                if(fsactive) SERIAL_PROTOCOLPGM("fsactive "); \
+            } \
+        }
+
+/*
+                X_DIR_WRITE(0); \
+                uint32_t IOIN     = stepperX.IOIN(); \
+                uint16_t DIR      = (IOIN >> 1) & 0b1; \
+                uint16_t ALWAYS_1 = (IOIN >> 6) & 0b1; \
+                if(!ALWAYS_1) SERIAL_PROTOCOLPGM("always_1 not 1! "); \
+                SERIAL_PROTOCOLPGM("Expected DIR 0:"); \
+                SERIAL_PROTOCOLLN(DIR); \
+                X_DIR_WRITE(1); \
+                IOIN     = stepperX.IOIN(); \
+                DIR      = (IOIN >> 1) & 0b1; \
+                SERIAL_PROTOCOLPGM("Expected DIR 1:"); \
+                SERIAL_PROTOCOLLN(DIR); \
+                SERIAL_PROTOCOLPGM("DRVSTATUS:"); \
+                SERIAL_PROTOCOLLN(DRVSTATUS); \
+*/
+
+#elif defined(LULZBOT_IS_MINI)
     #define LULZBOT_MOTHERBOARD                   BOARD_MINIRAMBO
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN  // Digital pin 6
 
@@ -202,11 +288,20 @@
 
 /*********************** HOMING & AXIS DIRECTIONS ******************************/
 
-#define LULZBOT_INVERT_X_DIR                      false
-#define LULZBOT_INVERT_Y_DIR                      true
-#define LULZBOT_INVERT_Z_DIR                      false
-#define LULZBOT_INVERT_E0_DIR                     true
-#define LULZBOT_INVERT_E1_DIR                     true
+#if defined(LULZBOT_USE_EINSYRAMBO)
+    // The axis connectors seem to be reversed on the EinsyRambo.
+    #define LULZBOT_INVERT_X_DIR                  true
+    #define LULZBOT_INVERT_Y_DIR                  false
+    #define LULZBOT_INVERT_Z_DIR                  true
+    #define LULZBOT_INVERT_E0_DIR                 false
+    #define LULZBOT_INVERT_E1_DIR                 false
+#else
+    #define LULZBOT_INVERT_X_DIR                      false
+    #define LULZBOT_INVERT_Y_DIR                      true
+    #define LULZBOT_INVERT_Z_DIR                      false
+    #define LULZBOT_INVERT_E0_DIR                     true
+    #define LULZBOT_INVERT_E1_DIR                     true
+#endif
 
 #if defined(LULZBOT_IS_MINI)
     #define LULZBOT_HOMING_Z_WITH_PROBE           false
@@ -374,7 +469,10 @@
  *   Z_MIN_PIN corresponds to the Z-Home push button.
  *   Z_MIN_PROBE_PIN are the bed washers.
  */
-#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
+#if defined(LULZBOT_Gladiola_MiniEinsy)
+    #define LULZBOT_ENABLE_PROBE_PINS(enable)
+
+#elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
         if(enable) { \
             /* Set as inputs with pull-up resistor */ \
@@ -867,9 +965,18 @@
 
 /**************************** ENDSTOP CONFIGURATION ****************************/
 
-#define LULZBOT_USE_XMIN_PLUG
-#define LULZBOT_USE_YMIN_PLUG
-#define LULZBOT_USE_ZMIN_PLUG
+#if defined(LULZBOT_SENSORLESS_HOMING)
+    #define LULZBOT_USE_XMIN_PLUG // Uses Stallguard
+    //#define LULZBOT_USE_XMAX_PLUG // Uses Stallguard
+    //#define LULZBOT_USE_YMIN_PLUG // Uses Stallguard
+    #define LULZBOT_USE_YMAX_PLUG // Uses Stallguard
+    #define LULZBOT_USE_ZMIN_PLUG
+    #define LULZBOT_USE_ZMAX_PLUG
+#else
+    #define LULZBOT_USE_XMIN_PLUG
+    #define LULZBOT_USE_YMIN_PLUG
+    #define LULZBOT_USE_ZMIN_PLUG
+#endif
 
 // Z-Max Endstops were introduced on the Mini and TAZ 6
 #if defined(LULZBOT_USE_MAX_ENDSTOPS)
@@ -892,7 +999,27 @@
 /* Endstop settings are determined by printer model, except for the
  * X_MAX which varies by toolhead. */
 
-#if defined(LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS)
+#if defined(LULZBOT_SENSORLESS_HOMING)
+    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
+
+    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING true
+
+    // The following does not seem to work when both
+    // MAX and MIN are using Stallguard:
+    #define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
+
+    // For some reason, Quickhome is not reliable with sensorless homing
+    #undef LULZBOT_QUICKHOME
+
+    #define LULZBOT_X_HOMING_SENSITIVITY 5
+    #define LULZBOT_Y_HOMING_SENSITIVITY 5
+
+#elif defined(LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS)
     // TAZ 6+ and Huerfano Mini onwards use normally closed endstops.
     // This is safer, as a loose connector or broken wire will halt
     // the axis
@@ -1052,7 +1179,10 @@
     #define LULZBOT_Z_STEPS                       1790.08264463
 #endif
 
-#if defined(LULZBOT_IS_MINI)
+#if defined(LULZBOT_USE_EINSYRAMBO)
+    // Neither define LULZBOT_PWM_MOTOR_CURRENT nor LULZBOT_DIGIPOT_MOTOR_CURRENT
+
+#elif defined(LULZBOT_IS_MINI)
         #define LULZBOT_PWM_MOTOR_CURRENT { \
             LULZBOT_MOTOR_CURRENT_XY, \
             LULZBOT_MOTOR_CURRENT_Z, \

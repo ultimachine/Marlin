@@ -348,11 +348,13 @@
 // @section homing
 
 //homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
-#define X_HOME_BUMP_MM 5
-#define Y_HOME_BUMP_MM 5
+#define X_HOME_BUMP_MM LULZBOT_X_HOME_BUMP_MM
+#define Y_HOME_BUMP_MM LULZBOT_Y_HOME_BUMP_MM
 #define Z_HOME_BUMP_MM 2
 #define HOMING_BUMP_DIVISOR {2, 2, 4}  // Re-Bump Speed Divisor (Divides the Homing Feedrate)
+#if defined(LULZBOT_QUICKHOME)
 #define QUICK_HOME LULZBOT_QUICKHOME  //if this is defined, if both x and y are to be homed, a diagonal move will be performed initially.
+#endif
 
 // When G28 is called, this option will make Y home before X
 //#define HOME_Y_BEFORE_X
@@ -432,8 +434,12 @@
  *    M908 - BQ_ZUM_MEGA_3D, RAMBO, PRINTRBOARD_REVF, RIGIDBOARD_V2 & SCOOVO_X9H
  *    M909, M910 & LCD - only PRINTRBOARD_REVF & RIGIDBOARD_V2
  */
+#if defined(LULZBOT_PWM_MOTOR_CURRENT)
 #define PWM_MOTOR_CURRENT     LULZBOT_PWM_MOTOR_CURRENT          // Values in milliamps
+#endif
+#if defined(LULZBOT_DIGIPOT_MOTOR_CURRENT)
 #define DIGIPOT_MOTOR_CURRENT LULZBOT_DIGIPOT_MOTOR_CURRENT   // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+#endif
 //#define DAC_MOTOR_CURRENT_DEFAULT { 70, 80, 90, 80 }    // Default drive percent - X, Y, Z, E axis
 
 // Uncomment to enable an I2C based DIGIPOT like on the Azteeg X3 Pro
@@ -946,7 +952,7 @@
    * Stepper driver settings
    */
 
-  #define R_SENSE           0.11  // R_sense resistor for SilentStepStick2130
+  #define R_SENSE LULZBOT_R_SENSE  // R_sense resistor for SilentStepStick2130
   #define HOLD_MULTIPLIER    0.5  // Scales down the holding current from run current
   #define INTERPOLATE          1  // Interpolate X/Y/Z_MICROSTEPS to 256
 
@@ -987,7 +993,9 @@
    * Use Trinamic's ultra quiet stepping mode.
    * When disabled, Marlin will use spreadCycle stepping mode.
    */
+  #if defined(LULZBOT_STEALTHCHOP)
   #define STEALTHCHOP
+  #endif
 
   /**
    * Let Marlin automatically control stepper current.
@@ -1042,11 +1050,13 @@
    * It is advised to set X/Y_HOME_BUMP_MM to 0.
    * M914 X/Y to live tune the setting
    */
-  //#define SENSORLESS_HOMING
+  #if defined(LULZBOT_SENSORLESS_HOMING)
+  #define SENSORLESS_HOMING
+  #endif
 
   #if ENABLED(SENSORLESS_HOMING)
-    #define X_HOMING_SENSITIVITY  19
-    #define Y_HOMING_SENSITIVITY  19
+    #define X_HOMING_SENSITIVITY  LULZBOT_X_HOMING_SENSITIVITY
+    #define Y_HOMING_SENSITIVITY  LULZBOT_Y_HOMING_SENSITIVITY
   #endif
 
   /**

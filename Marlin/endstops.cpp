@@ -181,6 +181,7 @@ void Endstops::report_state() {
       }
     #endif
   }
+  LULZBOT_STALLGUARD_REPORT
 } // Endstops::report_state
 
 void Endstops::M119() {
