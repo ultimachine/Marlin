@@ -48,7 +48,9 @@
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
     #define LULZBOT_BAUDRATE 115200
     #define LULZBOT_UUID "351487b6-ca9a-4c1a-8765-d668b1da6585"
 #endif
@@ -73,6 +75,7 @@
     #define LULZBOT_MINI_BED
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
@@ -87,7 +90,9 @@
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
     #define LULZBOT_BAUDRATE 115200
     #define LULZBOT_UUID "083f68f1-028e-494c-98e1-f2e0dfaee9a5"
 #endif
@@ -101,6 +106,7 @@
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
@@ -114,6 +120,8 @@
     #define LULZBOT_IS_TAZ
     #define LULZBOT_TAZ_BED
     #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_USE_MIN_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_UUID "c3255c96-4097-4884-8ed0-ded2ff9bae61"
 #endif
@@ -125,6 +133,7 @@
     #define LULZBOT_TAZ_BED
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_HOME_BUTTON
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
@@ -140,6 +149,7 @@
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
@@ -196,73 +206,6 @@
     // Experimental Mini retrofitted with EinsyRambo from UltiMachine
     #define LULZBOT_MOTHERBOARD                   BOARD_EINSYRAMBO
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN  // Digital pin 6
-    #define LULZBOT_HAVE_TMC2130
-
-    // EinsyRambo uses a 220 mOhm sense resistor
-    #define LULZBOT_R_SENSE                       0.22
-
-    //#define LULZBOT_STEALTHCHOP
-    // According to Jason at UltiMachine, setting the lower the
-    // stealth freq the cooler the motor drivers will operate.
-    #define LULZBOT_STEALTH_FREQ                  0
-
-    // Make the diag pin active low so because diag0 and diag1 are
-    // connected to the same pin in the processor.
-    #define LULZBOT_TMC_DIAG_ACTIVE_LOW
-
-    #define LULZBOT_TMC_INIT(st) \
-        /* The EinsyRambo connects both diag pins to the same */ \
-        /* microcontroller pin and provides a pull up resistor, */ \
-        /* so configure the pin as active low. */ \
-        st.diag0_active_high(0); \
-        st.diag1_active_high(0); \
-        st.diag1_stall(1); \
-
-    #define LULZBOT_STALLGUARD_REPORT \
-        static int nextSgReport = 100; \
-        if(planner.blocks_queued()) { \
-            if(nextSgReport-- == 0) { \
-                nextSgReport = 100; \
-                uint32_t DRVSTATUS = stepperX.DRV_STATUS(); \
-                uint16_t SG_RESULT = DRVSTATUS & 0b111111111; \
-                bool stst      = (DRVSTATUS >> 31) & 0b1; \
-                bool olb       = (DRVSTATUS >> 30) & 0b1; \
-                bool ola       = (DRVSTATUS >> 29) & 0b1; \
-                bool s2gb      = (DRVSTATUS >> 28) & 0b1; \
-                bool s2ga      = (DRVSTATUS >> 27) & 0b1; \
-                bool otpw      = (DRVSTATUS >> 26) & 0b1; \
-                bool ot        = (DRVSTATUS >> 25) & 0b1; \
-                bool fsactive  = (DRVSTATUS >> 15) & 0b1; \
-                SERIAL_PROTOCOLPGM("Stepper X: "); \
-                SERIAL_PROTOCOLPGM("SG_RESULT:"); \
-                SERIAL_PROTOCOLLN(SG_RESULT); \
-                if(stst)  SERIAL_PROTOCOLPGM("standstill "); \
-                if(olb)   SERIAL_PROTOCOLPGM("olb "); \
-                if(ola)   SERIAL_PROTOCOLPGM("ola "); \
-                if(s2gb)  SERIAL_PROTOCOLPGM("s2gb "); \
-                if(s2ga)  SERIAL_PROTOCOLPGM("s2ga "); \
-                if(otpw)  SERIAL_PROTOCOLPGM("otpw "); \
-                if(ot)    SERIAL_PROTOCOLPGM("ot "); \
-                if(fsactive) SERIAL_PROTOCOLPGM("fsactive "); \
-            } \
-        }
-
-/*
-                X_DIR_WRITE(0); \
-                uint32_t IOIN     = stepperX.IOIN(); \
-                uint16_t DIR      = (IOIN >> 1) & 0b1; \
-                uint16_t ALWAYS_1 = (IOIN >> 6) & 0b1; \
-                if(!ALWAYS_1) SERIAL_PROTOCOLPGM("always_1 not 1! "); \
-                SERIAL_PROTOCOLPGM("Expected DIR 0:"); \
-                SERIAL_PROTOCOLLN(DIR); \
-                X_DIR_WRITE(1); \
-                IOIN     = stepperX.IOIN(); \
-                DIR      = (IOIN >> 1) & 0b1; \
-                SERIAL_PROTOCOLPGM("Expected DIR 1:"); \
-                SERIAL_PROTOCOLLN(DIR); \
-                SERIAL_PROTOCOLPGM("DRVSTATUS:"); \
-                SERIAL_PROTOCOLLN(DRVSTATUS); \
-*/
 
 #elif defined(LULZBOT_IS_MINI)
     #define LULZBOT_MOTHERBOARD                   BOARD_MINIRAMBO
@@ -965,14 +908,7 @@
 
 /**************************** ENDSTOP CONFIGURATION ****************************/
 
-#if defined(LULZBOT_SENSORLESS_HOMING)
-    #define LULZBOT_USE_XMIN_PLUG // Uses Stallguard
-    //#define LULZBOT_USE_XMAX_PLUG // Uses Stallguard
-    //#define LULZBOT_USE_YMIN_PLUG // Uses Stallguard
-    #define LULZBOT_USE_YMAX_PLUG // Uses Stallguard
-    #define LULZBOT_USE_ZMIN_PLUG
-    #define LULZBOT_USE_ZMAX_PLUG
-#else
+#if defined(LULZBOT_USE_MIN_ENDSTOPS)
     #define LULZBOT_USE_XMIN_PLUG
     #define LULZBOT_USE_YMIN_PLUG
     #define LULZBOT_USE_ZMIN_PLUG
@@ -999,27 +935,7 @@
 /* Endstop settings are determined by printer model, except for the
  * X_MAX which varies by toolhead. */
 
-#if defined(LULZBOT_SENSORLESS_HOMING)
-    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING       true
-    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
-    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
-
-    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
-    #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       true
-    #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING true
-
-    // The following does not seem to work when both
-    // MAX and MIN are using Stallguard:
-    #define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
-
-    // For some reason, Quickhome is not reliable with sensorless homing
-    #undef LULZBOT_QUICKHOME
-
-    #define LULZBOT_X_HOMING_SENSITIVITY 5
-    #define LULZBOT_Y_HOMING_SENSITIVITY 5
-
-#elif defined(LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS)
+#if defined(LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS)
     // TAZ 6+ and Huerfano Mini onwards use normally closed endstops.
     // This is safer, as a loose connector or broken wire will halt
     // the axis
@@ -1031,7 +947,8 @@
     // LULZBOT_X_MAX_ENDSTOP_INVERTING varies by toolhead
     #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       false
     #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       false
-#else
+
+#elif defined(LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS)
     #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
     #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
     #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       true
@@ -1040,6 +957,109 @@
     // LULZBOT_X_MAX_ENDSTOP_INVERTING varies by toolhead
     #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
     #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
+#endif
+
+/******************************* SENSORLESS HOMING ******************************/
+
+#if defined(LULZBOT_USE_EINSYRAMBO)
+    #define LULZBOT_HAVE_TMC2130
+
+    // EinsyRambo uses a 220 mOhm sense resistor
+    #define LULZBOT_R_SENSE                       0.22
+
+    #define LULZBOT_TMC_INIT(st) \
+        /* The EinsyRambo connects both diag pins to the same */ \
+        /* microcontroller pin and provides a pull up resistor, */ \
+        /* so configure the pin as active low. */ \
+        st.diag0_active_high(0); \
+        st.diag1_active_high(0); \
+        st.diag1_stall(1);
+
+    #define LULZBOT_STALLGUARD_REPORT \
+        static int nextSgReport = 100; \
+        if(planner.blocks_queued()) { \
+            if(nextSgReport-- == 0) { \
+                nextSgReport = 100; \
+                uint32_t DRVSTATUS = stepperX.DRV_STATUS(); \
+                uint16_t SG_RESULT = DRVSTATUS & 0b111111111; \
+                bool stst      = (DRVSTATUS >> 31) & 0b1; \
+                bool olb       = (DRVSTATUS >> 30) & 0b1; \
+                bool ola       = (DRVSTATUS >> 29) & 0b1; \
+                bool s2gb      = (DRVSTATUS >> 28) & 0b1; \
+                bool s2ga      = (DRVSTATUS >> 27) & 0b1; \
+                bool otpw      = (DRVSTATUS >> 26) & 0b1; \
+                bool ot        = (DRVSTATUS >> 25) & 0b1; \
+                bool fsactive  = (DRVSTATUS >> 15) & 0b1; \
+                SERIAL_PROTOCOLPGM("Stepper X: "); \
+                SERIAL_PROTOCOLPGM("SG_RESULT:"); \
+                SERIAL_PROTOCOLLN(SG_RESULT); \
+                if(stst)  SERIAL_PROTOCOLPGM("standstill "); \
+                if(olb)   SERIAL_PROTOCOLPGM("olb "); \
+                if(ola)   SERIAL_PROTOCOLPGM("ola "); \
+                if(s2gb)  SERIAL_PROTOCOLPGM("s2gb "); \
+                if(s2ga)  SERIAL_PROTOCOLPGM("s2ga "); \
+                if(otpw)  SERIAL_PROTOCOLPGM("otpw "); \
+                if(ot)    SERIAL_PROTOCOLPGM("ot "); \
+                if(fsactive) SERIAL_PROTOCOLPGM("fsactive "); \
+            } \
+        }
+
+    #define LULZBOT_TMC_HEALTHCHECK(AXIS) \
+        { \
+            uint16_t ALWAYS_1, DIR_0, DIR_1; \
+                                 ALWAYS_1 = (stepper##AXIS.IOIN() >> 6) & 0b1; \
+            AXIS##_DIR_WRITE(0); DIR_0    = (stepper##AXIS.IOIN() >> 1) & 0b1; \
+            AXIS##_DIR_WRITE(1); DIR_1    = (stepper##AXIS.IOIN() >> 1) & 0b1; \
+            if(!ALWAYS_1 || DIR_0 != 0 || DIR_1 != 1) { \
+                SERIAL_PROTOCOLPGM("Failed TMC driver health check!"); \
+            } \
+        }
+#else
+    #define LULZBOT_STALLGUARD_REPORT
+    #define LULZBOT_TMC_HEALTHCHECK
+#endif
+
+#if defined(LULZBOT_SENSORLESS_HOMING)
+    #define LULZBOT_USE_XMIN_PLUG // Uses Stallguard
+    //#define LULZBOT_USE_XMAX_PLUG // Uses Stallguard
+    //#define LULZBOT_USE_YMIN_PLUG // Uses Stallguard
+    #define LULZBOT_USE_YMAX_PLUG // Uses Stallguard
+    #define LULZBOT_USE_ZMIN_PLUG
+    #define LULZBOT_USE_ZMAX_PLUG
+
+    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
+
+    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING true
+
+    #define LULZBOT_X_HOME_BUMP_MM                0
+    #define LULZBOT_Y_HOME_BUMP_MM                0
+
+    // The following does not seem to work when both
+    // MAX and MIN are using Stallguard.
+    // It also appears that when this is enabled
+    // stallguard is never cleared.
+    //#define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
+
+    #define LULZBOT_STEALTHCHOP
+
+    // According to Jason at UltiMachine, setting the lower the
+    // stealth freq the cooler the motor drivers will operate.
+    #define LULZBOT_STEALTH_FREQ 0
+
+    // For some reason, Quickhome is not reliable with sensorless homing
+    #undef LULZBOT_QUICKHOME
+
+    #define LULZBOT_X_HOMING_SENSITIVITY 5
+    #define LULZBOT_Y_HOMING_SENSITIVITY 5
+
+#else
+    #define LULZBOT_X_HOME_BUMP_MM                5
+    #define LULZBOT_Y_HOME_BUMP_MM                5
 #endif
 
 /**************************** ADVANCED PAUSE FEATURE ****************************/
