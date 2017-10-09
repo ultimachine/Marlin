@@ -4032,7 +4032,6 @@ inline void gcode_G28(const bool always_home_all) {
     #endif
 
     #if ENABLED(HOME_Y_BEFORE_X)
-
       // Home Y
       if (home_all || homeY) {
         HOMEAXIS(Y);

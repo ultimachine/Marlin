@@ -357,7 +357,9 @@
 #endif
 
 // When G28 is called, this option will make Y home before X
-//#define HOME_Y_BEFORE_X
+#if defined(LULZBOT_HOME_Y_BEFORE_X)
+#define HOME_Y_BEFORE_X
+#endif
 
 // @section machine
 
