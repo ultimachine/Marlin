@@ -2247,8 +2247,12 @@ static void clean_up_after_endstop_or_probe_move() {
       probing_pause(true);
     #endif
 
+    LULZBOT_TMC_CHECK_S2G(Z,1);
+
     // Move down until probe triggered
     do_blocking_move_to_z(z, MMM_TO_MMS(fr_mm_m));
+
+    LULZBOT_TMC_CHECK_S2G(Z,2);
 
     // Check to see if the probe was triggered
     const bool probe_triggered = TEST(Endstops::endstop_hit_bits,
@@ -2258,6 +2262,8 @@ static void clean_up_after_endstop_or_probe_move() {
         Z_MIN_PROBE
       #endif
     );
+
+    LULZBOT_PROBE_DIAGNOSTICS(probe_triggered)
 
     #if QUIET_PROBING
       probing_pause(false);
@@ -2281,6 +2287,8 @@ static void clean_up_after_endstop_or_probe_move() {
       if (DEBUGGING(LEVELING)) DEBUG_POS("<<< do_probe_move", current_position);
     #endif
 
+    LULZBOT_TMC_CHECK_S2G(Z,3);
+
     return !probe_triggered;
   }
 
@@ -2301,6 +2309,7 @@ static void clean_up_after_endstop_or_probe_move() {
     refresh_cmd_timeout();
 
     #if ENABLED(PROBE_DOUBLE_TOUCH)
+      LULZBOT_TMC_CHECK_S2G(Z,4)
 
       // Do a first probe at the fast speed
       #if defined(LULZBOT_PROBE_Z_WITH_REWIPE)
@@ -2313,6 +2322,8 @@ static void clean_up_after_endstop_or_probe_move() {
         float first_probe_z = current_position[Z_AXIS];
         if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPAIR("1st Probe Z:", first_probe_z);
       #endif
+
+      LULZBOT_TMC_CHECK_S2G(Z,5)
 
       // move up to make clearance for the probe
       do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
@@ -2332,12 +2343,15 @@ static void clean_up_after_endstop_or_probe_move() {
       }
     #endif
 
+    LULZBOT_TMC_CHECK_S2G(Z,6)
     // move down slowly to find bed
     #if defined(LULZBOT_PROBE_Z_WITH_REWIPE)
     LULZBOT_PROBE_Z_WITH_REWIPE(Z_PROBE_SPEED_SLOW);
     #else
     if (do_probe_move(-10 + (short_move ? 0 : -(Z_MAX_LENGTH)), Z_PROBE_SPEED_SLOW)) return NAN;
     #endif
+
+    LULZBOT_TMC_CHECK_S2G(Z,7)
 
     #if ENABLED(DEBUG_LEVELING_FEATURE)
       if (DEBUGGING(LEVELING)) DEBUG_POS("<<< run_z_probe", current_position);
@@ -2408,10 +2422,14 @@ static void clean_up_after_endstop_or_probe_move() {
     if (!DEPLOY_PROBE()) {
       measured_z = run_z_probe(printable);
 
+      LULZBOT_TMC_CHECK_S2G(Z,8)
+
       if (!stow)
         do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
       else
         if (STOW_PROBE()) measured_z = NAN;
+
+      LULZBOT_TMC_CHECK_S2G(Z,9)
     }
 
     #if HAS_SOFTWARE_ENDSTOPS
@@ -11270,6 +11288,7 @@ void process_next_command() {
         break;
       case 119: // M119: Report endstop states
         LULZBOT_ENABLE_PROBE_PINS(true);
+        LULZBOT_DELAY_BEFORE_M119
         gcode_M119();
         LULZBOT_ENABLE_PROBE_PINS(false);
         break;

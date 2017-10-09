@@ -181,7 +181,7 @@ void Endstops::report_state() {
       }
     #endif
   }
-  LULZBOT_STALLGUARD_REPORT
+  LULZBOT_TMC_G0G1_STALLGUARD_REPORT
 } // Endstops::report_state
 
 void Endstops::M119() {
@@ -226,6 +226,7 @@ void Endstops::M119() {
     SERIAL_PROTOCOLPGM(MSG_FILAMENT_RUNOUT_SENSOR);
     SERIAL_PROTOCOLLN(((READ(FIL_RUNOUT_PIN)^FIL_RUNOUT_INVERTING) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN));
   #endif
+  LULZBOT_TMC_M119_STALLGUARD_REPORT
 } // Endstops::M119
 
 #if ENABLED(Z_DUAL_ENDSTOPS)

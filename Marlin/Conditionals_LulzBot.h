@@ -231,20 +231,11 @@
 
 /*********************** HOMING & AXIS DIRECTIONS ******************************/
 
-#if defined(LULZBOT_USE_EINSYRAMBO)
-    // The axis connectors seem to be reversed on the EinsyRambo.
-    #define LULZBOT_INVERT_X_DIR                  true
-    #define LULZBOT_INVERT_Y_DIR                  false
-    #define LULZBOT_INVERT_Z_DIR                  true
-    #define LULZBOT_INVERT_E0_DIR                 false
-    #define LULZBOT_INVERT_E1_DIR                 false
-#else
-    #define LULZBOT_INVERT_X_DIR                      false
-    #define LULZBOT_INVERT_Y_DIR                      true
-    #define LULZBOT_INVERT_Z_DIR                      false
-    #define LULZBOT_INVERT_E0_DIR                     true
-    #define LULZBOT_INVERT_E1_DIR                     true
-#endif
+#define LULZBOT_INVERT_X_DIR                      false
+#define LULZBOT_INVERT_Y_DIR                      true
+#define LULZBOT_INVERT_Z_DIR                      false
+#define LULZBOT_INVERT_E0_DIR                     true
+#define LULZBOT_INVERT_E1_DIR                     true
 
 #if defined(LULZBOT_IS_MINI)
     #define LULZBOT_HOMING_Z_WITH_PROBE           false
@@ -412,46 +403,42 @@
  *   Z_MIN_PIN corresponds to the Z-Home push button.
  *   Z_MIN_PROBE_PIN are the bed washers.
  */
+#define LULZBOT_SET_PIN_STATE(pin, enable) \
+    if(enable) { \
+        /* Set as inputs with pull-up resistor */ \
+        SET_INPUT(pin); \
+        WRITE(pin, HIGH); \
+    } else { \
+        /* Ground to prevent EMI */ \
+        SET_OUTPUT(pin); \
+        WRITE(pin, LOW); \
+    }
+
 #if defined(LULZBOT_Gladiola_MiniEinsy)
-    #define LULZBOT_ENABLE_PROBE_PINS(enable)
+    #define LULZBOT_ENABLE_PROBE_PINS(enable) \
+        endstops.enable_z_probe(enable);
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
-        if(enable) { \
-            /* Set as inputs with pull-up resistor */ \
-            SET_INPUT(Z_MIN_PIN); \
-            WRITE(Z_MIN_PIN, HIGH); \
-        } else { \
-            /* Ground to prevent EMI */ \
-            SET_OUTPUT(Z_MIN_PIN); \
-            WRITE(Z_MIN_PIN, LOW); \
-        } \
+        endstops.enable_z_probe(enable); \
+        LULZBOT_SET_PIN_STATE(Z_MIN_PIN, enable) \
         LULZBOT_EXTRUDER_MOTOR_SHUTOFF_ON_PROBE(enable) \
     }
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_USE_HOME_BUTTON)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
-        if(enable) { \
-            /* Set both as inputs with pull-up resistor */ \
-            SET_INPUT(LULZBOT_Z_MIN_PROBE_PIN); \
-            WRITE(LULZBOT_Z_MIN_PROBE_PIN, HIGH); \
-            SET_INPUT(Z_MIN_PIN); \
-            WRITE(Z_MIN_PIN, HIGH); \
-            /* The following is required since Marlin would \
-             * not normally deploy the probe for Z-Min */ \
-            endstops.enable_z_probe(true); \
-        } else { \
-            /* Ground both pins to prevent EMI */ \
-            SET_OUTPUT(LULZBOT_Z_MIN_PROBE_PIN); \
-            WRITE(LULZBOT_Z_MIN_PROBE_PIN, LOW); \
-            SET_OUTPUT(Z_MIN_PIN); \
-            WRITE(Z_MIN_PIN, LOW); \
-            endstops.enable_z_probe(false); \
-        } \
+        endstops.enable_z_probe(enable); \
+        LULZBOT_SET_PIN_STATE(Z_MIN_PIN, enable) \
+        LULZBOT_SET_PIN_STATE(LULZBOT_Z_MIN_PROBE_PIN, enable) \
     }
 #else
     #define LULZBOT_ENABLE_PROBE_PINS(enable)
 #endif
+
+/* We need a delay before M119, since LULZBOT_ENABLE_PROBE_PINS
+ * calls endstops.enable_z_probe, but there is a delay before
+ * the ISR checks endstops again */
+#define LULZBOT_DELAY_BEFORE_M119 safe_delay(500);
 
 /* Make it so M42 S<state> controls the state of the
 /* probe lines. This is useful for troubleshooting. */
@@ -965,7 +952,9 @@
     #define LULZBOT_HAVE_TMC2130
 
     // EinsyRambo uses a 220 mOhm sense resistor
-    #define LULZBOT_R_SENSE                       0.22
+    #define LULZBOT_R_SENSE         0.22
+
+    #define LULZBOT_HOLD_MULTIPLIER 0.5
 
     #define LULZBOT_TMC_INIT(st) \
         /* The EinsyRambo connects both diag pins to the same */ \
@@ -973,36 +962,15 @@
         /* so configure the pin as active low. */ \
         st.diag0_active_high(0); \
         st.diag1_active_high(0); \
-        st.diag1_stall(1);
-
-    #define LULZBOT_STALLGUARD_REPORT \
-        static int nextSgReport = 100; \
-        if(planner.blocks_queued()) { \
-            if(nextSgReport-- == 0) { \
-                nextSgReport = 100; \
-                uint32_t DRVSTATUS = stepperX.DRV_STATUS(); \
-                uint16_t SG_RESULT = DRVSTATUS & 0b111111111; \
-                bool stst      = (DRVSTATUS >> 31) & 0b1; \
-                bool olb       = (DRVSTATUS >> 30) & 0b1; \
-                bool ola       = (DRVSTATUS >> 29) & 0b1; \
-                bool s2gb      = (DRVSTATUS >> 28) & 0b1; \
-                bool s2ga      = (DRVSTATUS >> 27) & 0b1; \
-                bool otpw      = (DRVSTATUS >> 26) & 0b1; \
-                bool ot        = (DRVSTATUS >> 25) & 0b1; \
-                bool fsactive  = (DRVSTATUS >> 15) & 0b1; \
-                SERIAL_PROTOCOLPGM("Stepper X: "); \
-                SERIAL_PROTOCOLPGM("SG_RESULT:"); \
-                SERIAL_PROTOCOLLN(SG_RESULT); \
-                if(stst)  SERIAL_PROTOCOLPGM("standstill "); \
-                if(olb)   SERIAL_PROTOCOLPGM("olb "); \
-                if(ola)   SERIAL_PROTOCOLPGM("ola "); \
-                if(s2gb)  SERIAL_PROTOCOLPGM("s2gb "); \
-                if(s2ga)  SERIAL_PROTOCOLPGM("s2ga "); \
-                if(otpw)  SERIAL_PROTOCOLPGM("otpw "); \
-                if(ot)    SERIAL_PROTOCOLPGM("ot "); \
-                if(fsactive) SERIAL_PROTOCOLPGM("fsactive "); \
-            } \
-        }
+        st.diag1_stall(1); \
+        /* Reverse the motor direction so it matches the Rambo */ \
+        st.shaft_dir(1); \
+        st.external_ref(0);     /* I_scale_analog  = 0 */ \
+        st.internal_sense_R(0); /* internal_Rsense = 0 */ \
+        /* Disable short protection since this generates false positives
+           on the Z axis when probing.
+         */ \
+        //st.disable_short_protection(1)
 
     #define LULZBOT_TMC_HEALTHCHECK(AXIS) \
         { \
@@ -1014,9 +982,89 @@
                 SERIAL_PROTOCOLPGM("Failed TMC driver health check!"); \
             } \
         }
+
+    #define LULZBOT_TMC_REPORT(AXIS) \
+        { \
+            uint32_t DRVSTATUS  = stepper##AXIS.DRV_STATUS(); \
+            uint32_t IOIN       = stepper##AXIS.IOIN(); \
+            uint32_t IHOLD_IRUN = stepper##AXIS.IHOLD_IRUN(); \
+            uint32_t CHOPCONF   = stepper##AXIS.CHOPCONF(); \
+            uint16_t SG_RESULT  = (DRVSTATUS)       & 0b111111111; \
+            bool drv_enn        = (IOIN      >>  4) & 0b1; \
+            bool stst           = (DRVSTATUS >> 31) & 0b1; \
+            bool olb            = (DRVSTATUS >> 30) & 0b1; \
+            bool ola            = (DRVSTATUS >> 29) & 0b1; \
+            bool s2gb           = (DRVSTATUS >> 28) & 0b1; \
+            bool s2ga           = (DRVSTATUS >> 27) & 0b1; \
+            bool otpw           = (DRVSTATUS >> 26) & 0b1; \
+            bool ot             = (DRVSTATUS >> 25) & 0b1; \
+            bool fsactive       = (DRVSTATUS >> 15) & 0b1; \
+            uint16_t ihold      = (IHOLD_IRUN)      & 0b11111; \
+            uint16_t irun       = (IHOLD_IRUN >> 8) & 0b11111; \
+            bool vsense         = (CHOPCONF  >> 17) & 0b1; \
+            SERIAL_PROTOCOLPGM("TMC_" #AXIS ": "); \
+            if(!drv_enn) SERIAL_PROTOCOLPGM("en "); \
+            if(stst)     SERIAL_PROTOCOLPGM("st "); \
+            if(olb)      SERIAL_PROTOCOLPGM("olb "); \
+            if(ola)      SERIAL_PROTOCOLPGM("ola "); \
+            if(s2gb)     SERIAL_PROTOCOLPGM("s2gb "); \
+            if(s2ga)     SERIAL_PROTOCOLPGM("s2ga "); \
+            if(otpw)     SERIAL_PROTOCOLPGM("otpw "); \
+            if(ot)       SERIAL_PROTOCOLPGM("ot "); \
+            if(fsactive) SERIAL_PROTOCOLPGM("fsactive "); \
+            SERIAL_PROTOCOLPGM("ihold_irun:"); \
+            SERIAL_PROTOCOL(ihold); \
+            SERIAL_PROTOCOLPGM("/"); \
+            SERIAL_PROTOCOL(irun); \
+            SERIAL_PROTOCOLPGM(" vsense:"); \
+            SERIAL_PROTOCOL(vsense); \
+            SERIAL_PROTOCOLPGM(" SGR:"); \
+            SERIAL_PROTOCOLLN(SG_RESULT); \
+        }
+
+    /* For reasons unknown, s2ga and s2gb seem to be getting triggered
+     * during probing at the end of Z motions. This checks to see if
+     * these flags are set, and if so, resets the drivers */
+    #define LULZBOT_TMC_CHECK_S2G(AXIS, WHERE) \
+        { \
+            safe_delay(100); \
+            uint32_t DRVSTATUS = stepper##AXIS.DRV_STATUS(); \
+            bool s2gb          = (DRVSTATUS >> 28) & 0b1; \
+            bool s2ga          = (DRVSTATUS >> 27) & 0b1; \
+            if(s2ga || s2gb) { \
+                SERIAL_PROTOCOLLN("s2g detected in checkpoint#" #WHERE); \
+                /* Z_ENABLE_WRITE(!Z_ENABLE_ON); */ \
+                /* Z_ENABLE_WRITE( Z_ENABLE_ON); */ \
+            } \
+        }
+
+    #define LULZBOT_PROBE_DIAGNOSTICS(TRIGGERED) \
+        if(TRIGGERED) \
+            SERIAL_ERRORLNPGM("Probe triggered"); \
+        else \
+            SERIAL_ERRORLNPGM("Probe not triggered");
+
+    /*#define LULZBOT_TMC_G0G1_STALLGUARD_REPORT \
+        static int nextSgReport = 100; \
+        if(planner.blocks_queued()) { \
+            if(nextSgReport-- == 0) { \
+                nextSgReport = 100; \
+                LULZBOT_TMC_REPORT(AXIS)\
+            } \
+        }*/
+
+    #define LULZBOT_TMC_G0G1_STALLGUARD_REPORT
+
+    #define LULZBOT_TMC_M119_STALLGUARD_REPORT \
+        LULZBOT_TMC_REPORT(X) \
+        LULZBOT_TMC_REPORT(Y) \
+        LULZBOT_TMC_REPORT(Z)
 #else
-    #define LULZBOT_STALLGUARD_REPORT
-    #define LULZBOT_TMC_HEALTHCHECK
+    #define LULZBOT_TMC_M119_STALLGUARD_REPORT
+    #define LULZBOT_TMC_G0G1_STALLGUARD_REPORT
+    #define LULZBOT_TMC_HEALTHCHECK(AXIS)
+    #define LULZBOT_TMC_CHECK_S2G(AXIS, WHERE)
+    #define LULZBOT_PROBE_DIAGNOSTICS(TRIGGERED)
 #endif
 
 #if defined(LULZBOT_SENSORLESS_HOMING)
@@ -1028,9 +1076,9 @@
     #define LULZBOT_USE_ZMAX_PLUG
 
     #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING       true
+    //#define LULZBOT_X_MAX_ENDSTOP_INVERTING       true
     #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
-    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
+    //#define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
 
     #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
     #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       true
@@ -1051,7 +1099,7 @@
     // stealth freq the cooler the motor drivers will operate.
     #define LULZBOT_STEALTH_FREQ 0
 
-    // For some reason, Quickhome is not reliable with sensorless homing
+    // Quickhome does not work with sensorless homing
     #undef LULZBOT_QUICKHOME
 
     #define LULZBOT_X_HOMING_SENSITIVITY 5
@@ -1128,12 +1176,46 @@
         Nozzle::clean(0, 2, 0, 0);                    /* wipe nozzle */ \
     }
 
-/************ ACCELERATION, FEEDRATES, XYZ MOTOR STEPS AND CURRENTS ************/
+/******************************** MOTOR CURRENTS *******************************/
+
+// Values for XYZ vary by printer model, values for E vary by toolhead.
+
+#if defined(LULZBOT_Gladiola_MiniEinsy)
+    #define LULZBOT_MOTOR_CURRENT_XY              960    // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               960    // mA
+
+    #if LULZBOT_MOTOR_CURRENT_E  > 960
+        #warning This toolhead may not work properly with the EinsyRambo
+        #undef  LULZBOT_MOTOR_CURRENT_E
+        #define LULZBOT_MOTOR_CURRENT_E           960    // mA
+    #endif
+
+#elif defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
+    #define LULZBOT_MOTOR_CURRENT_XY              1300   // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               1630   // mA
+
+#elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
+    #define LULZBOT_MOTOR_CURRENT_XY              1300   // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               1000   // mA
+
+#elif defined(LULZBOT_Juniper_TAZ5)
+    #define LULZBOT_MOTOR_CURRENT_XY              950    // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               1275   // mA
+
+#elif defined(LULZBOT_Oliveoil_TAZ6)
+    #define LULZBOT_MOTOR_CURRENT_XY              950    // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               1075   // mA
+
+#elif defined(LULZBOT_Quiver_TAZ7)
+    #define LULZBOT_MOTOR_CURRENT_XY              950    // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               950    // mA
+#endif
+
+/******************** ACCELERATION, FEEDRATES AND XYZ MOTOR STEPS *******************/
 
 // Values for XYZ vary by printer model, values for E vary by toolhead.
 
 #if defined(LULZBOT_IS_MINI)
-    #define LULZBOT_MOTOR_CURRENT_XY             1300   // mA
     #define LULZBOT_XY_STEPS                      100.5
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 8, 40}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,1000}
@@ -1148,7 +1230,6 @@
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.377
 
 #elif defined(LULZBOT_IS_TAZ)
-    #define LULZBOT_MOTOR_CURRENT_XY              950     // mA
     #define LULZBOT_XY_STEPS                      100.5
     #define LULZBOT_DEFAULT_XJERK                 8.0
     #define LULZBOT_DEFAULT_YJERK                 8.0
@@ -1164,7 +1245,6 @@
 #endif
 
 #if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Gladiola_MiniEinsy)
-    #define LULZBOT_MOTOR_CURRENT_Z               1630                   // mA
     #define LULZBOT_Z_STEPS                       1600
 
 #elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
@@ -1175,32 +1255,42 @@
     #define Z_MOTOR_GEAR_REDUCTION                26.8512396694
     #define LULZBOT_Z_STEPS (Z_FULL_STEPS_PER_ROTATION * Z_MICROSTEPS * Z_MOTOR_GEAR_REDUCTION / double(Z_BELT_PITCH) / double(Z_PULLEY_TEETH))
 
-    #define LULZBOT_MOTOR_CURRENT_Z               1000                   // mA
     #undef  LULZBOT_DEFAULT_MAX_FEEDRATE
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 8, 25}      // (mm/sec)
 
 #elif defined(LULZBOT_Juniper_TAZ5)
-    #define LULZBOT_MOTOR_CURRENT_Z               1275                   // mA
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 3, 25}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
     #define LULZBOT_Z_STEPS                       1600
 
 #elif defined(LULZBOT_Oliveoil_TAZ6)
-    #define LULZBOT_MOTOR_CURRENT_Z               1075                   // mA
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 3, 25}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
     #define LULZBOT_Z_STEPS                       1600
 
 #elif defined(LULZBOT_Quiver_TAZ7)
     // Prototype Z-belt driven TAZ 7
-    #define LULZBOT_MOTOR_CURRENT_Z               950                    // mA
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 10, 25}     // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,10,10000}
     #define LULZBOT_Z_STEPS                       1790.08264463
 #endif
 
 #if defined(LULZBOT_USE_EINSYRAMBO)
-    // Neither define LULZBOT_PWM_MOTOR_CURRENT nor LULZBOT_DIGIPOT_MOTOR_CURRENT
+    // Neither define LULZBOT_PWM_MOTOR_CURRENT nor LULZBOT_DIGIPOT_MOTOR_CURRENT,
+    // as the current is set in Configuration_adv.h under the HAVE_TMC2130 block
+
+    // Make sure the current is in range, as setting it above this causes the
+    // value in irun to wrap around to zero, which fails silently!
+    #if LULZBOT_MOTOR_CURRENT_XY  > 960 || \
+        LULZBOT_MOTOR_CURRENT_Z   > 960 || \
+        LULZBOT_MOTOR_CURRENT_E   > 960
+        #error Motor currents exceed the maximum values that can be set on the EinsyRambo
+    #endif
+
+    #define LULZBOT_X_CURRENT  LULZBOT_MOTOR_CURRENT_XY
+    #define LULZBOT_Y_CURRENT  LULZBOT_MOTOR_CURRENT_XY
+    #define LULZBOT_Z_CURRENT  LULZBOT_MOTOR_CURRENT_Z
+    #define LULZBOT_E0_CURRENT LULZBOT_MOTOR_CURRENT_E
 
 #elif defined(LULZBOT_IS_MINI)
         #define LULZBOT_PWM_MOTOR_CURRENT { \
