@@ -154,7 +154,6 @@ void Endstops::report_state() {
     #define ENDSTOP_HIT_TEST_Y() _ENDSTOP_HIT_TEST(Y,'Y')
     #define ENDSTOP_HIT_TEST_Z() _ENDSTOP_HIT_TEST(Z,'Z')
 
-    #if !defined(LULZBOT_SUPPRESS_CHATTY_ENDSTOPS)
     SERIAL_ECHO_START();
     SERIAL_ECHOPGM(MSG_ENDSTOPS_HIT);
     ENDSTOP_HIT_TEST_X();
@@ -166,7 +165,6 @@ void Endstops::report_state() {
       if (TEST(endstop_hit_bits, Z_MIN_PROBE)) _ENDSTOP_HIT_ECHO(P, 'P');
     #endif
     SERIAL_EOL();
-    #endif
 
     #if ENABLED(ULTRA_LCD)
       lcd_status_printf_P(0, PSTR(MSG_LCD_ENDSTOPS " %c %c %c %c"), chrX, chrY, chrZ, chrP);
