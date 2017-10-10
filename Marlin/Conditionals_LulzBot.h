@@ -1044,21 +1044,64 @@
         else \
             SERIAL_ERRORLNPGM("Probe not triggered");
 
-    /*#define LULZBOT_TMC_G0G1_STALLGUARD_REPORT \
-        static int nextSgReport = 100; \
-        if(planner.blocks_queued()) { \
-            if(nextSgReport-- == 0) { \
-                nextSgReport = 100; \
-                LULZBOT_TMC_REPORT(AXIS)\
-            } \
-        }*/
+    /* The following function accumulates the average of a
+       stallguard value during a planner move and reports
+       it once the motion ends */
+    #define LULZBOT_TMC_STALLGUARD_AVERAGE(AXIS, SUM, NUM) \
+        static uint8_t   current_tail; \
+        static uint32_t  SUM; \
+        static uint16_t  NUM; \
+        if(current_tail != planner.block_buffer_tail) { \
+            current_tail = planner.block_buffer_tail; \
+            /* When the planner finishes move, report results */ \
+            SERIAL_ECHOLNPAIR(#AXIS " avg_sg: ", SUM/NUM); \
+            SUM = 0; \
+            NUM = 0; \
+        } else if(planner.blocks_queued()) { \
+            /* While in motion, accumulate sg values */ \
+            SUM += stepper##AXIS.DRV_STATUS() & 0b111111111; \
+            NUM++; \
+        }
 
-    #define LULZBOT_TMC_G0G1_STALLGUARD_REPORT
+    /* The following function reports when the average of the
+       stallguard value changes significantly */
+    #define LULZBOT_TMC_STALLGUARD_REPORT_CHANGES(AXIS, SUM, NUM, THRESH) \
+        static uint8_t   current_tail; \
+        static uint32_t  SUM; \
+        static uint16_t  NUM; \
+        static uint16_t  last_avg; \
+        if(current_tail != planner.block_buffer_tail) { \
+            current_tail = planner.block_buffer_tail; \
+            uint16_t avg = SUM/NUM; \
+            if(abs(int(last_avg) - avg) > last_avg * THRESH) { \
+                SERIAL_ECHOLNPAIR("Detected changed in sg value:", avg - last_avg); \
+            } \
+            SERIAL_ECHOLNPAIR(#AXIS " avg_sg: ", avg); \
+            last_avg = avg; \
+            SUM = 0; \
+            NUM = 0; \
+        } else if(planner.blocks_queued()) { \
+            /* While in motion, accumulate sg values */ \
+            SUM += stepper##AXIS.DRV_STATUS() & 0b111111111; \
+            NUM++; \
+        }
+
+    #define LULZBOT_TMC_G0G1_STALLGUARD_REPORT \
+        LULZBOT_TMC_STALLGUARD_AVERAGE(E0, sg_sum_e, sg_num_e)
+
+    //#define LULZBOT_TMC_G0G1_STALLGUARD_REPORT
 
     #define LULZBOT_TMC_M119_STALLGUARD_REPORT \
         LULZBOT_TMC_REPORT(X) \
         LULZBOT_TMC_REPORT(Y) \
         LULZBOT_TMC_REPORT(Z)
+
+    #define LULZBOT_TMC2130_ADV { \
+            /* Turn off stealhchop for extruder motor */ \
+            stepperE0.coolstep_min_speed(1024UL * 1024UL - 1UL); \
+            /* Set stallguard value for filament sensing */ \
+            stepperE0.sg_stall_value(5); \
+        }
 #else
     #define LULZBOT_TMC_M119_STALLGUARD_REPORT
     #define LULZBOT_TMC_G0G1_STALLGUARD_REPORT

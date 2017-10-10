@@ -1072,7 +1072,7 @@
    *   stepperX.interpolate(0); \
    * }
    */
-  #define  TMC2130_ADV() {  }
+  #define  TMC2130_ADV() LULZBOT_TMC2130_ADV
 
 #endif // HAVE_TMC2130
 

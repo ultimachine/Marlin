@@ -9933,8 +9933,7 @@ inline void gcode_M502() {
 
   static void tmc2130_get_sgt(TMC2130Stepper &st, const char name) {
     SERIAL_CHAR(name);
-    SERIAL_ECHOPGM(" driver homing sensitivity set to ");
-    SERIAL_ECHOLN(st.sgt());
+    SERIAL_ECHOLNPAIR(" driver homing sensitivity set to ", st.sgt());
   }
   static void tmc2130_set_sgt(TMC2130Stepper &st, const char name, const int8_t sgt_val) {
     st.sgt(sgt_val);
@@ -10056,6 +10055,10 @@ inline void gcode_M502() {
       #if ENABLED(Y_IS_TMC2130)
         if (parser.seen(axis_codes[Y_AXIS])) tmc2130_set_sgt(stepperY, 'Y', parser.value_int());
         else tmc2130_get_sgt(stepperY, 'Y');
+      #endif
+      #if ENABLED(E0_IS_TMC2130)
+        if (parser.seen(axis_codes[E_AXIS])) tmc2130_set_sgt(stepperE0, 'E', parser.value_int());
+        else tmc2130_get_sgt(stepperE0, 'E');
       #endif
     }
   #endif // SENSORLESS_HOMING
