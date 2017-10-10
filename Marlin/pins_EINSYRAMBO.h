@@ -46,17 +46,42 @@
 #define BOARD_X_MIN_PIN     12
 #define BOARD_Y_MIN_PIN     11
 #define BOARD_Z_MIN_PIN     10
+#if defined(LULZBOT_USE_EARLY_EINSY)
+  // EINY 0-.1 - EINSY 0.3
+  #define BOARD_X_MAX_PIN     30
+  #define BOARD_Y_MAX_PIN     24
+  #define BOARD_Z_MAX_PIN     23
+#endif
 
 //
 // Limit Switches
 //
-#if defined(LULZBOT_SENSORLESS_HOMING)
+// EINY 0-.1 - EINSY 0.3 have MAX switches
+#if   defined(LULZBOT_USE_EARLY_EINSY) && defined(LULZBOT_SENSORLESS_HOMING)
+  #define X_MIN_PIN          BOARD_X_DIAG_PIN
+  #define Y_MIN_PIN          BOARD_Y_MIN_PIN
+  #define Z_MIN_PIN          BOARD_Z_MIN_PIN
+  #define X_MAX_PIN          BOARD_X_MAX_PIN
+  #define Y_MAX_PIN          BOARD_Y_DIAG_PIN
+  #define Z_MAX_PIN          BOARD_Z_MAX_PIN
+
+#elif defined(LULZBOT_USE_EARLY_EINSY)
+  #define X_MIN_PIN          BOARD_X_MIN_PIN
+  #define Y_MIN_PIN          BOARD_Y_MIN_PIN
+  #define Z_MIN_PIN          BOARD_Z_MIN_PIN
+  #define X_MAX_PIN          BOARD_X_MAX_PIN
+  #define Y_MAX_PIN          BOARD_Y_MAX_PIN
+  #define Z_MAX_PIN          BOARD_Z_MAX_PIN
+
+// Einsy 0.4+ lacks MAX switches
+#elif defined(LULZBOT_SENSORLESS_HOMING)
   #define X_MIN_PIN          BOARD_X_DIAG_PIN
   #define Y_MIN_PIN          -1
   #define Z_MIN_PIN          BOARD_Y_MIN_PIN
   #define X_MAX_PIN          -1
   #define Y_MAX_PIN          BOARD_Y_DIAG_PIN
   #define Z_MAX_PIN          BOARD_X_MIN_PIN
+
 #else
   #define X_MIN_PIN          BOARD_X_MIN_PIN
   #define Y_MIN_PIN          BOARD_Y_MIN_PIN
@@ -133,8 +158,11 @@
 //
 // Misc. Functions
 //
-//#define SDSS             53 // EINY 0-.1 - EINSY 0.3
-#define SDSS               77 // EINSY 0.4
+#if defined(LULZBOT_USE_EARLY_EINSY)
+  #define SDSS             53 // EINY 0-.1 - EINSY 0.3
+#else
+  #define SDSS             77 // EINSY 0.4
+#endif
 #define LED_PIN            13
 
 //
@@ -150,12 +178,15 @@
     #define BEEPER_PIN     84
 
     #define LCD_PINS_RS    82
-    // EINY 0.1- EINSY-0.3
-    //#define LCD_PINS_ENABLE 18
-    //#define LCD_PINS_D4     19
-    // EINSY 0.4+
-    #define LCD_PINS_ENABLE 61
-    #define LCD_PINS_D4     59
+    #if defined(LULZBOT_USE_EARLY_EINSY)
+      // EINY 0.1- EINSY-0.3
+      #define LCD_PINS_ENABLE 18
+      #define LCD_PINS_D4     19
+    #else
+      // EINSY 0.4+
+      #define LCD_PINS_ENABLE 61
+      #define LCD_PINS_D4     59
+    #endif
     #define LCD_PINS_D5    70
     #define LCD_PINS_D6    85
     #define LCD_PINS_D7    71

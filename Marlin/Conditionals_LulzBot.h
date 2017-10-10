@@ -17,10 +17,13 @@
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
-    !defined(LULZBOT_Gladiola_MiniEinsy) && \
     !defined(LULZBOT_Hibiscus_Mini2) && \
     !defined(LULZBOT_Gladiola_MiniLCD) && \
     !defined(LULZBOT_Hibiscus_Mini2LCD) && \
+    !defined(LULZBOT_Gladiola_EinsyMini) && \
+    !defined(LULZBOT_Hibiscus_EinsyMini2) && \
+    !defined(LULZBOT_Gladiola_EinsyMiniLCD) && \
+    !defined(LULZBOT_Hibiscus_EinsyMini2LCD) && \
     !defined(LULZBOT_Juniper_TAZ5) && \
     !defined(LULZBOT_Oliveoil_TAZ6) && \
     !defined(LULZBOT_Quiver_TAZ7) \
@@ -55,7 +58,19 @@
     #define LULZBOT_UUID "351487b6-ca9a-4c1a-8765-d668b1da6585"
 #endif
 
-#if defined(LULZBOT_Gladiola_MiniEinsy)
+#if defined(LULZBOT_Gladiola_EinsyMini)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_BAUDRATE 115200
+    #define LULZBOT_UUID "4479bf92-7e47-4c2c-be95-64dd01bd413b"
+#endif
+
+#if defined(LULZBOT_Gladiola_EinsyMiniLCD)
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
     #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy"
     #define LULZBOT_IS_MINI
@@ -81,6 +96,41 @@
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
+#endif
+
+#if defined(LULZBOT_Hibiscus_EinsyMini2)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EARLY_EINSY
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
+    #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
+#endif
+
+#if defined(LULZBOT_Hibiscus_EinsyMini2LCD)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EARLY_EINSY
+    #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
+    #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
 #endif
 
 #if defined(LULZBOT_Gladiola_MiniLCD)
@@ -414,7 +464,7 @@
         WRITE(pin, LOW); \
     }
 
-#if defined(LULZBOT_Gladiola_MiniEinsy)
+#if defined(LULZBOT_USE_EINSYRAMBO) && defined(LULZBOT_MINI_BED)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) \
         endstops.enable_z_probe(enable);
 
@@ -865,11 +915,11 @@
     #define LULZBOT_Y_BED_SIZE                 280
 #endif
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Gladiola_MiniEinsy)
+#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Gladiola_EinsyMini) || defined(LULZBOT_Gladiola_EinsyMiniLCD)
     #define LULZBOT_STANDARD_Z_MIN_POS          -2
     #define LULZBOT_STANDARD_Z_MAX_POS         159
 
-#elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
+#elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)  || defined(LULZBOT_Hibiscus_EinsyMini2) || defined(LULZBOT_Hibiscus_EinsyMini2LCD)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
     #define LULZBOT_STANDARD_Z_MAX_POS         178
 
@@ -1223,7 +1273,7 @@
 
 // Values for XYZ vary by printer model, values for E vary by toolhead.
 
-#if defined(LULZBOT_Gladiola_MiniEinsy)
+#if defined(LULZBOT_USE_EINSYRAMBO)
     #define LULZBOT_MOTOR_CURRENT_XY              960    // mA
     #define LULZBOT_MOTOR_CURRENT_Z               960    // mA
 
@@ -1287,10 +1337,10 @@
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER -1.200
 #endif
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Gladiola_MiniEinsy)
+#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Gladiola_EinsyMini) || defined(LULZBOT_Gladiola_EinsyMiniLCD)
     #define LULZBOT_Z_STEPS                       1600
 
-#elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
+#elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD) || defined(LULZBOT_Hibiscus_EinsyMini2) || defined(LULZBOT_Hibiscus_EinsyMini2LCD)
     #define Z_FULL_STEPS_PER_ROTATION             200
     #define Z_MICROSTEPS                          16
     #define Z_BELT_PITCH                          2
@@ -1390,7 +1440,7 @@
     #define LULZBOT_ENCODER_PULSES_PER_STEP 2
     #define LULZBOT_ENCODER_STEPS_PER_MENU_ITEM 1
     #define LULZBOT_COOLING_MESSAGES
-    #if defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Hibiscus_Mini2LCD)
+    #if defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Hibiscus_Mini2LCD) || defined(LULZBOT_Gladiola_EinsyMiniLCD) || defined(LULZBOT_Hibiscus_EinsyMini2LCD)
         // In the experimental Gladiola_MiniLCD, the encoder direction is reversed.
         #define LULZBOT_REVERSE_ENCODER_DIRECTION
     #endif

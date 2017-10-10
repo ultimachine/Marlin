@@ -16,7 +16,7 @@
 ####
 # The following variables list the models and toolheads to build for:
 
-MINI_MODELS="Gladiola_Mini Hibiscus_Mini2 Gladiola_MiniLCD Hibiscus_Mini2LCD"
+MINI_MODELS="Gladiola_Mini Hibiscus_Mini2 Gladiola_MiniLCD Hibiscus_Mini2LCD Gladiola_EinsyMini Hibiscus_EinsyMini2 Gladiola_EinsyMiniLCD Hibiscus_EinsyMini2LCD"
 MINI_TOOLHEADS="Gladiola_SingleExtruder Albatross_Flexystruder Finch_Aerostruder"
 
 TAZ_MODELS="Juniper_TAZ5 Oliveoil_TAZ6 Quiver_TAZ7"
