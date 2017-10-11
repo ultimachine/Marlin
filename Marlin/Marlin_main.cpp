@@ -9933,9 +9933,10 @@ inline void gcode_M502() {
 
   static void tmc2130_get_sgt(TMC2130Stepper &st, const char name) {
     SERIAL_CHAR(name);
-    SERIAL_ECHOLNPAIR(" driver homing sensitivity set to ", st.sgt());
+    SERIAL_ECHOLNPAIR(" driver homing sensitivity set to ", LULZBOT_SIGN_EXTEND_SGT(st.sgt()));
   }
   static void tmc2130_set_sgt(TMC2130Stepper &st, const char name, const int8_t sgt_val) {
+    LULZBOT_M914_DISABLES_STEALTHCHOP(st)
     st.sgt(sgt_val);
     tmc2130_get_sgt(st, name);
   }

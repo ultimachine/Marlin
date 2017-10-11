@@ -66,6 +66,7 @@
     #define LULZBOT_USE_EINSYRAMBO
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_SENSORLESS_PROBING
     #define LULZBOT_BAUDRATE 115200
     #define LULZBOT_UUID "4479bf92-7e47-4c2c-be95-64dd01bd413b"
 #endif
@@ -107,9 +108,7 @@
     #define LULZBOT_USE_EARLY_EINSY
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
-    #define LULZBOT_USE_MIN_ENDSTOPS
-    #define LULZBOT_USE_MAX_ENDSTOPS
-    #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
@@ -125,9 +124,7 @@
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
-    #define LULZBOT_USE_MIN_ENDSTOPS
-    #define LULZBOT_USE_MAX_ENDSTOPS
-    #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
@@ -1021,10 +1018,6 @@
         st.shaft_dir(1); \
         st.external_ref(0);     /* I_scale_analog  = 0 */ \
         st.internal_sense_R(0); /* internal_Rsense = 0 */ \
-        /* Disable short protection since this generates false positives
-           on the Z axis when probing.
-         */ \
-        //st.disable_short_protection(1)
 
     #define LULZBOT_TMC_HEALTHCHECK(AXIS) \
         { \
@@ -1033,7 +1026,7 @@
             AXIS##_DIR_WRITE(0); DIR_0    = (stepper##AXIS.IOIN() >> 1) & 0b1; \
             AXIS##_DIR_WRITE(1); DIR_1    = (stepper##AXIS.IOIN() >> 1) & 0b1; \
             if(!ALWAYS_1 || DIR_0 != 0 || DIR_1 != 1) { \
-                SERIAL_PROTOCOLPGM("Failed TMC driver health check!"); \
+                SERIAL_ECHOPGM("Failed TMC driver health check!"); \
             } \
         }
 
@@ -1043,6 +1036,8 @@
             uint32_t IOIN       = stepper##AXIS.IOIN(); \
             uint32_t IHOLD_IRUN = stepper##AXIS.IHOLD_IRUN(); \
             uint32_t CHOPCONF   = stepper##AXIS.CHOPCONF(); \
+            uint32_t COOLCONF   = stepper##AXIS.COOLCONF(); \
+            int8_t   SGT        = (COOLCONF  >> 16) & 0b1111111; \
             uint16_t SG_RESULT  = (DRVSTATUS)       & 0b111111111; \
             bool drv_enn        = (IOIN      >>  4) & 0b1; \
             bool stst           = (DRVSTATUS >> 31) & 0b1; \
@@ -1056,29 +1051,38 @@
             uint16_t ihold      = (IHOLD_IRUN)      & 0b11111; \
             uint16_t irun       = (IHOLD_IRUN >> 8) & 0b11111; \
             bool vsense         = (CHOPCONF  >> 17) & 0b1; \
-            SERIAL_PROTOCOLPGM("TMC_" #AXIS ": "); \
-            if(!drv_enn) SERIAL_PROTOCOLPGM("en "); \
-            if(stst)     SERIAL_PROTOCOLPGM("st "); \
-            if(olb)      SERIAL_PROTOCOLPGM("olb "); \
-            if(ola)      SERIAL_PROTOCOLPGM("ola "); \
-            if(s2gb)     SERIAL_PROTOCOLPGM("s2gb "); \
-            if(s2ga)     SERIAL_PROTOCOLPGM("s2ga "); \
-            if(otpw)     SERIAL_PROTOCOLPGM("otpw "); \
-            if(ot)       SERIAL_PROTOCOLPGM("ot "); \
-            if(fsactive) SERIAL_PROTOCOLPGM("fsactive "); \
-            SERIAL_PROTOCOLPGM("ihold_irun:"); \
-            SERIAL_PROTOCOL(ihold); \
-            SERIAL_PROTOCOLPGM("/"); \
-            SERIAL_PROTOCOL(irun); \
-            SERIAL_PROTOCOLPGM(" vsense:"); \
-            SERIAL_PROTOCOL(vsense); \
-            SERIAL_PROTOCOLPGM(" SGR:"); \
-            SERIAL_PROTOCOLLN(SG_RESULT); \
+            SERIAL_ECHOPGM(" " #AXIS ":"); \
+            SERIAL_ECHOPGM(" ihr:"); \
+            SERIAL_ECHO(ihold); \
+            SERIAL_ECHOPGM("/"); \
+            SERIAL_ECHO(irun); \
+            SERIAL_ECHOPGM(" vsen:"); \
+            SERIAL_ECHO(vsense); \
+            if(stepper##AXIS.coolstep_min_speed() == 1024UL * 1024UL - 1UL) { \
+                SERIAL_ECHOPGM(" sgt:"); \
+                SERIAL_ECHO(LULZBOT_SIGN_EXTEND_SGT(SGT)); \
+                if(num_sg > 0) { \
+                    SERIAL_ECHOPGM(" avg_sg:"); \
+                    SERIAL_ECHO(sum_sg_##AXIS/num_sg); \
+                } \
+            } else { \
+                SERIAL_ECHOPGM(" stealth"); \
+            } \
+            if(!drv_enn) SERIAL_ECHOPGM(" en"); \
+            if(stst)     SERIAL_ECHOPGM(" st"); \
+            if(olb)      SERIAL_ECHOPGM(" olb"); \
+            if(ola)      SERIAL_ECHOPGM(" ola"); \
+            if(s2gb)     SERIAL_ECHOPGM(" s2gb"); \
+            if(s2ga)     SERIAL_ECHOPGM(" s2ga"); \
+            if(otpw)     SERIAL_ECHOPGM(" otpw"); \
+            if(ot)       SERIAL_ECHOPGM(" ot"); \
+            if(fsactive) SERIAL_ECHOPGM(" fsactive"); \
+            SERIAL_ECHOLN(""); \
         }
 
-    /* For reasons unknown, s2ga and s2gb seem to be getting triggered
-     * during probing at the end of Z motions. This checks to see if
-     * these flags are set, and if so, resets the drivers */
+    #define LULZBOT_SIGN_EXTEND_SGT(sgt) int8_t(sgt | ((sgt << 1) & 0x80))
+
+    /* This checks to see if the s2ga and s2gb flags are set */
     #define LULZBOT_TMC_CHECK_S2G(AXIS, WHERE) \
         { \
             safe_delay(100); \
@@ -1086,76 +1090,65 @@
             bool s2gb          = (DRVSTATUS >> 28) & 0b1; \
             bool s2ga          = (DRVSTATUS >> 27) & 0b1; \
             if(s2ga || s2gb) { \
-                SERIAL_PROTOCOLLN("s2g detected in checkpoint#" #WHERE); \
-                /* Z_ENABLE_WRITE(!Z_ENABLE_ON); */ \
-                /* Z_ENABLE_WRITE( Z_ENABLE_ON); */ \
+                SERIAL_ECHOLN("s2g detected in checkpoint#" #WHERE); \
             } \
         }
 
     #define LULZBOT_PROBE_DIAGNOSTICS(TRIGGERED) \
         if(TRIGGERED) \
-            SERIAL_ERRORLNPGM("Probe triggered"); \
+            SERIAL_ECHOLNPGM("Probe triggered"); \
         else \
             SERIAL_ERRORLNPGM("Probe not triggered");
 
     /* The following function accumulates the average of a
-       stallguard value during a planner move and reports
-       it once the motion ends */
-    #define LULZBOT_TMC_STALLGUARD_AVERAGE(AXIS, SUM, NUM) \
-        static uint8_t   current_tail; \
-        static uint32_t  SUM; \
-        static uint16_t  NUM; \
-        if(current_tail != planner.block_buffer_tail) { \
-            current_tail = planner.block_buffer_tail; \
-            /* When the planner finishes move, report results */ \
-            SERIAL_ECHOLNPAIR(#AXIS " avg_sg: ", SUM/NUM); \
-            SUM = 0; \
-            NUM = 0; \
-        } else if(planner.blocks_queued()) { \
-            /* While in motion, accumulate sg values */ \
-            SUM += stepper##AXIS.DRV_STATUS() & 0b111111111; \
-            NUM++; \
-        }
+       stallguard values during a planner move */
+    #define LULZBOT_TMC_STALLGUARD_AVG_VARS \
+        static uint8_t   current_tail, tally_freq = 10; \
+        static uint32_t  sum_sg_X = 0, sum_sg_Y = 0, sum_sg_Z = 0, sum_sg_E0 = 0, num_sg = 0;
 
-    /* The following function reports when the average of the
-       stallguard value changes significantly */
-    #define LULZBOT_TMC_STALLGUARD_REPORT_CHANGES(AXIS, SUM, NUM, THRESH) \
-        static uint8_t   current_tail; \
-        static uint32_t  SUM; \
-        static uint16_t  NUM; \
-        static uint16_t  last_avg; \
-        if(current_tail != planner.block_buffer_tail) { \
-            current_tail = planner.block_buffer_tail; \
-            uint16_t avg = SUM/NUM; \
-            if(abs(int(last_avg) - avg) > last_avg * THRESH) { \
-                SERIAL_ECHOLNPAIR("Detected changed in sg value:", avg - last_avg); \
+    #define LULZBOT_TMC_STALLGUARD_AVG_FUNC \
+        if(--tally_freq == 0) { \
+            tally_freq = 10; \
+            if(planner.blocks_queued()) { \
+                /* Reset accumulators at the start of each movement */ \
+                if(current_tail != planner.block_buffer_tail) { \
+                    current_tail = planner.block_buffer_tail; \
+                    sum_sg_X = sum_sg_Y = sum_sg_Z = sum_sg_E0 = num_sg = 0; \
+                } \
+                /* While in motion, accumulate sg values */ \
+                sum_sg_X  += stepperX.DRV_STATUS()  & 0b111111111; \
+                sum_sg_Y  += stepperY.DRV_STATUS()  & 0b111111111; \
+                sum_sg_Z  += stepperZ.DRV_STATUS()  & 0b111111111; \
+                sum_sg_E0 += stepperE0.DRV_STATUS() & 0b111111111; \
+                num_sg++; \
             } \
-            SERIAL_ECHOLNPAIR(#AXIS " avg_sg: ", avg); \
-            last_avg = avg; \
-            SUM = 0; \
-            NUM = 0; \
-        } else if(planner.blocks_queued()) { \
-            /* While in motion, accumulate sg values */ \
-            SUM += stepper##AXIS.DRV_STATUS() & 0b111111111; \
-            NUM++; \
         }
-
-    #define LULZBOT_TMC_G0G1_STALLGUARD_REPORT \
-        LULZBOT_TMC_STALLGUARD_AVERAGE(E0, sg_sum_e, sg_num_e)
-
-    //#define LULZBOT_TMC_G0G1_STALLGUARD_REPORT
 
     #define LULZBOT_TMC_M119_STALLGUARD_REPORT \
+        SERIAL_ECHOLNPGM("TMC2130 Status:"); \
         LULZBOT_TMC_REPORT(X) \
         LULZBOT_TMC_REPORT(Y) \
-        LULZBOT_TMC_REPORT(Z)
+        LULZBOT_TMC_REPORT(Z) \
+        LULZBOT_TMC_REPORT(E0)
+
+    #define LULZBOT_ENABLE_STALLGUARD(st) \
+        /* Enable stallguard by disabling steathchop */ \
+        st.coolstep_min_speed(1024UL * 1024UL - 1UL);
 
     #define LULZBOT_TMC2130_ADV { \
             /* Turn off stealhchop for extruder motor */ \
-            stepperE0.coolstep_min_speed(1024UL * 1024UL - 1UL); \
+            LULZBOT_ENABLE_STALLGUARD(stepperE0) \
             /* Set stallguard value for filament sensing */ \
             stepperE0.sg_stall_value(5); \
+            /* Turn off stealhchop for Z motor */ \
+            LULZBOT_ENABLE_STALLGUARD(stepperZ) \
+            /* Set stallguard value for Z sensing */ \
+            stepperZ.sg_stall_value(5); \
         }
+
+    #define LULZBOT_M914_DISABLES_STEALTHCHOP(st) \
+        LULZBOT_ENABLE_STALLGUARD(st)
+
 #else
     #define LULZBOT_TMC_M119_STALLGUARD_REPORT
     #define LULZBOT_TMC_G0G1_STALLGUARD_REPORT
@@ -1178,6 +1171,11 @@
     //#define LULZBOT_Y_MIN_ENDSTOP_INVERTING LULZBOT_NORMALLY_OPEN_ENDSTOP
 
     #define LULZBOT_Z_MAX_ENDSTOP_INVERTING   LULZBOT_NORMALLY_OPEN_ENDSTOP
+
+    #if defined(LULZBOT_SENSORLESS_PROBING)
+        #define LULZBOT_Z_MIN_ENDSTOP_INVERTING         LULZBOT_NORMALLY_CLOSED_ENDSTOP
+        #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING   LULZBOT_NORMALLY_CLOSED_ENDSTOP
+    #endif
 
     #define LULZBOT_X_HOME_BUMP_MM                0
     #define LULZBOT_Y_HOME_BUMP_MM                0

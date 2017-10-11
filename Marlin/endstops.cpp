@@ -133,6 +133,8 @@ void Endstops::init() {
 
 } // Endstops::init
 
+LULZBOT_TMC_STALLGUARD_AVG_VARS
+
 void Endstops::report_state() {
   if (endstop_hit_bits) {
     #if ENABLED(ULTRA_LCD)
@@ -181,7 +183,7 @@ void Endstops::report_state() {
       }
     #endif
   }
-  LULZBOT_TMC_G0G1_STALLGUARD_REPORT
+  LULZBOT_TMC_STALLGUARD_AVG_FUNC
 } // Endstops::report_state
 
 void Endstops::M119() {

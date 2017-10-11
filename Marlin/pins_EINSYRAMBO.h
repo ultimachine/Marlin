@@ -38,11 +38,18 @@
 #define Z_IS_TMC2130
 #define E0_IS_TMC2130
 
-#define BOARD_Z_THRES_PIN   57 // PF3 as defined in "fastio_1280.h"
-#define BOARD_X_DIAG_PIN    64 // PK2 as defined in "fastio_1280.h"
-#define BOARD_Y_DIAG_PIN    69 // PK7 as defined in "fastio_1280.h"
-#define BOARD_Z_DIAG_PIN    68 // PK6 as defined in "fastio_1280.h"
-#define BOARD_E0_DIAG_PIN   65 // PK3 as defined in "fastio_1280.h"
+#if defined(LULZBOT_USE_EARLY_EINSY)
+  #define BOARD_X_DIAG_PIN    40 // PG1 as defined in "fastio_1280.h"
+  #define BOARD_Y_DIAG_PIN    69 // PK7 as defined in "fastio_1280.h"
+  #define BOARD_Z_DIAG_PIN    68 // PK6 as defined in "fastio_1280.h"
+  #define BOARD_E0_DIAG_PIN   65 // PK3 as defined in "fastio_1280.h"
+#else
+  #define BOARD_Z_THRES_PIN   57 // PF3 as defined in "fastio_1280.h"
+  #define BOARD_X_DIAG_PIN    64 // PK2 as defined in "fastio_1280.h"
+  #define BOARD_Y_DIAG_PIN    69 // PK7 as defined in "fastio_1280.h"
+  #define BOARD_Z_DIAG_PIN    68 // PK6 as defined in "fastio_1280.h"
+  #define BOARD_E0_DIAG_PIN   65 // PK3 as defined in "fastio_1280.h"
+#endif
 #define BOARD_X_MIN_PIN     12
 #define BOARD_Y_MIN_PIN     11
 #define BOARD_Z_MIN_PIN     10
