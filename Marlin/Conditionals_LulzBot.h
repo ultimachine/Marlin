@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".16" // Change this with each update
+#define LULZBOT_FW_VERSION ".17" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -253,7 +253,7 @@
     #define LULZBOT_Z_SAFE_HOMING_Y_POINT         (258)
     #define LULZBOT_Z_HOMING_HEIGHT               5
 
-    #define LULZBOT_AFTER_Z_HOME_Z_RAISE          5
+    #define LULZBOT_AFTER_Z_HOME_Z_RAISE         10
     #define LULZBOT_AFTER_Z_HOME_Z_ORIGIN         0
 #elif defined(LULZBOT_Juniper_TAZ5)
     // Set safe homing position so fan duct does not hit.
@@ -959,7 +959,11 @@
 /*************************** REWIPE FUNCTIONALITY *******************************/
 
 #define LULZBOT_NUM_REWIPES      1
-#define LULZBOT_BED_PROBE_MIN   -3 // Limit on pushing into the bed
+#if defined(LULZBOT_IS_TAZ)
+    #define LULZBOT_BED_PROBE_MIN    0 // Limit on pushing into the bed
+#else
+    #define LULZBOT_BED_PROBE_MIN   -4 // Limit on pushing into the bed
+#endif
 
 #define LULZBOT_PROBE_Z_WITH_REWIPE(speed) \
     /* do_probe_move returns true when it fails to hit an endstop, meaning we need to rewipe */ \
