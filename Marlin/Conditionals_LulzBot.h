@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".17" // Change this with each update
+#define LULZBOT_FW_VERSION ".18" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -64,6 +64,7 @@
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EARLY_EINSY
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_SENSORLESS_PROBING
@@ -77,6 +78,7 @@
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EARLY_EINSY
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
