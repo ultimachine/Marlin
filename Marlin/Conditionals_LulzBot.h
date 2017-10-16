@@ -59,6 +59,9 @@
 #endif
 
 #if defined(LULZBOT_Gladiola_EinsyMini)
+    /* Modified Gladiola Mini with Einsy board and half-height
+     * X & Y motors (full-height Z motors must be re-wired in
+     * series). X & Y endstops replaced w/ bumpers. */
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
     #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy"
     #define LULZBOT_IS_MINI
@@ -67,7 +70,6 @@
     #define LULZBOT_USE_EARLY_EINSY
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
-    #define LULZBOT_SENSORLESS_PROBING
     #define LULZBOT_BAUDRATE 115200
     #define LULZBOT_UUID "4479bf92-7e47-4c2c-be95-64dd01bd413b"
 #endif
@@ -1139,13 +1141,13 @@
 
     #define LULZBOT_TMC2130_ADV { \
             /* Turn off stealhchop for extruder motor */ \
-            LULZBOT_ENABLE_STALLGUARD(stepperE0) \
+            /* LULZBOT_ENABLE_STALLGUARD(stepperE0) */ \
             /* Set stallguard value for filament sensing */ \
-            stepperE0.sg_stall_value(5); \
+            /* stepperE0.sg_stall_value(5); */ \
             /* Turn off stealhchop for Z motor */ \
-            LULZBOT_ENABLE_STALLGUARD(stepperZ) \
+            /* LULZBOT_ENABLE_STALLGUARD(stepperZ) */ \
             /* Set stallguard value for Z sensing */ \
-            stepperZ.sg_stall_value(5); \
+            /* stepperZ.sg_stall_value(5); */ \
         }
 
     #define LULZBOT_M914_DISABLES_STEALTHCHOP(st) \
@@ -1173,11 +1175,6 @@
     //#define LULZBOT_Y_MIN_ENDSTOP_INVERTING LULZBOT_NORMALLY_OPEN_ENDSTOP
 
     #define LULZBOT_Z_MAX_ENDSTOP_INVERTING   LULZBOT_NORMALLY_OPEN_ENDSTOP
-
-    #if defined(LULZBOT_SENSORLESS_PROBING)
-        #define LULZBOT_Z_MIN_ENDSTOP_INVERTING         LULZBOT_NORMALLY_CLOSED_ENDSTOP
-        #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING   LULZBOT_NORMALLY_CLOSED_ENDSTOP
-    #endif
 
     #define LULZBOT_X_HOME_BUMP_MM                0
     #define LULZBOT_Y_HOME_BUMP_MM                0
