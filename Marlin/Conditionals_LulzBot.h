@@ -1276,7 +1276,7 @@
 // Values for XYZ vary by printer model, values for E vary by toolhead.
 
 #if defined(LULZBOT_USE_EINSYRAMBO)
-    #define LULZBOT_MOTOR_CURRENT_XY              960    // mA
+    #define LULZBOT_MOTOR_CURRENT_XY              800    // mA
     #define LULZBOT_MOTOR_CURRENT_Z               960    // mA
 
     #if LULZBOT_MOTOR_CURRENT_E  > 960
