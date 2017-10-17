@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".18" // Change this with each update
+#define LULZBOT_FW_VERSION ".19" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1081,7 +1081,7 @@
             if(otpw)     SERIAL_ECHOPGM(" otpw"); \
             if(ot)       SERIAL_ECHOPGM(" ot"); \
             if(fsactive) SERIAL_ECHOPGM(" fsactive"); \
-            SERIAL_ECHOLN(""); \
+            SERIAL_EOL(); \
         }
 
     #define LULZBOT_SIGN_EXTEND_SGT(sgt) int8_t(sgt | ((sgt << 1) & 0x80))
@@ -1137,7 +1137,12 @@
 
     #define LULZBOT_ENABLE_STALLGUARD(st) \
         /* Enable stallguard by disabling steathchop */ \
-        st.coolstep_min_speed(1024UL * 1024UL - 1UL);
+        st.coolstep_min_speed(1024UL * 1024UL - 1UL); \
+        st.stealthChop(0);
+
+    #define LULZBOT_ENABLE_STEALTHCHOP(st) \
+        st.coolstep_min_speed(0); \
+        st.stealthChop(1);
 
     #define LULZBOT_TMC2130_ADV { \
             /* Turn off stealhchop for extruder motor */ \
@@ -1152,6 +1157,25 @@
 
     #define LULZBOT_M914_DISABLES_STEALTHCHOP(st) \
         LULZBOT_ENABLE_STALLGUARD(st)
+
+    /* When STEALTHCHOP is disabled, sometimes the X axis refuses to
+     * move at the start of G28, because the stallguard is triggered.
+     * Toggling in and out of STEALHCHOP mode seems to resolve this. */
+    #define LULZBOT_CLEAR_STALLGUARD_FLAG(st) \
+        LULZBOT_ENABLE_STEALTHCHOP(st) \
+        LULZBOT_ENABLE_STALLGUARD(st)
+
+    /* Leaving the toolhead resting on the endstops will likely cause
+     * chatter if the machine is immediately re-homed, so don't leave
+     * the head sitting on the endstop after homing. */
+    #define LULZBOT_BACKOFF_DIST     3
+    #define LULZBOT_BACKOFF_FEEDRATE 5
+    #define LULZBOT_AFTER_Z_HOME_ACTION \
+        do_blocking_move_to_xy( \
+            LULZBOT_INVERT_X_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_X_MAX_POS - LULZBOT_BACKOFF_DIST, \
+            LULZBOT_INVERT_Y_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_Y_MAX_POS - LULZBOT_BACKOFF_DIST, \
+            LULZBOT_BACKOFF_FEEDRATE \
+        );
 
 #else
     #define LULZBOT_TMC_M119_STALLGUARD_REPORT
@@ -1185,7 +1209,9 @@
     // stallguard is never cleared.
     //#define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
 
-    #define LULZBOT_STEALTHCHOP
+    //#define LULZBOT_STEALTHCHOP
+
+    #undef LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
 
     // According to Jason at UltiMachine, setting the lower the
     // stealth freq the cooler the motor drivers will operate.
@@ -1194,8 +1220,8 @@
     // Quickhome does not work with sensorless homing
     #undef LULZBOT_QUICKHOME
 
-    #define LULZBOT_X_HOMING_SENSITIVITY 5
-    #define LULZBOT_Y_HOMING_SENSITIVITY 5
+    #define LULZBOT_X_HOMING_SENSITIVITY 3
+    #define LULZBOT_Y_HOMING_SENSITIVITY 3
 
 #else
     #define LULZBOT_X_HOME_BUMP_MM                5

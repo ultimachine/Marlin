@@ -2989,8 +2989,9 @@ static void do_homing_move(const AxisEnum axis, const float distance, const floa
         st.coolstep_min_speed(0);
         st.stealthChop(1);
       }
+    #else
+      LULZBOT_CLEAR_STALLGUARD_FLAG(st)
     #endif
-
     st.diag1_stall(enable ? 1 : 0);
   }
 #endif
