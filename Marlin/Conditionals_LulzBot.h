@@ -469,11 +469,7 @@
         WRITE(pin, LOW); \
     }
 
-#if defined(LULZBOT_USE_EINSYRAMBO) && defined(LULZBOT_MINI_BED)
-    #define LULZBOT_ENABLE_PROBE_PINS(enable) \
-        endstops.enable_z_probe(enable);
-
-#elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
+#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
         endstops.enable_z_probe(enable); \
         LULZBOT_SET_PIN_STATE(Z_MIN_PIN, enable) \
