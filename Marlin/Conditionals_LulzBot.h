@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".19" // Change this with each update
+#define LULZBOT_FW_VERSION ".20" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -906,6 +906,15 @@
     #define LULZBOT_X_BED_SIZE                 288
     #define LULZBOT_Y_BED_SIZE                 275
 
+#elif defined(LULZBOT_Quiver_TAZ7)
+    #define LULZBOT_STANDARD_X_MAX_POS         300
+    #define LULZBOT_STANDARD_X_MIN_POS         -16
+    #define LULZBOT_STANDARD_Y_MAX_POS         303
+    #define LULZBOT_STANDARD_Y_MIN_POS         -20
+
+    #define LULZBOT_X_BED_SIZE                 280
+    #define LULZBOT_Y_BED_SIZE                 280
+
 #elif defined(LULZBOT_IS_TAZ)
     #define LULZBOT_STANDARD_X_MAX_POS         300
     #define LULZBOT_STANDARD_X_MIN_POS         -20
@@ -934,7 +943,7 @@
 
 #elif defined(LULZBOT_Quiver_TAZ7)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
-    #define LULZBOT_STANDARD_Z_MAX_POS         300
+    #define LULZBOT_STANDARD_Z_MAX_POS         299
 #endif
 
 #define LULZBOT_X_MAX_POS (LULZBOT_STANDARD_X_MAX_POS - LULZBOT_TOOLHEAD_X_MAX_ADJ)
@@ -1179,6 +1188,8 @@
     #define LULZBOT_TMC_HEALTHCHECK(AXIS)
     #define LULZBOT_TMC_CHECK_S2G(AXIS, WHERE)
     #define LULZBOT_PROBE_DIAGNOSTICS(TRIGGERED)
+    #define LULZBOT_TMC_STALLGUARD_AVG_VARS
+    #define LULZBOT_TMC_STALLGUARD_AVG_FUNC
 #endif
 
 #if defined(LULZBOT_SENSORLESS_HOMING)
