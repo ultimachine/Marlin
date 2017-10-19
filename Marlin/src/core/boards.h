@@ -102,6 +102,7 @@
 #define BOARD_BQ_ZUM_MEGA_3D    503  // bq ZUM Mega 3D
 #define BOARD_ZRIB_V20          504  // zrib V2.0 control board (Chinese knock off RAMPS replica)
 //ARM 32
+#define BOARD_ARCHIM2          1299  // ArchimRambo 2.0 (sam3x8e + tmc2130)
 #define BOARD_DUE3DOM          1411  // DUE3DOM for Arduino DUE
 #define BOARD_DUE3DOM_MINI     1412  // DUE3DOM MINI for Arduino DUE
 #define BOARD_RADDS            1502  // RADDS

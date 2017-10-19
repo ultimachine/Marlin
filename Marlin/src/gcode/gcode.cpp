@@ -42,6 +42,8 @@ GcodeSuite gcode;
 
 #include "../Marlin.h" // for idle()
 
+void tmc2130_init();
+
 uint8_t GcodeSuite::target_extruder;
 millis_t GcodeSuite::previous_cmd_ms;
 
@@ -665,6 +667,7 @@ void GcodeSuite::process_next_command() {
         #if ENABLED(SENSORLESS_HOMING)
           case 914: M914(); break;  // M914: Set SENSORLESS_HOMING sensitivity.
         #endif
+        case 915: tmc2130_init(); break;  // M915: Manual TMC2130 Init.
       #endif
 
       #if HAS_MICROSTEPS

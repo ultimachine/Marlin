@@ -181,9 +181,9 @@
     st.power_down_delay(128); // ~2s until driver lowers to hold current
     st.hysterisis_start(0); // HSTRT = 1
     st.hysterisis_low(1); // HEND = -2
-    st.diag1_active_high(1); // For sensorless homing
+    //st.diag1_active_high(1); // Don't use push-pull on Archim2. Both diags are connected together.
     #if ENABLED(STEALTHCHOP)
-      st.stealth_freq(1); // f_pwm = 2/683 f_clk
+      st.stealth_freq(0); // Drivers run cooler at lowest frequency.
       st.stealth_autoscale(1);
       st.stealth_gradient(5);
       st.stealth_amplitude(255);
@@ -199,6 +199,12 @@
   #define _TMC2130_INIT(ST, SPMM) tmc2130_init(stepper##ST, ST##_MICROSTEPS, ST##_HYBRID_THRESHOLD, SPMM)
 
   void tmc2130_init() {
+	SerialUSB.println("tmc2130_init()");
+	#ifdef TMC2130_USES_SW_SPI
+	    pinMode(TMC_SWSPI_MISO_PIN, INPUT );
+	    pinMode(TMC_SWSPI_SCK_PIN, OUTPUT );
+	    pinMode(TMC_SWSPI_MOSI_PIN, OUTPUT );
+	#endif
     constexpr float steps_per_mm[] = DEFAULT_AXIS_STEPS_PER_UNIT;
     #if ENABLED(X_IS_TMC2130)
       _TMC2130_INIT( X, steps_per_mm[X_AXIS]);

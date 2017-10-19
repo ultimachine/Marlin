@@ -253,7 +253,8 @@
 //
 // Other 32-bit Boards
 //
-
+#elif MB(ARCHIM2)
+   #include "pins_ARCHIM2.h"
 #elif MB(TEENSY35_36)
   #include "pins_TEENSY35_36.h"
 #elif MB(DUE3DOM)
