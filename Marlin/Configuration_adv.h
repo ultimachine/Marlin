@@ -1020,7 +1020,7 @@
   #define Z_IS_TMC2130
   //#define Z2_IS_TMC2130
   #define E0_IS_TMC2130
-  //#define E1_IS_TMC2130
+  #define E1_IS_TMC2130
   //#define E2_IS_TMC2130
   //#define E3_IS_TMC2130
   //#define E4_IS_TMC2130
@@ -1054,8 +1054,8 @@
   #define E0_CURRENT       900
   #define E0_MICROSTEPS     16
 
-  //#define E1_CURRENT      1000
-  //#define E1_MICROSTEPS     16
+  #define E1_CURRENT      900
+  #define E1_MICROSTEPS     16
 
   //#define E2_CURRENT      1000
   //#define E2_MICROSTEPS     16
@@ -1070,7 +1070,7 @@
    * Use Trinamic's ultra quiet stepping mode.
    * When disabled, Marlin will use spreadCycle stepping mode.
    */
-  #define STEALTHCHOP
+  //#define STEALTHCHOP
 
   /**
    * Let Marlin automatically control stepper current.
