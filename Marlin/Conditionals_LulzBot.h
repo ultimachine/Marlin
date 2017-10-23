@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".20" // Change this with each update
+#define LULZBOT_FW_VERSION ".21" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -49,6 +49,7 @@
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
     #define LULZBOT_BAUDRATE 115200
     #define LULZBOT_UUID "351487b6-ca9a-4c1a-8765-d668b1da6585"
 #endif
@@ -77,6 +78,7 @@
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
     #define LULZBOT_BAUDRATE 115200
     #define LULZBOT_UUID "083f68f1-028e-494c-98e1-f2e0dfaee9a5"
 #endif
@@ -105,6 +107,7 @@
     #define LULZBOT_TAZ_BED
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_MIN_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_UUID "c3255c96-4097-4884-8ed0-ded2ff9bae61"
 #endif
@@ -184,6 +187,10 @@
 #if defined(TOOLHEAD_Devel_ServoDual)
     #undef LULZBOT_USE_HOME_BUTTON
 #endif
+
+// Whether endstops are inverting
+#define LULZBOT_NORMALLY_CLOSED_ENDSTOP       false
+#define LULZBOT_NORMALLY_OPEN_ENDSTOP         true
 
 #if defined(LULZBOT_IS_MINI)
     #define LULZBOT_MOTHERBOARD                   BOARD_MINIRAMBO
@@ -442,7 +449,7 @@
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Single Extruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_M115_EXTRUDER_TYPE             "SingleExtruder"
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_OPEN_ENDSTOP
     #define LULZBOT_AO_Hexagon
     #define LULZBOT_E_STEPS                        833
 #endif /* TOOLHEAD_Gladiola_SingleExtruder */
@@ -451,7 +458,7 @@
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Flexystruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_M115_EXTRUDER_TYPE             "Flexystruder"
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_OPEN_ENDSTOP
     #define LULZBOT_AO_Hexagon
         #define LULZBOT_E_STEPS                    833
 #endif /* TOOLHEAD_Albatross_Flexystruder */
@@ -461,7 +468,7 @@
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Aerostruder"
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_M115_EXTRUDER_TYPE             "Aerostruder"
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING        true
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_OPEN_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero
     #define LULZBOT_E_STEPS                        420
 #endif /* TOOLHEAD_Finch_Aerostruder */
@@ -487,7 +494,7 @@
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_M115_EXTRUDER_TYPE         "SingleExtruder"
     #define LULZBOT_MOTOR_CURRENT_E            750 // mA
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING    false
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING    LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_AO_Hexagon
     #define LULZBOT_E_STEPS                    830
 #endif /* TOOLHEAD_Tilapia_SingleExtruder */
@@ -498,7 +505,7 @@
 //          16 chars max                       ^^^^^^^^^^^^^^^
     #define LULZBOT_M115_EXTRUDER_TYPE         "Aerostruder"
     #define LULZBOT_MOTOR_CURRENT_E            875 // mA
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING    false
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING    LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero
     #define LULZBOT_E_STEPS                    420
 #endif /* TOOLHEAD_Angelfish_Aerostruder */
@@ -509,7 +516,7 @@
     #define LULZBOT_M115_EXTRUDER_TYPE         "Flexystruder"
     #define LULZBOT_MOTOR_CURRENT_E            410 // mA
     #define LULZBOT_EXTRUDERS                  1
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING    true
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING    LULZBOT_NORMALLY_OPEN_ENDSTOP
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         12
     #define LULZBOT_TOOLHEAD_X_MIN_ADJ         7
     #define LULZBOT_TOOLHEAD_Y_MAX_ADJ         1
@@ -532,7 +539,7 @@
     #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION 250
     #define LULZBOT_MOTOR_CURRENT_E            750 // mA
     #define LULZBOT_EXTRUDERS                  1
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING    true
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING    LULZBOT_NORMALLY_OPEN_ENDSTOP
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         10
     #define LULZBOT_TOOLHEAD_X_MIN_ADJ         0
     #define LULZBOT_TOOLHEAD_Y_MAX_ADJ         0
@@ -575,7 +582,7 @@
     #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ      48
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING    true
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING    LULZBOT_NORMALLY_OPEN_ENDSTOP
     #define LULZBOT_E_STEPS                    830
     #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Javelin_DualExtruderV2 */
@@ -588,7 +595,7 @@
     #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ      48
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING    true
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING    LULZBOT_NORMALLY_OPEN_ENDSTOP
     #define LULZBOT_E_STEPS                  830
     #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Longfin_FlexyDually */
@@ -622,7 +629,7 @@
     #endif /* LULZBOT_USE_HOME_BUTTON */
     #undef  LULZBOT_TOOLHEAD_X_MAX_ADJ
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ             10
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING       false
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING       LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_SWAP_EXTRUDERS
     #undef  LULZBOT_INVERT_E1_DIR
     #define LULZBOT_INVERT_E1_DIR                 false
@@ -843,7 +850,7 @@
     #define LULZBOT_Y_BED_SIZE                 280
 #endif
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Gladiola_MiniEinsy)
+#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
     #define LULZBOT_STANDARD_Z_MIN_POS          -2
     #define LULZBOT_STANDARD_Z_MAX_POS         159
 
@@ -904,24 +911,26 @@
     // TAZ 6+ and Huerfano Mini onwards use normally closed endstops.
     // This is safer, as a loose connector or broken wire will halt
     // the axis
-    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       false
-    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       false
-    #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       true
-    #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING true
+    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       LULZBOT_NORMALLY_CLOSED_ENDSTOP
+    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       LULZBOT_NORMALLY_CLOSED_ENDSTOP
+
 
     // LULZBOT_X_MAX_ENDSTOP_INVERTING varies by toolhead
-    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       false
-    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       false
-#else
-    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
-    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
-    #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       true
-    #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING true
+    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       LULZBOT_NORMALLY_CLOSED_ENDSTOP
+    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       LULZBOT_NORMALLY_CLOSED_ENDSTOP
+
+#elif defined(LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS)
+    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       LULZBOT_NORMALLY_OPEN_ENDSTOP
+    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       LULZBOT_NORMALLY_OPEN_ENDSTOP
 
     // LULZBOT_X_MAX_ENDSTOP_INVERTING varies by toolhead
-    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
-    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       LULZBOT_NORMALLY_OPEN_ENDSTOP
+    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       LULZBOT_NORMALLY_OPEN_ENDSTOP
 #endif
+
+// Electrical probing pins are always open until contact is made
+#define LULZBOT_Z_MIN_ENDSTOP_INVERTING       LULZBOT_NORMALLY_OPEN_ENDSTOP
+#define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING LULZBOT_NORMALLY_OPEN_ENDSTOP
 
 /**************************** ADVANCED PAUSE FEATURE ****************************/
 
@@ -1013,12 +1022,12 @@
     #define LULZBOT_MOTOR_CURRENT_XY              950    // mA
     #define LULZBOT_MOTOR_CURRENT_Z               1075   // mA
 
-#elif defined(LULZBOT_Quiver_TAZ7) || defined(LULZBOT_Quiver_EinsyTAZ7)
+#elif defined(LULZBOT_Quiver_TAZ7)
     #define LULZBOT_MOTOR_CURRENT_XY              950    // mA
     #define LULZBOT_MOTOR_CURRENT_Z               950    // mA
 #endif
 
-/************ ACCELERATION, FEEDRATES, XYZ MOTOR STEPS *******************/
+/************ ACCELERATION, FEEDRATES AND XYZ MOTOR STEPS *******************/
 
 // Values for XYZ vary by printer model, values for E vary by toolhead.
 
