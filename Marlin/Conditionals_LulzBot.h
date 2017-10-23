@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".19" // Change this with each update
+#define LULZBOT_FW_VERSION ".20" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -47,6 +47,7 @@
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_BAUDRATE 115200
     #define LULZBOT_UUID "351487b6-ca9a-4c1a-8765-d668b1da6585"
@@ -59,6 +60,7 @@
     #define LULZBOT_MINI_BED
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
@@ -73,6 +75,7 @@
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_BAUDRATE 115200
     #define LULZBOT_UUID "083f68f1-028e-494c-98e1-f2e0dfaee9a5"
@@ -87,6 +90,7 @@
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
@@ -100,6 +104,7 @@
     #define LULZBOT_IS_TAZ
     #define LULZBOT_TAZ_BED
     #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_UUID "c3255c96-4097-4884-8ed0-ded2ff9bae61"
 #endif
@@ -111,6 +116,7 @@
     #define LULZBOT_TAZ_BED
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_HOME_BUTTON
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
@@ -126,6 +132,7 @@
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_BAUDRATE 250000
@@ -374,39 +381,29 @@
  *   Z_MIN_PIN corresponds to the Z-Home push button.
  *   Z_MIN_PROBE_PIN are the bed washers.
  */
+#define LULZBOT_SET_PIN_STATE(pin, enable) \
+    if(enable) { \
+        /* Set as inputs with pull-up resistor */ \
+        SET_INPUT(pin); \
+        WRITE(pin, HIGH); \
+    } else { \
+        /* Ground to prevent EMI */ \
+        SET_OUTPUT(pin); \
+        WRITE(pin, LOW); \
+    }
+
 #if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
-        if(enable) { \
-            /* Set as inputs with pull-up resistor */ \
-            SET_INPUT(Z_MIN_PIN); \
-            WRITE(Z_MIN_PIN, HIGH); \
-        } else { \
-            /* Ground to prevent EMI */ \
-            SET_OUTPUT(Z_MIN_PIN); \
-            WRITE(Z_MIN_PIN, LOW); \
-        } \
+        endstops.enable_z_probe(enable); \
+        LULZBOT_SET_PIN_STATE(Z_MIN_PIN, enable) \
         LULZBOT_EXTRUDER_MOTOR_SHUTOFF_ON_PROBE(enable) \
     }
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_USE_HOME_BUTTON)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
-        if(enable) { \
-            /* Set both as inputs with pull-up resistor */ \
-            SET_INPUT(LULZBOT_Z_MIN_PROBE_PIN); \
-            WRITE(LULZBOT_Z_MIN_PROBE_PIN, HIGH); \
-            SET_INPUT(Z_MIN_PIN); \
-            WRITE(Z_MIN_PIN, HIGH); \
-            /* The following is required since Marlin would \
-             * not normally deploy the probe for Z-Min */ \
-            endstops.enable_z_probe(true); \
-        } else { \
-            /* Ground both pins to prevent EMI */ \
-            SET_OUTPUT(LULZBOT_Z_MIN_PROBE_PIN); \
-            WRITE(LULZBOT_Z_MIN_PROBE_PIN, LOW); \
-            SET_OUTPUT(Z_MIN_PIN); \
-            WRITE(Z_MIN_PIN, LOW); \
-            endstops.enable_z_probe(false); \
-        } \
+        endstops.enable_z_probe(enable); \
+        LULZBOT_SET_PIN_STATE(Z_MIN_PIN, enable) \
+        LULZBOT_SET_PIN_STATE(LULZBOT_Z_MIN_PROBE_PIN, enable) \
     }
 #else
     #define LULZBOT_ENABLE_PROBE_PINS(enable)
@@ -827,6 +824,15 @@
     #define LULZBOT_X_BED_SIZE                 288
     #define LULZBOT_Y_BED_SIZE                 275
 
+#elif defined(LULZBOT_Quiver_TAZ7)
+    #define LULZBOT_STANDARD_X_MAX_POS         300
+    #define LULZBOT_STANDARD_X_MIN_POS         -16
+    #define LULZBOT_STANDARD_Y_MAX_POS         303
+    #define LULZBOT_STANDARD_Y_MIN_POS         -20
+
+    #define LULZBOT_X_BED_SIZE                 280
+    #define LULZBOT_Y_BED_SIZE                 280
+
 #elif defined(LULZBOT_IS_TAZ)
     #define LULZBOT_STANDARD_X_MAX_POS         300
     #define LULZBOT_STANDARD_X_MIN_POS         -20
@@ -855,7 +861,7 @@
 
 #elif defined(LULZBOT_Quiver_TAZ7)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
-    #define LULZBOT_STANDARD_Z_MAX_POS         300
+    #define LULZBOT_STANDARD_Z_MAX_POS         299
 #endif
 
 #define LULZBOT_X_MAX_POS (LULZBOT_STANDARD_X_MAX_POS - LULZBOT_TOOLHEAD_X_MAX_ADJ)
@@ -867,9 +873,11 @@
 
 /**************************** ENDSTOP CONFIGURATION ****************************/
 
-#define LULZBOT_USE_XMIN_PLUG
-#define LULZBOT_USE_YMIN_PLUG
-#define LULZBOT_USE_ZMIN_PLUG
+#if defined(LULZBOT_USE_MIN_ENDSTOPS)
+    #define LULZBOT_USE_XMIN_PLUG
+    #define LULZBOT_USE_YMIN_PLUG
+    #define LULZBOT_USE_ZMIN_PLUG
+#endif
 
 // Z-Max Endstops were introduced on the Mini and TAZ 6
 #if defined(LULZBOT_USE_MAX_ENDSTOPS)
@@ -985,12 +993,36 @@
         Nozzle::clean(0, 2, 0, 0);                    /* wipe nozzle */ \
     }
 
-/************ ACCELERATION, FEEDRATES, XYZ MOTOR STEPS AND CURRENTS ************/
+/******************************** MOTOR CURRENTS *******************************/
+
+// Values for XYZ vary by printer model, values for E vary by toolhead.
+
+#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
+    #define LULZBOT_MOTOR_CURRENT_XY              1300   // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               1630   // mA
+
+#elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
+    #define LULZBOT_MOTOR_CURRENT_XY              1300   // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               1000   // mA
+
+#elif defined(LULZBOT_Juniper_TAZ5)
+    #define LULZBOT_MOTOR_CURRENT_XY              950    // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               1275   // mA
+
+#elif defined(LULZBOT_Oliveoil_TAZ6)
+    #define LULZBOT_MOTOR_CURRENT_XY              950    // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               1075   // mA
+
+#elif defined(LULZBOT_Quiver_TAZ7) || defined(LULZBOT_Quiver_EinsyTAZ7)
+    #define LULZBOT_MOTOR_CURRENT_XY              950    // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               950    // mA
+#endif
+
+/************ ACCELERATION, FEEDRATES, XYZ MOTOR STEPS *******************/
 
 // Values for XYZ vary by printer model, values for E vary by toolhead.
 
 #if defined(LULZBOT_IS_MINI)
-    #define LULZBOT_MOTOR_CURRENT_XY             1300   // mA
     #define LULZBOT_XY_STEPS                      100.5
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 8, 40}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,1000}
@@ -1005,7 +1037,6 @@
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.377
 
 #elif defined(LULZBOT_IS_TAZ)
-    #define LULZBOT_MOTOR_CURRENT_XY              950     // mA
     #define LULZBOT_XY_STEPS                      100.5
     #define LULZBOT_DEFAULT_XJERK                 8.0
     #define LULZBOT_DEFAULT_YJERK                 8.0
@@ -1020,8 +1051,7 @@
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER -1.200
 #endif
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Gladiola_MiniEinsy)
-    #define LULZBOT_MOTOR_CURRENT_Z               1630                   // mA
+#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
     #define LULZBOT_Z_STEPS                       1600
 
 #elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
@@ -1032,25 +1062,21 @@
     #define Z_MOTOR_GEAR_REDUCTION                26.8512396694
     #define LULZBOT_Z_STEPS (Z_FULL_STEPS_PER_ROTATION * Z_MICROSTEPS * Z_MOTOR_GEAR_REDUCTION / double(Z_BELT_PITCH) / double(Z_PULLEY_TEETH))
 
-    #define LULZBOT_MOTOR_CURRENT_Z               1000                   // mA
     #undef  LULZBOT_DEFAULT_MAX_FEEDRATE
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 8, 25}      // (mm/sec)
 
 #elif defined(LULZBOT_Juniper_TAZ5)
-    #define LULZBOT_MOTOR_CURRENT_Z               1275                   // mA
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 3, 25}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
     #define LULZBOT_Z_STEPS                       1600
 
 #elif defined(LULZBOT_Oliveoil_TAZ6)
-    #define LULZBOT_MOTOR_CURRENT_Z               1075                   // mA
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 3, 25}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
     #define LULZBOT_Z_STEPS                       1600
 
 #elif defined(LULZBOT_Quiver_TAZ7)
     // Prototype Z-belt driven TAZ 7
-    #define LULZBOT_MOTOR_CURRENT_Z               950                    // mA
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 10, 25}     // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,10,10000}
     #define LULZBOT_Z_STEPS                       1790.08264463

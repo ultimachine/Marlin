@@ -87,7 +87,7 @@ U8GLIB             ?= 1
 
 # this defines whether to add a workaround for the avr-gcc relocation bug
 #	  https://www.stix.id.au/wiki/AVR_relocation_truncations_workaround
-RELOC_WORKAROUND   ?= 1
+RELOC_WORKAROUND   ?= 0
 
 ############
 # The following added by AlephObjects for adjusting the name of the output
