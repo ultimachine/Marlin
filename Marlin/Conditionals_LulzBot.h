@@ -814,10 +814,10 @@
  */
 
 #if defined(LULZBOT_IS_MINI)
-    #define LULZBOT_STANDARD_X_MAX_POS         175
+    #define LULZBOT_STANDARD_X_MAX_POS         165
     #define LULZBOT_STANDARD_X_MIN_POS           0
     #define LULZBOT_STANDARD_Y_MAX_POS         191
-    #define LULZBOT_STANDARD_Y_MIN_POS         -10
+    #define LULZBOT_STANDARD_Y_MIN_POS          -6
 
     #define LULZBOT_X_BED_SIZE                 155
     #define LULZBOT_Y_BED_SIZE                 155
