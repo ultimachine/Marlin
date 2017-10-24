@@ -191,6 +191,7 @@
 // Whether endstops are inverting
 #define LULZBOT_NORMALLY_CLOSED_ENDSTOP       false
 #define LULZBOT_NORMALLY_OPEN_ENDSTOP         true
+#define LULZBOT_NO_ENDSTOP                    true
 
 #if defined(LULZBOT_IS_MINI)
     #define LULZBOT_MOTHERBOARD                   BOARD_MINIRAMBO
@@ -647,7 +648,10 @@
     #define LULZBOT_SWITCHING_EXTRUDER
     #define LULZBOT_SWITCHING_NOZZLE
     #define LULZBOT_SWITCHING_SERVO_ANGLES   { 0, 67 }
+    #undef  LULZBOT_TOOLHEAD_X_MIN_ADJ
+    #define LULZBOT_TOOLHEAD_X_MIN_ADJ              14
     #define LULZBOT_E_STEPS                      420
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING       LULZBOT_NO_ENDSTOP
     #define LULZBOT_AO_Hexagon
 #endif /* TOOLHEAD_Devel_ServoDual */
 
