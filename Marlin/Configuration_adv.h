@@ -948,17 +948,17 @@
    * Stepper driver settings
    */
 
-  #define R_SENSE           0.11  // R_sense resistor for SilentStepStick2130
+  #define R_SENSE           0.22  // R_sense resistor for SilentStepStick2130
   #define HOLD_MULTIPLIER    0.5  // Scales down the holding current from run current
   #define INTERPOLATE          1  // Interpolate X/Y/Z_MICROSTEPS to 256
 
-  #define X_CURRENT           1000  // rms current in mA. Multiply by 1.41 for peak current.
+  #define X_CURRENT          700  // rms current in mA. Multiply by 1.41 for peak current.
   #define X_MICROSTEPS        16  // 0..256
 
-  #define Y_CURRENT           1000
+  #define Y_CURRENT          700
   #define Y_MICROSTEPS        16
 
-  #define Z_CURRENT           1000
+  #define Z_CURRENT          800
   #define Z_MICROSTEPS        16
 
   //#define X2_CURRENT      1000
@@ -1049,8 +1049,8 @@
   #endif
 
   #if ENABLED(SENSORLESS_HOMING)
-    #define X_HOMING_SENSITIVITY  1
-    #define Y_HOMING_SENSITIVITY  1
+    #define X_HOMING_SENSITIVITY  5
+    #define Y_HOMING_SENSITIVITY  5
   #endif
 
   /**

@@ -93,7 +93,7 @@
 // boot image unmodified. For an example have a look at the bq Hephestos 2
 // example configuration folder.
 //
-#define SHOW_CUSTOM_BOOTSCREEN LULZBOT_SHOW_CUSTOM_BOOTSCREEN
+// #define SHOW_CUSTOM_BOOTSCREEN LULZBOT_SHOW_CUSTOM_BOOTSCREEN
 // @section machine
 
 /**
@@ -777,7 +777,7 @@
 // @section extruder
 
 // For direct drive extruder v9 set to true, for geared extruder set to false.
-#define INVERT_E0_DIR LULZBOT_INVERT_E0_DIR
+#define INVERT_E0_DIR (!(LULZBOT_INVERT_E0_DIR))
 #define INVERT_E1_DIR LULZBOT_INVERT_E1_DIR
 #define INVERT_E2_DIR false
 #define INVERT_E3_DIR false
@@ -806,7 +806,7 @@
 #define Z_MIN_POS LULZBOT_Z_MIN_POS
 #define X_MAX_POS LULZBOT_X_MAX_POS
 #define Y_MAX_POS LULZBOT_Y_MAX_POS
-#define Z_MAX_POS LULZBOT_Z_MAX_POS
+#define Z_MAX_POS 160
 
 // If enabled, axes won't move below MIN_POS in response to movement commands.
 //#define MIN_SOFTWARE_ENDSTOPS LULZBOT_MIN_SOFTWARE_ENDSTOPS_DISABLED
@@ -1288,7 +1288,7 @@
 // Use this option to override the number of step signals required to
 // move between next/prev menu items.
 //
-#define ENCODER_STEPS_PER_MENU_ITEM LULZBOT_ENCODER_STEPS_PER_MENU_ITEM
+#define ENCODER_STEPS_PER_MENU_ITEM 1 //LULZBOT_ENCODER_STEPS_PER_MENU_ITEM
 
 /**
  * Encoder Direction Options
@@ -1397,7 +1397,7 @@
 //
 // Note: Usually sold with a white PCB.
 //
-//#define REPRAP_DISCOUNT_SMART_CONTROLLER
+// #define REPRAP_DISCOUNT_SMART_CONTROLLER
 
 //
 // GADGETS3D G3D LCD/SD Controller
@@ -1411,7 +1411,7 @@
 // RepRapDiscount FULL GRAPHIC Smart Controller
 // http://reprap.org/wiki/RepRapDiscount_Full_Graphic_Smart_Controller
 //
-#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER LULZBOT_REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
+// #define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER LULZBOT_REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
 
 //
 // MakerLab Mini Panel with graphic

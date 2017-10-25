@@ -180,9 +180,10 @@
     st.power_down_delay(128); // ~2s until driver lowers to hold current
     st.hysterisis_start(0); // HSTRT = 1
     st.hysterisis_low(1); // HEND = -2
-    st.diag1_active_high(1); // For sensorless homing
+    //st.diag1_active_high(1); // For sensorless homing
+    //st.external_ref(1);
     #if ENABLED(STEALTHCHOP)
-      st.stealth_freq(1); // f_pwm = 2/683 f_clk
+      st.stealth_freq(0); // f_pwm = 2/683 f_clk
       st.stealth_autoscale(1);
       st.stealth_gradient(5);
       st.stealth_amplitude(255);

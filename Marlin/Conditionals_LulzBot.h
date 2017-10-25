@@ -75,7 +75,7 @@
     #define LULZBOT_IS_MINI
     //#define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_MINI_BED
-    #define LULZBOT_USE_LCD_DISPLAY
+    //#define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_BAUDRATE 115200
@@ -333,9 +333,9 @@
 
 #if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     #define LULZBOT_LEFT_PROBE_BED_POSITION        0
-    #define LULZBOT_RIGHT_PROBE_BED_POSITION     164
-    #define LULZBOT_BACK_PROBE_BED_POSITION      162
-    #define LULZBOT_FRONT_PROBE_BED_POSITION      -6
+    #define LULZBOT_RIGHT_PROBE_BED_POSITION     155 //164
+    #define LULZBOT_BACK_PROBE_BED_POSITION      165 //162
+    #define LULZBOT_FRONT_PROBE_BED_POSITION      0 //-6
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_TAZ_BED)
     #define LULZBOT_LEFT_PROBE_BED_POSITION       -9
@@ -404,7 +404,7 @@
 #define LULZBOT_PROBE_DOUBLE_TOUCH
 #define LULZBOT_X_PROBE_OFFSET_FROM_EXTRUDER  0
 #define LULZBOT_Y_PROBE_OFFSET_FROM_EXTRUDER  0
-#define LULZBOT_Z_PROBE_OFFSET_RANGE_MIN      -2
+#define LULZBOT_Z_PROBE_OFFSET_RANGE_MIN      -3
 #define LULZBOT_Z_PROBE_OFFSET_RANGE_MAX      5
 #define LULZBOT_XY_PROBE_SPEED                6000
 #define LULZBOT_Z_PROBE_SPEED_SLOW           (1*60)
@@ -488,7 +488,7 @@
 #define LULZBOT_HOST_KEEPALIVE_FEATURE_DISABLED
 
 #if defined(LULZBOT_USE_LCD_DISPLAY)
-    #define LULZBOT_REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
+    //#define LULZBOT_REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
     #define LULZBOT_SDSUPPORT
     #define LULZBOT_XYZ_HOLLOW_FRAME_DISABLE
     #define LULZBOT_MENU_HOLLOW_FRAME_DISABLE
@@ -750,13 +750,13 @@
  */
 
 #if defined(LULZBOT_IS_MINI)
-    #define LULZBOT_STANDARD_X_MAX_POS         175
+    #define LULZBOT_STANDARD_X_MAX_POS         155 //175
     #define LULZBOT_STANDARD_X_MIN_POS           0
-    #define LULZBOT_STANDARD_Y_MAX_POS         191
-    #define LULZBOT_STANDARD_Y_MIN_POS         -10
+    #define LULZBOT_STANDARD_Y_MAX_POS         195 //191
+    #define LULZBOT_STANDARD_Y_MIN_POS          0 //-10
 
-    #define LULZBOT_X_BED_SIZE                 155
-    #define LULZBOT_Y_BED_SIZE                 155
+    #define LULZBOT_X_BED_SIZE                 145 //145
+    #define LULZBOT_Y_BED_SIZE                 145 //145
 
 #elif defined(LULZBOT_Juniper_TAZ5)
     #define LULZBOT_STANDARD_X_MAX_POS         298
@@ -842,10 +842,10 @@
  * X_MAX which varies by toolhead. */
 
 #if defined(LULZBOT_SENSORLESS_HOMING)
-    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       false
-    #define LULZBOT_X_MAX_ENDSTOP_INVERTING       false
-    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       false
-    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       false
+    #define LULZBOT_X_MIN_ENDSTOP_INVERTING       true
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING       true
+    #define LULZBOT_Y_MIN_ENDSTOP_INVERTING       true
 
     #define LULZBOT_Z_MAX_ENDSTOP_INVERTING       true
     #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       true
@@ -1029,7 +1029,7 @@
 #endif
 
 #if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Gladiola_MiniEinsy)
-    #define LULZBOT_MOTOR_CURRENT_Z                   1630
+    #define LULZBOT_MOTOR_CURRENT_Z               1630
     #define LULZBOT_Z_STEPS                       1600
 
 #elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
@@ -1081,6 +1081,17 @@
     } // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
 
 #else
+    #ifndef LULZBOT_MOTOR_CURRENT_XY
+        #warning LULZBOT_MOTOR_CURRENT_XY not defined.
+    #endif
+    
+    #ifndef LULZBOT_MOTOR_CURRENT_Z
+        #warning LULZBOT_MOTOR_CURRENT_Z not defined.
+    #endif
+    
+    #ifndef LULZBOT_MOTOR_CURRENT_E
+        #warning LULZBOT_MOTOR_CURRENT_E not defined.
+    #endif
     #error Motor currents not defined
 #endif
 

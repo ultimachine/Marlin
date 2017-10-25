@@ -40,4 +40,7 @@
 //#define LULZBOT_Oliveoil_TAZ6
 //#define TOOLHEAD_Tilapia_SingleExtruder
 
+#define LULZBOT_Gladiola_MiniEinsy
+#define TOOLHEAD_Gladiola_SingleExtruder
+
 #endif /* CONFIGURATION_LULZBOT */
