@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".20" // Change this with each update
+#define LULZBOT_FW_VERSION ".21" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -931,7 +931,7 @@
 
 #elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)  || defined(LULZBOT_Hibiscus_EinsyMini2) || defined(LULZBOT_Hibiscus_EinsyMini2LCD)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
-    #define LULZBOT_STANDARD_Z_MAX_POS         178
+    #define LULZBOT_STANDARD_Z_MAX_POS         183
 
 #elif defined(LULZBOT_Juniper_TAZ5)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
