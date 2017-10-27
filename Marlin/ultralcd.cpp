@@ -901,42 +901,42 @@ void kill_screen(const char* lcd_msg) {
   static void lcd_store_settings();
   static void lcd_load_settings();
 
-  void lcd_main_menu() {
-    #if ENABLED(SDSUPPORT)
-      /* If we are printing, the menu will only show options related to pausing/stopping */
-      if (card.cardOK && card.isFileOpen()) {
-        START_MENU();
-        MENU_BACK(MSG_WATCH);
-        if (card.sdprinting)
-          MENU_ITEM(function, MSG_PAUSE_PRINT, lcd_sdcard_pause);
-        else
-          MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_resume);
-        MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_stop);
-        if (!thermalManager.tooColdToExtrude(active_extruder)) {
-          MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_enqueue_filament_change);
-        }
-        END_MENU();
-        return;
-      }
-    #endif // SDSUPPORT
 
+  void lcd_main_menu() {
     START_MENU();
     MENU_BACK(MSG_WATCH);
 
-    if (!thermalManager.tooColdToExtrude(active_extruder)) {
-      MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_enqueue_filament_change);
-    }
+    bool isPrinting = (planner.movesplanned() || IS_SD_PRINTING || (card.cardOK && card.isFileOpen()));
 
-    MENU_ITEM(submenu, _UxGT("Movement"), lcd_movement_menu);
-    MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
-    MENU_ITEM(submenu, _UxGT("Configuration"), lcd_configuration_menu);
+    if (isPrinting) {
+      MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
+      #if ENABLED(ADVANCED_PAUSE_FEATURE)
+        if (!thermalManager.tooColdToExtrude(active_extruder))
+          MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_enqueue_filament_change);
+      #endif
+    } else {
+      MENU_ITEM(submenu, _UxGT("Movement"), lcd_movement_menu);
+      MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
+      MENU_ITEM(submenu, _UxGT("Configuration"), lcd_configuration_menu);
+    }
 
     #if ENABLED(SDSUPPORT)
       if (card.cardOK) {
-        if(!card.isFileOpen()) {
-          MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
+        if (card.isFileOpen()) {
+          if (card.sdprinting)
+            MENU_ITEM(function, MSG_PAUSE_PRINT, lcd_sdcard_pause);
+          else
+            MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_resume);
+          MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_stop);
         }
-      } else {
+        else if(!isPrinting) {
+          MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
+          #if !PIN_EXISTS(SD_DETECT)
+            MENU_ITEM(gcode, MSG_CNG_SDCARD, PSTR("M21"));  // SD-card changed by user
+          #endif
+        }
+      }
+      else if(!isPrinting) {
         MENU_ITEM(submenu, MSG_NO_CARD, lcd_sdcard_menu);
         #if !PIN_EXISTS(SD_DETECT)
           MENU_ITEM(gcode, MSG_INIT_SDCARD, PSTR("M21")); // Manually initialize the SD-card via user interface
@@ -944,11 +944,13 @@ void kill_screen(const char* lcd_msg) {
       }
     #endif // SDSUPPORT
 
-    MENU_ITEM(submenu, MSG_INFO_MENU, lcd_show_custom_bootscreen);
+    if(!isPrinting) {
+      MENU_ITEM(submenu, MSG_INFO_MENU, lcd_show_custom_bootscreen);
 
-    #if defined(LULZBOT_PRINTERCOUNTER)
-    MENU_ITEM(submenu, MSG_INFO_STATS_MENU, lcd_info_stats_menu);          // Printer Statistics >
-    #endif
+      #if defined(LULZBOT_PRINTERCOUNTER)
+      MENU_ITEM(submenu, MSG_INFO_STATS_MENU, lcd_info_stats_menu);          // Printer Statistics >
+      #endif
+    }
 
     END_MENU();
   }
@@ -1365,7 +1367,7 @@ void kill_screen(const char* lcd_msg) {
     //
     // Change filament
     //
-    #if ENABLED(ADVANCED_PAUSE_FEATURE)
+    #if ENABLED(ADVANCED_PAUSE_FEATURE) && !defined(LULZBOT_REORDERED_MENUS)
       if (!thermalManager.tooColdToExtrude(active_extruder))
         MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_enqueue_filament_change);
     #endif

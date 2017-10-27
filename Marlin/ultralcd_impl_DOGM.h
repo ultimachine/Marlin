@@ -760,9 +760,9 @@ static void lcd_implementation_status_screen() {
   #endif // ADVANCED_PAUSE_FEATURE
 
   #if defined(LULZBOT_SCROLL_LONG_FILE_NAMES)
-    static int        scroll_offset;
-    static int        scroll_max;
-    static int        scroll_row;
+    static uint8_t    scroll_offset;
+    static uint8_t    scroll_max;
+    static uint8_t    scroll_hash;
   #endif
 
   // Set the colors for a menu item based on whether it is selected
@@ -953,16 +953,23 @@ static void lcd_implementation_status_screen() {
 
       uint8_t n = LCD_WIDTH - (START_COL) - 1;
       if (longFilename[0]) {
-        filename = longFilename;
         #if defined(LULZBOT_SCROLL_LONG_FILE_NAMES)
           if (isSelected) {
-            if(scroll_row != row) {
-              scroll_max    = max(0, strlen(longFilename) - n);
-              scroll_row    = row;
+            uint8_t name_hash = row;
+            for (uint8_t i = 0; filename[i]; ++i) {
+              name_hash = ((name_hash << 1) | (name_hash >> 7)) ^ filename[i];
+            }
+            if(scroll_hash != name_hash) {
+              scroll_max    = max(0, lcd_strlen(longFilename) - n);
+              scroll_hash   = name_hash;
               scroll_offset = 0;
             }
-            filename += scroll_offset;
+            filename = longFilename + scroll_offset;
+          } else {
+            filename = longFilename;
           }
+        #else
+          filename = longFilename;
         #endif
       }
 

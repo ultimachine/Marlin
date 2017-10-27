@@ -156,7 +156,7 @@
 #ifndef MSG_LEVEL_BED
   #define MSG_LEVEL_BED                       _UxGT("Level bed")
 #endif
-#ifndef MSG_REWIPE
+#ifndef MSG_REWIPE && defined(LULZBOT_PROBE_Z_WITH_REWIPE)
   #define MSG_REWIPE                          _UxGT("Rewiping")
 #endif
 #ifndef MSG_LEVEL_CORNERS
@@ -689,7 +689,9 @@
 #ifndef MSG_ERR_MINTEMP_BED
   #define MSG_ERR_MINTEMP_BED                 _UxGT("Err: MINTEMP BED")
 #endif
-#ifndef MSG_ERR_Z_HOMING
+#ifndef MSG_ERR_Z_HOMING && defined(LULZBOT_CLARIFY_ERROR_MESSAGES)
+  #define MSG_ERR_Z_HOMING                    _UxGT("Home XY first")
+#else
   #define MSG_ERR_Z_HOMING                    _UxGT("G28 Z Forbidden")
 #endif
 #ifndef MSG_HALTED
@@ -713,16 +715,16 @@
 #ifndef MSG_HEATING_COMPLETE
   #define MSG_HEATING_COMPLETE                _UxGT("Heating done.")
 #endif
-#ifndef MSG_COOLING
+#ifndef MSG_COOLING && defined(LULZBOT_COOLING_MESSAGES)
   #define MSG_COOLING                         _UxGT("Cooling...")
 #endif
-#ifndef MSG_COOLING_COMPLETE
+#ifndef MSG_COOLING_COMPLETE && defined(LULZBOT_COOLING_MESSAGES)
   #define MSG_COOLING_COMPLETE                _UxGT("Cooling done.")
 #endif
 #ifndef MSG_BED_HEATING
   #define MSG_BED_HEATING                     _UxGT("Bed heating.")
 #endif
-#ifndef MSG_BED_COOLING
+#ifndef MSG_BED_COOLING && defined(LULZBOT_COOLING_MESSAGES)
   #define MSG_BED_COOLING                     _UxGT("Bed cooling.")
 #endif
 #ifndef MSG_BED_DONE
