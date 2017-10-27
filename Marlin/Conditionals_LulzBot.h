@@ -847,7 +847,7 @@
     #define LULZBOT_X_BED_SIZE                 288
     #define LULZBOT_Y_BED_SIZE                 275
 
-#elif defined(LULZBOT_Quiver_TAZ7)
+#elif defined(LULZBOT_IS_TAZ) && defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_STANDARD_X_MAX_POS         300
     #define LULZBOT_STANDARD_X_MIN_POS         -16
     #define LULZBOT_STANDARD_Y_MAX_POS         303
@@ -856,7 +856,7 @@
     #define LULZBOT_X_BED_SIZE                 280
     #define LULZBOT_Y_BED_SIZE                 280
 
-#elif defined(LULZBOT_IS_TAZ)
+#elif defined(LULZBOT_IS_TAZ) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_STANDARD_X_MAX_POS         300
     #define LULZBOT_STANDARD_X_MIN_POS         -20
     #define LULZBOT_STANDARD_Y_MAX_POS         303
@@ -924,7 +924,7 @@
  * X_MAX which varies by toolhead. */
 
 #if defined(LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS)
-    // TAZ 6+ and Huerfano Mini onwards use normally closed endstops.
+    // TAZ 6+ and Hibiscus Mini onwards use normally closed endstops.
     // This is safer, as a loose connector or broken wire will halt
     // the axis
     #define LULZBOT_X_MIN_ENDSTOP_INVERTING       LULZBOT_NORMALLY_CLOSED_ENDSTOP
