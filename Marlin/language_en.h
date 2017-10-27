@@ -689,7 +689,9 @@
 #ifndef MSG_ERR_MINTEMP_BED
   #define MSG_ERR_MINTEMP_BED                 _UxGT("Err: MINTEMP BED")
 #endif
-#ifndef MSG_ERR_Z_HOMING
+#ifndef MSG_ERR_Z_HOMING && defined(LULZBOT_CLARIFY_ERROR_MESSAGES)
+  #define MSG_ERR_Z_HOMING                    _UxGT("Home XY first")
+#else
   #define MSG_ERR_Z_HOMING                    _UxGT("G28 Z Forbidden")
 #endif
 #ifndef MSG_HALTED

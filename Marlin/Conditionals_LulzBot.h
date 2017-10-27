@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".22" // Change this with each update
+#define LULZBOT_FW_VERSION ".23" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -50,6 +50,7 @@
     #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
+    #define LULZBOT_USE_Z_SCREW
     #define LULZBOT_BAUDRATE 115200
     #define LULZBOT_UUID "351487b6-ca9a-4c1a-8765-d668b1da6585"
 #endif
@@ -64,6 +65,7 @@
     #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_USE_Z_BELT
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
@@ -79,6 +81,7 @@
     #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
+    #define LULZBOT_USE_Z_SCREW
     #define LULZBOT_BAUDRATE 115200
     #define LULZBOT_UUID "083f68f1-028e-494c-98e1-f2e0dfaee9a5"
 #endif
@@ -95,6 +98,7 @@
     #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_USE_Z_BELT
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "80fed4d6-4d15-4512-a02e-61b1dc4fb072"
@@ -108,6 +112,7 @@
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
+    #define LULZBOT_USE_Z_SCREW
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_UUID "c3255c96-4097-4884-8ed0-ded2ff9bae61"
 #endif
@@ -123,6 +128,7 @@
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_HOME_BUTTON
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_USE_Z_SCREW
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_UUID "845f003c-aebd-4e53-a6b9-7d0984fde609"
 #endif
@@ -138,6 +144,7 @@
     #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_USE_Z_BELT
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "a952577d-8722-483a-999d-acdc9e772b7b"
@@ -152,6 +159,7 @@
 #define LULZBOT_AUTO_REPORT_TEMPERATURES
 #define LULZBOT_ADVANCED_OK
 #define LULZBOT_HOST_KEEPALIVE_FEATURE_DISABLED
+#define LULZBOT_CLARIFY_ERROR_MESSAGES
 
 // Marlin 1.1.4 has changed the behavior of G92 so that
 // it changes software endstops, making it less useful
@@ -253,12 +261,15 @@
 #if defined(LULZBOT_MINI_BED)
     #define LULZBOT_HOMING_FEEDRATE_XY            (30*60) // mm/m
     #define LULZBOT_HOMING_FEEDRATE_Z              (8*60) // mm/m
-#elif defined(LULZBOT_Quiver_TAZ7)
+
+#elif defined(LULZBOT_TAZ_BED) && defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_HOMING_FEEDRATE_XY            (50*60) // mm/m
     #define LULZBOT_HOMING_FEEDRATE_Z             (10*60) // mm/m
-#elif defined(LULZBOT_TAZ_BED)
+
+#elif defined(LULZBOT_TAZ_BED) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_HOMING_FEEDRATE_XY            (50*60) // mm/m
     #define LULZBOT_HOMING_FEEDRATE_Z             (3*60)  // mm/m
+
 #endif // LULZBOT_TAZ_BED
 
 // Only the TAZ 6 has a Z-homing button
@@ -270,8 +281,8 @@
 
     #define LULZBOT_AFTER_Z_HOME_Z_RAISE         10
     #define LULZBOT_AFTER_Z_HOME_Z_ORIGIN         0
-#elif defined(LULZBOT_Juniper_TAZ5)
-    // Set safe homing position so fan duct does not hit.
+#elif defined(LULZBOT_IS_TAZ) && !defined(LULZBOT_USE_HOME_BUTTON)
+    // TAZ 5 safe homing position so fan duct does not hit.
     #define LULZBOT_Z_SAFE_HOMING
     #define LULZBOT_Z_SAFE_HOMING_X_POINT         10
     #define LULZBOT_Z_SAFE_HOMING_Y_POINT         10
@@ -320,6 +331,7 @@
     #define LULZBOT_NOZZLE_CLEAN_FEATURE
     // Select type of leveling to use:
     //#define LULZBOT_AUTO_BED_LEVELING_BILINEAR
+    //#define LULZBOT_AUTO_BED_LEVELING_LINEAR
     #define LULZBOT_AUTO_BED_LEVELING_3POINT
 #endif
 
@@ -331,7 +343,7 @@
   #define LULZBOT_ABL_PROBE_PT_2_Y LULZBOT_FRONT_PROBE_BED_POSITION
   #define LULZBOT_ABL_PROBE_PT_3_X LULZBOT_RIGHT_PROBE_BED_POSITION
   #define LULZBOT_ABL_PROBE_PT_3_Y LULZBOT_BACK_PROBE_BED_POSITION
-#elif defined(LULZBOT_AUTO_BED_LEVELING_BILINEAR)
+#elif defined(LULZBOT_AUTO_BED_LEVELING_LINEAR) || defined(LULZBOT_AUTO_BED_LEVELING_BILINEAR)
   // Traditionally LulzBot printers have employed a four-point leveling
   // using a degenerate 2x2 grid. This is the traditional behavior.
   #define LULZBOT_GRID_MAX_POINTS_X            2
@@ -798,7 +810,7 @@
 #if defined(LULZBOT_IS_MINI)
     // The Mini fan runs rather loud at full speed.
     #define LULZBOT_CONTROLLERFAN_SPEED         120
-#else
+#elif defined(LULZBOT_IS_TAZ)
     #define LULZBOT_CONTROLLERFAN_SPEED         255
 #endif
 
@@ -854,11 +866,11 @@
     #define LULZBOT_Y_BED_SIZE                 280
 #endif
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
+#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_STANDARD_Z_MIN_POS          -2
     #define LULZBOT_STANDARD_Z_MAX_POS         159
 
-#elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
+#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
     #define LULZBOT_STANDARD_Z_MAX_POS         183
 
@@ -866,11 +878,11 @@
     #define LULZBOT_STANDARD_Z_MIN_POS           0
     #define LULZBOT_STANDARD_Z_MAX_POS         250
 
-#elif defined(LULZBOT_Oliveoil_TAZ6)
+#elif defined(LULZBOT_IS_TAZ) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
     #define LULZBOT_STANDARD_Z_MAX_POS         270
 
-#elif defined(LULZBOT_Quiver_TAZ7)
+#elif defined(LULZBOT_IS_TAZ) && defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
     #define LULZBOT_STANDARD_Z_MAX_POS         299
 #endif
@@ -982,7 +994,7 @@
 #define LULZBOT_NUM_REWIPES      1
 #if defined(LULZBOT_IS_TAZ)
     #define LULZBOT_BED_PROBE_MIN    0 // Limit on pushing into the bed
-#else
+#else defined(LULZBOT_IS_MINI)
     #define LULZBOT_BED_PROBE_MIN   -4 // Limit on pushing into the bed
 #endif
 
@@ -1010,11 +1022,11 @@
 
 // Values for XYZ vary by printer model, values for E vary by toolhead.
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
+#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_MOTOR_CURRENT_XY              1300   // mA
     #define LULZBOT_MOTOR_CURRENT_Z               1630   // mA
 
-#elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
+#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_MOTOR_CURRENT_XY              1300   // mA
     #define LULZBOT_MOTOR_CURRENT_Z               1000   // mA
 
@@ -1022,11 +1034,11 @@
     #define LULZBOT_MOTOR_CURRENT_XY              950    // mA
     #define LULZBOT_MOTOR_CURRENT_Z               1275   // mA
 
-#elif defined(LULZBOT_Oliveoil_TAZ6)
+#elif defined(LULZBOT_IS_TAZ) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_MOTOR_CURRENT_XY              950    // mA
     #define LULZBOT_MOTOR_CURRENT_Z               1075   // mA
 
-#elif defined(LULZBOT_Quiver_TAZ7)
+#elif defined(LULZBOT_IS_TAZ) && defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_MOTOR_CURRENT_XY              950    // mA
     #define LULZBOT_MOTOR_CURRENT_Z               950    // mA
 #endif
@@ -1064,10 +1076,10 @@
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER -1.200
 #endif
 
-#if defined(LULZBOT_Gladiola_Mini) || defined(LULZBOT_Gladiola_MiniLCD)
+#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_Z_STEPS                       1600
 
-#elif defined(LULZBOT_Hibiscus_Mini2) || defined(LULZBOT_Hibiscus_Mini2LCD)
+#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
     #define Z_FULL_STEPS_PER_ROTATION             200
     #define Z_MICROSTEPS                          16
     #define Z_BELT_PITCH                          2
@@ -1078,17 +1090,12 @@
     #undef  LULZBOT_DEFAULT_MAX_FEEDRATE
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 8, 25}      // (mm/sec)
 
-#elif defined(LULZBOT_Juniper_TAZ5)
+#elif defined(LULZBOT_IS_TAZ) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 3, 25}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
     #define LULZBOT_Z_STEPS                       1600
 
-#elif defined(LULZBOT_Oliveoil_TAZ6)
-    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 3, 25}      // (mm/sec)
-    #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
-    #define LULZBOT_Z_STEPS                       1600
-
-#elif defined(LULZBOT_Quiver_TAZ7)
+#elif defined(LULZBOT_IS_TAZ) && defined(LULZBOT_USE_Z_BELT)
     // Prototype Z-belt driven TAZ 7
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 10, 25}     // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,10,10000}
@@ -1150,7 +1157,7 @@
     #define LULZBOT_ENCODER_PULSES_PER_STEP 2
     #define LULZBOT_ENCODER_STEPS_PER_MENU_ITEM 1
     #define LULZBOT_COOLING_MESSAGES
-    #if defined(LULZBOT_Gladiola_MiniLCD) || defined(LULZBOT_Hibiscus_Mini2LCD)
+    #if defined(LULZBOT_IS_MINI)
         // In the experimental Gladiola_MiniLCD, the encoder direction is reversed.
         #define LULZBOT_REVERSE_ENCODER_DIRECTION
     #endif
