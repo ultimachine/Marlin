@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".23" // Change this with each update
+#define LULZBOT_FW_VERSION ".24" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -27,6 +27,7 @@
     !defined(TOOLHEAD_Gladiola_SingleExtruder) && \
     !defined(TOOLHEAD_Albatross_Flexystruder) && \
     !defined(TOOLHEAD_Finch_Aerostruder) && \
+    !defined(TOOLHEAD_Finch_AerostruderV2) && \
     !defined(TOOLHEAD_Tilapia_SingleExtruder) && \
     !defined(TOOLHEAD_Kanyu_Flexystruder) && \
     !defined(TOOLHEAD_Opah_Moarstruder) && \
@@ -443,7 +444,7 @@
 
 /**************************** MINI TOOLHEADS ***********************************/
 
-#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aerostruder)
+#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aerostruder) || defined(TOOLHEAD_Finch_AerostruderV2)
     #define LULZBOT_EXTRUDERS                  1
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         0
     #define LULZBOT_TOOLHEAD_X_MIN_ADJ         0
@@ -485,6 +486,18 @@
     #define LULZBOT_E3D_Titan_Aero
     #define LULZBOT_E_STEPS                        420
 #endif /* TOOLHEAD_Finch_Aerostruder */
+
+/******************************** Mini 2 / TAZ 7 TOOLHEADS *********************/
+
+#if defined(TOOLHEAD_Finch_AerostruderV2)
+    // Prototype Aero toolhead for Mini
+    #define LULZBOT_LCD_TOOLHEAD_NAME              "Aerostruder v2"
+//          16 chars max                            ^^^^^^^^^^^^^^^
+    #define LULZBOT_M115_EXTRUDER_TYPE             "Aerostruder"
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
+    #define LULZBOT_E3D_Titan_Aero
+    #define LULZBOT_E_STEPS                        420
+#endif /* TOOLHEAD_Finch_AerostruderV2 */
 
 /******************************** TAZ TOOLHEADS ********************************/
 
