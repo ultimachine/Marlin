@@ -133,6 +133,8 @@ void Endstops::init() {
 
 } // Endstops::init
 
+LULZBOT_TMC_STALLGUARD_AVG_VARS
+
 void Endstops::report_state() {
   if (endstop_hit_bits) {
     #if ENABLED(ULTRA_LCD)
@@ -181,6 +183,7 @@ void Endstops::report_state() {
       }
     #endif
   }
+  LULZBOT_TMC_STALLGUARD_AVG_FUNC
 } // Endstops::report_state
 
 void Endstops::M119() {
@@ -225,6 +228,7 @@ void Endstops::M119() {
     SERIAL_PROTOCOLPGM(MSG_FILAMENT_RUNOUT_SENSOR);
     SERIAL_PROTOCOLLN(((READ(FIL_RUNOUT_PIN)^FIL_RUNOUT_INVERTING) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN));
   #endif
+  LULZBOT_TMC_M119_STALLGUARD_REPORT
 } // Endstops::M119
 
 #if ENABLED(Z_DUAL_ENDSTOPS)

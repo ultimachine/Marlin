@@ -13,13 +13,17 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".24" // Change this with each update
+#define LULZBOT_FW_VERSION ".25" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
     !defined(LULZBOT_Hibiscus_Mini2) && \
     !defined(LULZBOT_Gladiola_MiniLCD) && \
     !defined(LULZBOT_Hibiscus_Mini2LCD) && \
+    !defined(LULZBOT_Gladiola_EinsyMini) && \
+    !defined(LULZBOT_Hibiscus_EinsyMini2) && \
+    !defined(LULZBOT_Gladiola_EinsyMiniLCD) && \
+    !defined(LULZBOT_Hibiscus_EinsyMini2LCD) && \
     !defined(LULZBOT_Juniper_TAZ5) && \
     !defined(LULZBOT_Oliveoil_TAZ6) && \
     !defined(LULZBOT_Quiver_TAZ7) \
@@ -56,6 +60,38 @@
     #define LULZBOT_UUID "351487b6-ca9a-4c1a-8765-d668b1da6585"
 #endif
 
+#if defined(LULZBOT_Gladiola_EinsyMini)
+    /* Modified Gladiola Mini with Einsy board and half-height
+     * X & Y motors (full-height Z motors must be re-wired in
+     * series). X & Y endstops replaced w/ bumpers. */
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EARLY_EINSY
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_USE_Z_SCREW
+    #define LULZBOT_BAUDRATE 115200
+    #define LULZBOT_UUID "4479bf92-7e47-4c2c-be95-64dd01bd413b"
+#endif
+
+#if defined(LULZBOT_Gladiola_EinsyMiniLCD)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EARLY_EINSY
+    #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_USE_Z_SCREW
+    #define LULZBOT_BAUDRATE 115200
+    #define LULZBOT_UUID "4479bf92-7e47-4c2c-be95-64dd01bd413b"
+#endif
+
 #if defined(LULZBOT_Hibiscus_Mini2)
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
     #define LULZBOT_LCD_MACHINE_NAME "Mini 2"
@@ -70,6 +106,39 @@
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
+#endif
+
+#if defined(LULZBOT_Hibiscus_EinsyMini2)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EARLY_EINSY
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
+#endif
+
+#if defined(LULZBOT_Hibiscus_EinsyMini2LCD)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EARLY_EINSY
+    #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
 #endif
 
 #if defined(LULZBOT_Gladiola_MiniLCD)
@@ -202,7 +271,12 @@
 #define LULZBOT_NORMALLY_OPEN_ENDSTOP         true
 #define LULZBOT_NO_ENDSTOP                    true
 
-#if defined(LULZBOT_IS_MINI)
+#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_EINSYRAMBO)
+    // Experimental Mini retrofitted with EinsyRambo from UltiMachine
+    #define LULZBOT_MOTHERBOARD                   BOARD_EINSYRAMBO
+    #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN  // Digital pin 6
+
+#elif defined(LULZBOT_IS_MINI)
     #define LULZBOT_MOTHERBOARD                   BOARD_MINIRAMBO
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN  // Digital pin 6
 
@@ -961,6 +1035,195 @@
 #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       LULZBOT_NORMALLY_OPEN_ENDSTOP
 #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING LULZBOT_NORMALLY_OPEN_ENDSTOP
 
+/******************************* SENSORLESS HOMING ******************************/
+
+#if defined(LULZBOT_USE_EINSYRAMBO)
+    #define LULZBOT_HAVE_TMC2130
+
+    // EinsyRambo uses a 220 mOhm sense resistor
+    #define LULZBOT_R_SENSE         0.22
+
+    #define LULZBOT_HOLD_MULTIPLIER 0.5
+
+    #define LULZBOT_TMC_INIT(st) \
+        /* The EinsyRambo connects both diag pins to the same */ \
+        /* microcontroller pin and provides a pull up resistor, */ \
+        /* so configure the pin as active low. */ \
+        st.diag0_active_high(0); \
+        st.diag1_active_high(0); \
+        st.diag1_stall(1); \
+        /* Reverse the motor direction so it matches the Rambo */ \
+        st.shaft_dir(1); \
+        st.external_ref(0);     /* I_scale_analog  = 0 */ \
+        st.internal_sense_R(0); /* internal_Rsense = 0 */
+
+    #define LULZBOT_TMC_REPORT(AXIS) \
+        { \
+            uint32_t DRVSTATUS  = stepper##AXIS.DRV_STATUS(); \
+            uint32_t IOIN       = stepper##AXIS.IOIN(); \
+            uint32_t IHOLD_IRUN = stepper##AXIS.IHOLD_IRUN(); \
+            uint32_t CHOPCONF   = stepper##AXIS.CHOPCONF(); \
+            uint32_t COOLCONF   = stepper##AXIS.COOLCONF(); \
+            int8_t   SGT        = (COOLCONF  >> 16) & 0b1111111; \
+            uint16_t SG_RESULT  = (DRVSTATUS)       & 0b111111111; \
+            bool drv_enn        = (IOIN      >>  4) & 0b1; \
+            bool stst           = (DRVSTATUS >> 31) & 0b1; \
+            bool olb            = (DRVSTATUS >> 30) & 0b1; \
+            bool ola            = (DRVSTATUS >> 29) & 0b1; \
+            bool s2gb           = (DRVSTATUS >> 28) & 0b1; \
+            bool s2ga           = (DRVSTATUS >> 27) & 0b1; \
+            bool otpw           = (DRVSTATUS >> 26) & 0b1; \
+            bool ot             = (DRVSTATUS >> 25) & 0b1; \
+            bool fsactive       = (DRVSTATUS >> 15) & 0b1; \
+            uint16_t ihold      = (IHOLD_IRUN)      & 0b11111; \
+            uint16_t irun       = (IHOLD_IRUN >> 8) & 0b11111; \
+            bool vsense         = (CHOPCONF  >> 17) & 0b1; \
+            SERIAL_ECHOPGM(" " #AXIS ":"); \
+            SERIAL_ECHOPGM(" ihr:"); \
+            SERIAL_ECHO(ihold); \
+            SERIAL_ECHOPGM("/"); \
+            SERIAL_ECHO(irun); \
+            SERIAL_ECHOPGM(" vsen:"); \
+            SERIAL_ECHO(vsense); \
+            if(stepper##AXIS.coolstep_min_speed() == 1024UL * 1024UL - 1UL) { \
+                SERIAL_ECHOPGM(" sgt:"); \
+                SERIAL_ECHO(LULZBOT_SIGN_EXTEND_SGT(SGT)); \
+                if(num_sg > 0) { \
+                    SERIAL_ECHOPGM(" avg_sg:"); \
+                    SERIAL_ECHO(sum_sg_##AXIS/num_sg); \
+                } \
+            } else { \
+                SERIAL_ECHOPGM(" stealth"); \
+            } \
+            if(!drv_enn) SERIAL_ECHOPGM(" en"); \
+            if(stst)     SERIAL_ECHOPGM(" st"); \
+            if(olb)      SERIAL_ECHOPGM(" olb"); \
+            if(ola)      SERIAL_ECHOPGM(" ola"); \
+            if(s2gb)     SERIAL_ECHOPGM(" s2gb"); \
+            if(s2ga)     SERIAL_ECHOPGM(" s2ga"); \
+            if(otpw)     SERIAL_ECHOPGM(" otpw"); \
+            if(ot)       SERIAL_ECHOPGM(" ot"); \
+            if(fsactive) SERIAL_ECHOPGM(" fsactive"); \
+            SERIAL_EOL(); \
+        }
+
+    #define LULZBOT_SIGN_EXTEND_SGT(sgt) int8_t(sgt | ((sgt << 1) & 0x80))
+
+    /* The following function accumulates the average of a
+       stallguard values during a planner move */
+    #define LULZBOT_TMC_STALLGUARD_AVG_VARS \
+        static uint8_t   current_tail, tally_freq = 10; \
+        static uint32_t  sum_sg_X = 0, sum_sg_Y = 0, sum_sg_Z = 0, sum_sg_E0 = 0, num_sg = 0;
+
+    #define LULZBOT_TMC_STALLGUARD_AVG_FUNC \
+        if(--tally_freq == 0) { \
+            tally_freq = 10; \
+            if(planner.blocks_queued()) { \
+                /* Reset accumulators at the start of each movement */ \
+                if(current_tail != planner.block_buffer_tail) { \
+                    current_tail = planner.block_buffer_tail; \
+                    sum_sg_X = sum_sg_Y = sum_sg_Z = sum_sg_E0 = num_sg = 0; \
+                } \
+                /* While in motion, accumulate sg values */ \
+                sum_sg_X  += stepperX.DRV_STATUS()  & 0b111111111; \
+                sum_sg_Y  += stepperY.DRV_STATUS()  & 0b111111111; \
+                sum_sg_Z  += stepperZ.DRV_STATUS()  & 0b111111111; \
+                sum_sg_E0 += stepperE0.DRV_STATUS() & 0b111111111; \
+                num_sg++; \
+            } \
+        }
+
+    #define LULZBOT_TMC_M119_STALLGUARD_REPORT \
+        SERIAL_ECHOLNPGM("TMC2130 Status:"); \
+        LULZBOT_TMC_REPORT(X) \
+        LULZBOT_TMC_REPORT(Y) \
+        LULZBOT_TMC_REPORT(Z) \
+        LULZBOT_TMC_REPORT(E0)
+
+    #define LULZBOT_ENABLE_STALLGUARD(st) \
+        /* Enable stallguard by disabling steathchop */ \
+        st.coolstep_min_speed(1024UL * 1024UL - 1UL); \
+        st.stealthChop(0);
+
+    #define LULZBOT_ENABLE_STEALTHCHOP(st) \
+        st.coolstep_min_speed(0); \
+        st.stealthChop(1);
+
+    #define LULZBOT_TMC2130_ADV { \
+            /* LULZBOT_ENABLE_STALLGUARD(stepperZ) */ \
+            /* Set stallguard value for Z sensing */ \
+            /* stepperZ.sg_stall_value(5); */ \
+        }
+
+    /* When STEALTHCHOP is disabled, sometimes the X axis refuses to
+     * move at the start of G28, because the stallguard is triggered.
+     * Toggling in and out of STEALHCHOP mode seems to resolve this. */
+    #define LULZBOT_CLEAR_STALLGUARD_FLAG(st) \
+        LULZBOT_ENABLE_STEALTHCHOP(st) \
+        LULZBOT_ENABLE_STALLGUARD(st)
+
+    /* Leaving the toolhead resting on the endstops will likely cause
+     * chatter if the machine is immediately re-homed, so don't leave
+     * the head sitting on the endstop after homing. */
+    #define LULZBOT_BACKOFF_DIST     3
+    #define LULZBOT_BACKOFF_FEEDRATE 5
+    #define LULZBOT_AFTER_Z_HOME_ACTION \
+        do_blocking_move_to_xy( \
+            LULZBOT_INVERT_X_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_X_MAX_POS - LULZBOT_BACKOFF_DIST, \
+            LULZBOT_INVERT_Y_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_Y_MAX_POS - LULZBOT_BACKOFF_DIST, \
+            LULZBOT_BACKOFF_FEEDRATE \
+        );
+
+#else
+    #define LULZBOT_TMC_M119_STALLGUARD_REPORT
+    #define LULZBOT_TMC_STALLGUARD_AVG_VARS
+    #define LULZBOT_TMC_STALLGUARD_AVG_FUNC
+#endif
+
+#if defined(LULZBOT_SENSORLESS_HOMING)
+    #define LULZBOT_USE_XMIN_PLUG // Uses Stallguard
+    //#define LULZBOT_USE_XMAX_PLUG // Uses Stallguard
+    //#define LULZBOT_USE_YMIN_PLUG // Uses Stallguard
+    #define LULZBOT_USE_YMAX_PLUG // Uses Stallguard
+    #define LULZBOT_USE_ZMIN_PLUG
+    #define LULZBOT_USE_ZMAX_PLUG
+
+    #define LULZBOT_X_MIN_ENDSTOP_INVERTING   LULZBOT_NORMALLY_OPEN_ENDSTOP
+    //#define LULZBOT_X_MAX_ENDSTOP_INVERTING LULZBOT_NORMALLY_OPEN_ENDSTOP
+    #define LULZBOT_Y_MAX_ENDSTOP_INVERTING   LULZBOT_NORMALLY_OPEN_ENDSTOP
+    //#define LULZBOT_Y_MIN_ENDSTOP_INVERTING LULZBOT_NORMALLY_OPEN_ENDSTOP
+
+    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING   LULZBOT_NORMALLY_OPEN_ENDSTOP
+
+    // The following does not seem to work when both
+    // MAX and MIN are using Stallguard.
+    // It also appears that when this is enabled
+    // stallguard is never cleared.
+    //#define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
+
+    //#define LULZBOT_STEALTHCHOP
+
+    #undef LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
+
+    // According to Jason at UltiMachine, setting the lower the
+    // stealth freq the cooler the motor drivers will operate.
+    #define LULZBOT_STEALTH_FREQ 0
+
+    // Quickhome does not work with sensorless homing
+    #undef LULZBOT_QUICKHOME
+
+    #define LULZBOT_X_HOMING_SENSITIVITY 3
+    #define LULZBOT_Y_HOMING_SENSITIVITY 3
+#endif
+
+#if defined(LULZBOT_SENSORLESS_HOMING)
+    #define LULZBOT_X_HOME_BUMP_MM                0
+    #define LULZBOT_Y_HOME_BUMP_MM                0
+#else
+    #define LULZBOT_X_HOME_BUMP_MM                5
+    #define LULZBOT_Y_HOME_BUMP_MM                5
+#endif
+
 /**************************** ADVANCED PAUSE FEATURE ****************************/
 
 #if defined(LULZBOT_USE_LCD_DISPLAY)
@@ -1035,7 +1298,17 @@
 
 // Values for XYZ vary by printer model, values for E vary by toolhead.
 
-#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_SCREW)
+#if defined(LULZBOT_USE_EINSYRAMBO)
+    #define LULZBOT_MOTOR_CURRENT_XY              800    // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               960    // mA
+
+    #if LULZBOT_MOTOR_CURRENT_E  > 960
+        #warning This toolhead may not work properly with the EinsyRambo
+        #undef  LULZBOT_MOTOR_CURRENT_E
+        #define LULZBOT_MOTOR_CURRENT_E           960    // mA
+    #endif
+
+#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_MOTOR_CURRENT_XY              1300   // mA
     #define LULZBOT_MOTOR_CURRENT_Z               1630   // mA
 
@@ -1115,7 +1388,24 @@
     #define LULZBOT_Z_STEPS                       1790.08264463
 #endif
 
-#if defined(LULZBOT_IS_MINI)
+#if defined(LULZBOT_USE_EINSYRAMBO)
+    // Neither define LULZBOT_PWM_MOTOR_CURRENT nor LULZBOT_DIGIPOT_MOTOR_CURRENT,
+    // as the current is set in Configuration_adv.h under the HAVE_TMC2130 block
+
+    // Make sure the current is in range, as setting it above this causes the
+    // value in irun to wrap around to zero, which fails silently!
+    #if LULZBOT_MOTOR_CURRENT_XY  > 960 || \
+        LULZBOT_MOTOR_CURRENT_Z   > 960 || \
+        LULZBOT_MOTOR_CURRENT_E   > 960
+        #error Motor currents exceed the maximum values that can be set on the EinsyRambo
+    #endif
+
+    #define LULZBOT_X_CURRENT  LULZBOT_MOTOR_CURRENT_XY
+    #define LULZBOT_Y_CURRENT  LULZBOT_MOTOR_CURRENT_XY
+    #define LULZBOT_Z_CURRENT  LULZBOT_MOTOR_CURRENT_Z
+    #define LULZBOT_E0_CURRENT LULZBOT_MOTOR_CURRENT_E
+
+#elif defined(LULZBOT_IS_MINI)
         #define LULZBOT_PWM_MOTOR_CURRENT { \
             LULZBOT_MOTOR_CURRENT_XY, \
             LULZBOT_MOTOR_CURRENT_Z, \

@@ -2301,7 +2301,6 @@ static void clean_up_after_endstop_or_probe_move() {
     refresh_cmd_timeout();
 
     #if ENABLED(PROBE_DOUBLE_TOUCH)
-
       // Do a first probe at the fast speed
       #if defined(LULZBOT_PROBE_Z_WITH_REWIPE)
       LULZBOT_PROBE_Z_WITH_REWIPE(Z_PROBE_SPEED_FAST);
@@ -2971,8 +2970,9 @@ static void do_homing_move(const AxisEnum axis, const float distance, const floa
         st.coolstep_min_speed(0);
         st.stealthChop(1);
       }
+    #else
+      LULZBOT_CLEAR_STALLGUARD_FLAG(st)
     #endif
-
     st.diag1_stall(enable ? 1 : 0);
   }
 #endif
@@ -4014,7 +4014,6 @@ inline void gcode_G28(const bool always_home_all) {
     #endif
 
     #if ENABLED(HOME_Y_BEFORE_X)
-
       // Home Y
       if (home_all || homeY) {
         HOMEAXIS(Y);
@@ -9916,8 +9915,12 @@ inline void gcode_M502() {
 
   static void tmc2130_get_sgt(TMC2130Stepper &st, const char name) {
     SERIAL_CHAR(name);
+    #if defined(LULZBOT_SIGN_EXTEND_SGT)
+    SERIAL_ECHOLNPAIR(" driver homing sensitivity set to ", LULZBOT_SIGN_EXTEND_SGT(st.sgt()));
+    #else
     SERIAL_ECHOPGM(" driver homing sensitivity set to ");
     SERIAL_ECHOLN(st.sgt());
+    #endif
   }
   static void tmc2130_set_sgt(TMC2130Stepper &st, const char name, const int8_t sgt_val) {
     st.sgt(sgt_val);
@@ -9947,10 +9950,6 @@ inline void gcode_M502() {
     #if ENABLED(Z_IS_TMC2130)
       if (values[Z_AXIS]) tmc2130_set_current(stepperZ, 'Z', values[Z_AXIS]);
       else tmc2130_get_current(stepperZ, 'Z');
-    #endif
-    #if ENABLED(E0_IS_TMC2130)
-      if (values[E_AXIS]) tmc2130_set_current(stepperE0, 'E', values[E_AXIS]);
-      else tmc2130_get_current(stepperE0, 'E');
     #endif
 
     #if ENABLED(AUTOMATIC_CURRENT_CONTROL)
@@ -10039,6 +10038,10 @@ inline void gcode_M502() {
       #if ENABLED(Y_IS_TMC2130)
         if (parser.seen(axis_codes[Y_AXIS])) tmc2130_set_sgt(stepperY, 'Y', parser.value_int());
         else tmc2130_get_sgt(stepperY, 'Y');
+      #endif
+      #if ENABLED(E0_IS_TMC2130)
+        if (parser.seen(axis_codes[E_AXIS])) tmc2130_set_sgt(stepperE0, 'E', parser.value_int());
+        else tmc2130_get_sgt(stepperE0, 'E');
       #endif
     }
   #endif // SENSORLESS_HOMING

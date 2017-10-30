@@ -126,7 +126,6 @@
 // TMC2130 Driver objects and inits
 //
 #if ENABLED(HAVE_TMC2130)
-
   #include <SPI.h>
   #include <TMC2130Stepper.h>
   #include "enum.h"
@@ -181,9 +180,13 @@
     st.power_down_delay(128); // ~2s until driver lowers to hold current
     st.hysterisis_start(0); // HSTRT = 1
     st.hysterisis_low(1); // HEND = -2
+    #if defined(LULZBOT_TMC_INIT)
+      LULZBOT_TMC_INIT(st);
+    #else
     st.diag1_active_high(1); // For sensorless homing
+    #endif
     #if ENABLED(STEALTHCHOP)
-      st.stealth_freq(1); // f_pwm = 2/683 f_clk
+      st.stealth_freq(LULZBOT_STEALTH_FREQ); // f_pwm = 2/683 f_clk
       st.stealth_autoscale(1);
       st.stealth_gradient(5);
       st.stealth_amplitude(255);

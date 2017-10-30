@@ -901,6 +901,7 @@ void kill_screen(const char* lcd_msg) {
   static void lcd_store_settings();
   static void lcd_load_settings();
 
+
   void lcd_main_menu() {
     START_MENU();
     MENU_BACK(MSG_WATCH);
