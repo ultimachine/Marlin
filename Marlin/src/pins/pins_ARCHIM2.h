@@ -135,13 +135,14 @@
     #define LCD_PINS_D6     68 //D68 PA1_CANRX0
     #define LCD_PINS_D7     34 //D34 PC2_PWML0
 
-    #define BEEPER          23 //D24 PA15_CTS1
+    #define BEEPER_PIN          23 //D24 PA15_CTS1
 
     #define BTN_EN1         60 //D60 PA3_TIOB1
     #define BTN_EN2         13 //D13 PB27_TIOB0
     #define BTN_ENC         16 //D16 PA13_TXD1 // the click
 
-    #define SDCARDDETECT     2 //D2  PB25_TIOA0
+    #define SD_DETECT_PIN    2 //D2  PB25_TIOA0
+	#undef SDSS
     #define SDSS            87 //D87 PA29 CS
   #endif
 #endif // ULTRA_LCD
