@@ -518,7 +518,11 @@ void Temperature::_temp_error(const int8_t e, const char * const serial_msg, con
     if (!killed) {
       Running = false;
       killed = true;
+      #if defined(LULZBOT_ENHANCED_TEMP_ERROR_MSG)
+        LULZBOT_ENHANCED_TEMP_ERROR_MSG(lcd_msg, e)
+      #else
       kill(lcd_msg);
+      #endif
     }
     else
       disable_all_heaters(); // paranoia

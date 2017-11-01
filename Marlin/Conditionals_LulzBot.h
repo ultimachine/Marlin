@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".25" // Change this with each update
+#define LULZBOT_FW_VERSION ".26" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1478,6 +1478,18 @@
     #define LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD
     #define LULZBOT_SCROLL_LONG_FILE_NAMES
     #define LULZBOT_REORDERED_MENUS
+    #define LULZBOT_ENHANCED_TEMP_ERROR_MSG(msg, e) \
+        { \
+            char str[30] = {'\0'}; \
+            strncpy(str, msg, 25); \
+            switch(e) { \
+                case -1: strcat(str, " BED"); break; \
+                case  0: strcat(str, " E0");  break; \
+                case  1: strcat(str, " E1");  break; \
+            break; \
+            } \
+            kill(str); \
+        }
 #endif
 
 /***************************** CUSTOM SPLASH SCREEN *****************************/
