@@ -1041,7 +1041,7 @@
     #define LULZBOT_HAVE_TMC2130
 
     // EinsyRambo uses a 220 mOhm sense resistor
-    #define LULZBOT_R_SENSE         0.22
+    #define LULZBOT_R_SENSE         0.1
 
     #define LULZBOT_HOLD_MULTIPLIER 0.5
 
@@ -1193,7 +1193,7 @@
     #define LULZBOT_Y_MAX_ENDSTOP_INVERTING   LULZBOT_NORMALLY_OPEN_ENDSTOP
     //#define LULZBOT_Y_MIN_ENDSTOP_INVERTING LULZBOT_NORMALLY_OPEN_ENDSTOP
 
-    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING   LULZBOT_NORMALLY_OPEN_ENDSTOP
+    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING   LULZBOT_NORMALLY_CLOSED_ENDSTOP
 
     // The following does not seem to work when both
     // MAX and MIN are using Stallguard.
@@ -1212,7 +1212,7 @@
     // Quickhome does not work with sensorless homing
     #undef LULZBOT_QUICKHOME
 
-    #define LULZBOT_X_HOMING_SENSITIVITY 3
+    #define LULZBOT_X_HOMING_SENSITIVITY 5
     #define LULZBOT_Y_HOMING_SENSITIVITY 3
 #endif
 
