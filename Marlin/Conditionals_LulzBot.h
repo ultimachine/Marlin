@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".26" // Change this with each update
+#define LULZBOT_FW_VERSION ".27" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -259,6 +259,12 @@
 
 // Q&A wants to be able to use M226 on endstops switches
 #define LULZBOT_NO_PIN_PROTECTION_ON_M226
+
+// Marlin 1.1.5 has an issue where bed leveling is disabled when homing,
+// this causes problems when rehoming X/Y after pausing a print.
+#if defined(LULZBOT_USE_AUTOLEVELING)
+    #define LULZBOT_G28_DISABLES_LEVELING_WORKAROUND
+#endif
 
 /******************** MOTHERBOARD AND PIN CONFIGURATION ***********************/
 

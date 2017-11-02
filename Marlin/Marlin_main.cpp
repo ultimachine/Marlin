@@ -3940,7 +3940,7 @@ inline void gcode_G28(const bool always_home_all) {
 
   // Disable the leveling matrix before homing
   #if HAS_LEVELING
-    #if ENABLED(AUTO_BED_LEVELING_UBL)
+    #if ENABLED(AUTO_BED_LEVELING_UBL) || defined(LULZBOT_G28_DISABLES_LEVELING_WORKAROUND)
       const bool ubl_state_at_entry = leveling_is_active();
     #endif
     set_bed_leveling_enabled(false);
@@ -4093,7 +4093,7 @@ inline void gcode_G28(const bool always_home_all) {
     do_blocking_move_to_z(delta_clip_start_height);
   #endif
 
-  #if ENABLED(AUTO_BED_LEVELING_UBL)
+  #if ENABLED(AUTO_BED_LEVELING_UBL) || defined(LULZBOT_G28_DISABLES_LEVELING_WORKAROUND)
     set_bed_leveling_enabled(ubl_state_at_entry);
   #endif
 
