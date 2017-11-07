@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".27" // Change this with each update
+#define LULZBOT_FW_VERSION ".28" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1159,6 +1159,9 @@
             /* LULZBOT_ENABLE_STALLGUARD(stepperZ) */ \
             /* Set stallguard value for Z sensing */ \
             /* stepperZ.sg_stall_value(5); */ \
+            /* Set TOFF to reduce audible chopping noise */ \
+            stepperX.toff(3); \
+            stepperY.toff(3); \
         }
 
     /* When STEALTHCHOP is disabled, sometimes the X axis refuses to
