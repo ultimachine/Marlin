@@ -67,10 +67,16 @@
 #if   defined(LULZBOT_USE_EARLY_EINSY) && defined(LULZBOT_SENSORLESS_HOMING)
   #define X_MIN_PIN          BOARD_X_DIAG_PIN
   #define Y_MIN_PIN          BOARD_Y_MIN_PIN
-  #define Z_MIN_PIN          BOARD_Z_MIN_PIN
   #define X_MAX_PIN          BOARD_X_MAX_PIN
   #define Y_MAX_PIN          BOARD_Y_DIAG_PIN
-  #define Z_MAX_PIN          BOARD_Z_MAX_PIN
+
+  #if defined(LULZBOT_SENSORLESS_HOMING_Z)
+    #define Z_MIN_PIN          BOARD_Z_DIAG_PIN
+    #define Z_MAX_PIN          BOARD_Z_MAX_PIN
+  #else
+    #define Z_MIN_PIN          BOARD_Z_MIN_PIN
+    #define Z_MAX_PIN          BOARD_Z_MAX_PIN
+  #endif
 
 #elif defined(LULZBOT_USE_EARLY_EINSY)
   #define X_MIN_PIN          BOARD_X_MIN_PIN

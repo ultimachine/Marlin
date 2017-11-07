@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".28" // Change this with each update
+#define LULZBOT_FW_VERSION ".29" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -118,6 +118,7 @@
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_SENSORLESS_HOMING_Z
     #define LULZBOT_USE_Z_BELT
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
@@ -135,6 +136,7 @@
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_SENSORLESS_HOMING_Z
     #define LULZBOT_USE_Z_BELT
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
@@ -299,6 +301,14 @@
     // when z_probe_enabled is false. We added this special case
     // to "endstops.cpp"
     #define LULZBOT_Z_MIN_USES_Z_PROBE_ENABLED
+
+#elif defined(LULZBOT_SENSORLESS_HOMING_Z)
+    /* When using stallguard for sensorless Z homing, "pins_EINSYRAMBO.h"
+    /* ties Z_MIN and Z_MAX to the diag output on the TMC. For the
+    /* electrical probe, we use the Z_MIN connector on the board. */
+    #define LULZBOT_Z_MIN_PROBE_ENDSTOP
+    #define LULZBOT_Z_MIN_PROBE_PIN BOARD_Z_MIN_PIN
+
 #else
     // The Mini and TAZ 7+ lack a home button and probe using the Z_MIN pin.
     #define LULZBOT_Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
@@ -313,14 +323,16 @@
 #define LULZBOT_INVERT_E1_DIR                     true
 
 #if defined(LULZBOT_IS_MINI)
-    #define LULZBOT_HOMING_Z_WITH_PROBE           false
     #define LULZBOT_INVERT_X_HOME_DIR             -1 // Home left
     #define LULZBOT_INVERT_Y_HOME_DIR              1 // Home bed forward
-    #define LULZBOT_INVERT_Z_HOME_DIR              1 // Home to top
+    #if defined(LULZBOT_SENSORLESS_HOMING_Z)
+        #define LULZBOT_INVERT_Z_HOME_DIR         -1 // Home to bottom
+    #else
+        #define LULZBOT_INVERT_Z_HOME_DIR          1 // Home to top
+    #endif
     #define LULZBOT_QUICKHOME
 
 #elif defined(LULZBOT_Juniper_TAZ5)
-    #define LULZBOT_HOMING_Z_WITH_PROBE           false
     #define LULZBOT_INVERT_X_HOME_DIR             -1 // Home left
     #define LULZBOT_INVERT_Y_HOME_DIR             -1 // Home bed rear
     #define LULZBOT_INVERT_Z_HOME_DIR             -1 // Home towards bed
@@ -362,6 +374,8 @@
 
     #define LULZBOT_AFTER_Z_HOME_Z_RAISE         10
     #define LULZBOT_AFTER_Z_HOME_Z_ORIGIN         0
+
+    #define LULZBOT_HOMING_USES_PROBE_PINS
 #elif defined(LULZBOT_IS_TAZ) && !defined(LULZBOT_USE_HOME_BUTTON)
     // TAZ 5 safe homing position so fan duct does not hit.
     #define LULZBOT_Z_SAFE_HOMING
@@ -481,6 +495,10 @@
  * On TAZ:
  *   Z_MIN_PIN corresponds to the Z-Home push button.
  *   Z_MIN_PROBE_PIN are the bed washers.
+ *
+ * On TAZ or Mini with TMC2130 and Sensorless Homing on Z:
+ *   Z_MIN_PIN corresponds to stallguard diag pin
+ *   Z_MIN_PROBE_PIN are the bed washers.
  */
 #define LULZBOT_SET_PIN_STATE(pin, enable) \
     if(enable) { \
@@ -493,7 +511,14 @@
         WRITE(pin, LOW); \
     }
 
-#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
+#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_SENSORLESS_HOMING_Z)
+    #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
+        endstops.enable_z_probe(enable); \
+        LULZBOT_SET_PIN_STATE(LULZBOT_Z_MIN_PROBE_PIN, enable) \
+        LULZBOT_EXTRUDER_MOTOR_SHUTOFF_ON_PROBE(enable) \
+    }
+
+#elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
         endstops.enable_z_probe(enable); \
         LULZBOT_SET_PIN_STATE(Z_MIN_PIN, enable) \
@@ -963,6 +988,10 @@
     #define LULZBOT_STANDARD_Z_MIN_POS          -2
     #define LULZBOT_STANDARD_Z_MAX_POS         159
 
+#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) && defined(LULZBOT_SENSORLESS_HOMING_Z)
+    #define LULZBOT_STANDARD_Z_MIN_POS        -3.5
+    #define LULZBOT_STANDARD_Z_MAX_POS         183
+
 #elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
     #define LULZBOT_STANDARD_Z_MAX_POS         183
@@ -1042,6 +1071,72 @@
 #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING LULZBOT_NORMALLY_OPEN_ENDSTOP
 
 /******************************* SENSORLESS HOMING ******************************/
+
+#if defined(LULZBOT_SENSORLESS_HOMING)
+    #define LULZBOT_X_HOMING_SENSITIVITY 5
+    #define LULZBOT_Y_HOMING_SENSITIVITY 3
+#endif
+
+#if defined(LULZBOT_SENSORLESS_HOMING_Z)
+    /* With sensorless Z homing, we position the head over a corner washer,
+       lower the Z current and push the head down until we detect a stall
+       (or electrical contact is made, if LULZBOT_HOMING_USES_PROBE_PINS).
+
+       Sensorless Z homing is not accurate enough for bed leveling, but it
+       is good enough to allow us to find the wiper pad and proceed to
+       probe electrically (as was done on previous generation machines).
+     */
+    #define LULZBOT_Z_SAFE_HOMING
+    #define LULZBOT_Z_SAFE_HOMING_X_POINT          17 // LULZBOT_LEFT_PROBE_BED_POSITION
+    #define LULZBOT_Z_SAFE_HOMING_Y_POINT         180 // LULZBOT_BACK_PROBE_BED_POSITION
+
+    #define LULZBOT_Z_HOMING_SENSITIVITY 1
+    #define LULZBOT_Z_HOMING_CURRENT     500
+
+    #define LULZBOT_Z_HOMING_HEIGHT      5
+
+    //#define LULZBOT_HOMING_FEEDRATE_Z (3*60) // mm/m
+
+    /* Lower the current on Z, otherwise the gearing on the axis prevents
+       us from detecting a stall. */
+    #define LULZBOT_ADJUST_Z_HOMING_CURRENT(enable) \
+        { \
+            if(enable) { \
+                stepperZ.setCurrent(LULZBOT_Z_HOMING_CURRENT, R_SENSE, HOLD_MULTIPLIER); \
+                stepperZ.sg_stall_value(LULZBOT_Z_HOMING_SENSITIVITY); \
+                stepperZ.diag1_stall(1); \
+            } else { \
+                stepperZ.setCurrent(LULZBOT_MOTOR_CURRENT_Z,  R_SENSE, HOLD_MULTIPLIER); \
+                stepperZ.diag1_stall(0); \
+            } \
+        }
+
+    /* When this is enabled, the probe pin will also be used, in addition to stallguard,
+       to detect the X_MIN. Will generally keep the bed from flexing as far. */
+    //#define LULZBOT_HOMING_USES_PROBE_PINS
+
+    #define LULZBOT_SENSORLESS_HOMING_Z_INIT \
+            LULZBOT_ENABLE_STALLGUARD(stepperZ); \
+            /* Set stallguard value for Z sensing */ \
+            stepperZ.sg_stall_value(LULZBOT_Z_HOMING_SENSITIVITY); \
+            stepperZ.diag1_stall(0); /* Start disabled */
+#else
+    #define LULZBOT_SENSORLESS_HOMING_Z_INIT
+#endif
+
+#if defined(LULZBOT_SENSORLESS_HOMING)
+    #define LULZBOT_X_HOME_BUMP_MM                0
+    #define LULZBOT_Y_HOME_BUMP_MM                0
+#else
+    #define LULZBOT_X_HOME_BUMP_MM                5
+    #define LULZBOT_Y_HOME_BUMP_MM                5
+#endif
+
+#if defined(LULZBOT_SENSORLESS_HOMING_Z)
+    #define LULZBOT_Z_HOME_BUMP_MM                0
+#else
+    #define LULZBOT_Z_HOME_BUMP_MM                2
+#endif
 
 #if defined(LULZBOT_USE_EINSYRAMBO)
     #define LULZBOT_HAVE_TMC2130
@@ -1156,9 +1251,7 @@
         st.stealthChop(1);
 
     #define LULZBOT_TMC2130_ADV { \
-            /* LULZBOT_ENABLE_STALLGUARD(stepperZ) */ \
-            /* Set stallguard value for Z sensing */ \
-            /* stepperZ.sg_stall_value(5); */ \
+            LULZBOT_SENSORLESS_HOMING_Z_INIT \
             /* Set TOFF to reduce audible chopping noise */ \
             stepperX.toff(3); \
             stepperY.toff(3); \
@@ -1173,16 +1266,20 @@
 
     /* Leaving the toolhead resting on the endstops will likely cause
      * chatter if the machine is immediately re-homed, so don't leave
-     * the head sitting on the endstop after homing. */
-    #define LULZBOT_BACKOFF_DIST     3
+     * the head sitting on the endstops after homing. */
+    #define LULZBOT_BACKOFF_DIST     5
     #define LULZBOT_BACKOFF_FEEDRATE 5
     #define LULZBOT_AFTER_Z_HOME_ACTION \
-        do_blocking_move_to_xy( \
-            LULZBOT_INVERT_X_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_X_MAX_POS - LULZBOT_BACKOFF_DIST, \
-            LULZBOT_INVERT_Y_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_Y_MAX_POS - LULZBOT_BACKOFF_DIST, \
-            LULZBOT_BACKOFF_FEEDRATE \
-        );
-
+        if(home_all || homeZ) { \
+          LULZBOT_G0_Z(LULZBOT_BACKOFF_DIST); \
+        } \
+        if(home_all || homeX || homeY) { \
+            int x = (LULZBOT_INVERT_X_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_X_MAX_POS - LULZBOT_BACKOFF_DIST); \
+            int y = (LULZBOT_INVERT_Y_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_Y_MAX_POS - LULZBOT_BACKOFF_DIST); \
+            do_blocking_move_to_xy( \
+                homeX ? x : current_position[X_AXIS], homeY ? y : current_position[Y_AXIS], LULZBOT_BACKOFF_FEEDRATE \
+            ); \
+        }
 #else
     #define LULZBOT_TMC_M119_STALLGUARD_REPORT
     #define LULZBOT_TMC_STALLGUARD_AVG_VARS
@@ -1220,17 +1317,6 @@
 
     // Quickhome does not work with sensorless homing
     #undef LULZBOT_QUICKHOME
-
-    #define LULZBOT_X_HOMING_SENSITIVITY 5
-    #define LULZBOT_Y_HOMING_SENSITIVITY 3
-#endif
-
-#if defined(LULZBOT_SENSORLESS_HOMING)
-    #define LULZBOT_X_HOME_BUMP_MM                0
-    #define LULZBOT_Y_HOME_BUMP_MM                0
-#else
-    #define LULZBOT_X_HOME_BUMP_MM                5
-    #define LULZBOT_Y_HOME_BUMP_MM                5
 #endif
 
 /**************************** ADVANCED PAUSE FEATURE ****************************/

@@ -3033,6 +3033,10 @@ static void homeaxis(const AxisEnum axis) {
     #if ENABLED(Y_IS_TMC2130)
       if (axis == Y_AXIS) tmc2130_sensorless_homing(stepperY);
     #endif
+    #if ENABLED(Z_IS_TMC2130) && defined(LULZBOT_SENSORLESS_HOMING_Z)
+      if (axis == Z_AXIS) tmc2130_sensorless_homing(stepperZ);
+      if (axis == Z_AXIS) LULZBOT_ADJUST_Z_HOMING_CURRENT(true);
+    #endif
   #endif
 
   // Fast move towards endstop until triggered
@@ -3126,6 +3130,10 @@ static void homeaxis(const AxisEnum axis) {
     #endif
     #if ENABLED(Y_IS_TMC2130)
       if (axis == Y_AXIS) tmc2130_sensorless_homing(stepperY, false);
+    #endif
+    #if ENABLED(Z_IS_TMC2130) && defined(LULZBOT_SENSORLESS_HOMING_Z)
+      if (axis == Z_AXIS) tmc2130_sensorless_homing(stepperZ, false);
+      if (axis == Z_AXIS) LULZBOT_ADJUST_Z_HOMING_CURRENT(false);
     #endif
   #endif
 
@@ -3921,7 +3929,9 @@ inline void gcode_G4() {
  *
  */
 inline void gcode_G28(const bool always_home_all) {
+  #if defined(LULZBOT_HOMING_USES_PROBE_PINS)
   LULZBOT_ENABLE_PROBE_PINS(true);
+  #endif
 
   #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) {
@@ -4001,7 +4011,9 @@ inline void gcode_G28(const bool always_home_all) {
               SERIAL_ECHOLNPAIR("Raise Z (before homing) to ", destination[Z_AXIS]);
           #endif
 
+          LULZBOT_ADJUST_Z_HOMING_CURRENT(true)
           do_blocking_move_to_z(destination[Z_AXIS]);
+          LULZBOT_ADJUST_Z_HOMING_CURRENT(false)
         }
       }
 
@@ -4118,7 +4130,9 @@ inline void gcode_G28(const bool always_home_all) {
     if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("<<< gcode_G28");
   #endif
 
+  #if defined(LULZBOT_HOMING_USES_PROBE_PINS)
   LULZBOT_ENABLE_PROBE_PINS(false);
+  #endif
 } // G28
 
 void home_all_axes() { gcode_G28(true); }
