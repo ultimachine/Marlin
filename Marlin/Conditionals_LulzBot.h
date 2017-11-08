@@ -1122,6 +1122,7 @@
             stepperZ.diag1_stall(0); /* Start disabled */
 #else
     #define LULZBOT_SENSORLESS_HOMING_Z_INIT
+    #define LULZBOT_ADJUST_Z_HOMING_CURRENT(enable)
 #endif
 
 #if defined(LULZBOT_SENSORLESS_HOMING)
