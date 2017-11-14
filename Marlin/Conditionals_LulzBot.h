@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".29" // Change this with each update
+#define LULZBOT_FW_VERSION ".31" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -118,7 +118,6 @@
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
-    #define LULZBOT_SENSORLESS_HOMING_Z
     #define LULZBOT_USE_Z_BELT
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
@@ -136,7 +135,6 @@
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
-    #define LULZBOT_SENSORLESS_HOMING_Z
     #define LULZBOT_USE_Z_BELT
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
@@ -542,6 +540,53 @@
       LULZBOT_ENABLE_PROBE_PINS(pin_status); \
       return; \
     }
+
+/****************************** BACKLASH COMPENSATION **************************/
+
+#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
+    //#define LULZBOT_AXIS_BACKLASH {0.27, 0.05, 0.4, 0}
+    #define LULZBOT_AXIS_BACKLASH {0.00, 0.00, 0.35, 0}
+#endif
+
+#if defined(LULZBOT_AXIS_BACKLASH)
+    #define SIGN(v) ((v < 0) ? -1.0 : 1.0)
+    #define LULZBOT_AXIS_BACKLASH_CORRECTION \
+        { \
+            static const float backlash[NUM_AXIS] = LULZBOT_AXIS_BACKLASH; \
+            static uint8_t last_direction_bits; \
+            static bool is_correction = false; \
+            if(!is_correction) { \
+                uint8_t changed_dir = last_direction_bits ^ dm; \
+                /* Ignore direction change if no steps are taken in that direction */ \
+                if(da == 0) CBI(changed_dir, X_AXIS); \
+                if(db == 0) CBI(changed_dir, Y_AXIS); \
+                if(dc == 0) CBI(changed_dir, Z_AXIS); \
+                if(de == 0) CBI(changed_dir, E_AXIS); \
+                last_direction_bits ^= changed_dir; \
+                /* When there is motion in an opposing direction, apply the backlash correction */ \
+                if(changed_dir) { \
+                    long saved_position[NUM_AXIS] = { 0 }; \
+                    COPY(saved_position, position); \
+                    const long x_backlash = TEST(changed_dir, X_AXIS) ? backlash[X_AXIS] * axis_steps_per_mm[X_AXIS] * SIGN(da) : 0; \
+                    const long y_backlash = TEST(changed_dir, Y_AXIS) ? backlash[Y_AXIS] * axis_steps_per_mm[Y_AXIS] * SIGN(db) : 0; \
+                    const long z_backlash = TEST(changed_dir, Z_AXIS) ? backlash[Z_AXIS] * axis_steps_per_mm[Z_AXIS] * SIGN(dc) : 0; \
+                    const long e_backlash = TEST(changed_dir, E_AXIS) ? backlash[E_AXIS] * axis_steps_per_mm[E_AXIS] * SIGN(de) : 0; \
+                    is_correction = true; /* Avoid infinite recursion */ \
+                    _buffer_line( \
+                        (position[X_AXIS] + x_backlash)/axis_steps_per_mm[X_AXIS], \
+                        (position[Y_AXIS] + y_backlash)/axis_steps_per_mm[Y_AXIS], \
+                        (position[Z_AXIS] + z_backlash)/axis_steps_per_mm[Z_AXIS], \
+                        (position[E_AXIS] + e_backlash)/axis_steps_per_mm[E_AXIS_N], \
+                        fr_mm_s, extruder \
+                    ); \
+                    is_correction = false; \
+                    COPY(position, saved_position); \
+                } \
+            } \
+        }
+#else
+    #define LULZBOT_AXIS_BACKLASH_CORRECTION
+#endif
 
 /*************************** COMMON TOOLHEADS PARAMETERS ***********************/
 
@@ -1074,7 +1119,7 @@
 
 #if defined(LULZBOT_SENSORLESS_HOMING)
     #define LULZBOT_X_HOMING_SENSITIVITY 5
-    #define LULZBOT_Y_HOMING_SENSITIVITY 3
+    #define LULZBOT_Y_HOMING_SENSITIVITY 5
 #endif
 
 #if defined(LULZBOT_SENSORLESS_HOMING_Z)
@@ -1090,7 +1135,7 @@
     #define LULZBOT_Z_SAFE_HOMING_X_POINT          17 // LULZBOT_LEFT_PROBE_BED_POSITION
     #define LULZBOT_Z_SAFE_HOMING_Y_POINT         180 // LULZBOT_BACK_PROBE_BED_POSITION
 
-    #define LULZBOT_Z_HOMING_SENSITIVITY 1
+    #define LULZBOT_Z_HOMING_SENSITIVITY 2
     #define LULZBOT_Z_HOMING_CURRENT     500
 
     #define LULZBOT_Z_HOMING_HEIGHT      5
@@ -1270,15 +1315,19 @@
      * the head sitting on the endstops after homing. */
     #define LULZBOT_BACKOFF_DIST     5
     #define LULZBOT_BACKOFF_FEEDRATE 5
+
     #define LULZBOT_AFTER_Z_HOME_ACTION \
-        if(home_all || homeZ) { \
-          LULZBOT_G0_Z(LULZBOT_BACKOFF_DIST); \
-        } \
-        if(home_all || homeX || homeY) { \
+        { \
             int x = (LULZBOT_INVERT_X_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_X_MAX_POS - LULZBOT_BACKOFF_DIST); \
             int y = (LULZBOT_INVERT_Y_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_Y_MAX_POS - LULZBOT_BACKOFF_DIST); \
+            int z = (LULZBOT_INVERT_Z_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_Z_MAX_POS - LULZBOT_BACKOFF_DIST); \
+            do_blocking_move_to_z( \
+                (home_all || homeZ) ? z : current_position[Z_AXIS] \
+            ); \
             do_blocking_move_to_xy( \
-                homeX ? x : current_position[X_AXIS], homeY ? y : current_position[Y_AXIS], LULZBOT_BACKOFF_FEEDRATE \
+                (home_all || homeX) ? x : current_position[X_AXIS], \
+                (home_all || homeY) ? y : current_position[Y_AXIS], \
+                LULZBOT_BACKOFF_FEEDRATE \
             ); \
         }
 #else
