@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".31" // Change this with each update
+#define LULZBOT_FW_VERSION ".32" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -424,8 +424,8 @@
     #define LULZBOT_NOZZLE_CLEAN_FEATURE
     // Select type of leveling to use:
     //#define LULZBOT_AUTO_BED_LEVELING_BILINEAR
-    //#define LULZBOT_AUTO_BED_LEVELING_LINEAR
-    #define LULZBOT_AUTO_BED_LEVELING_3POINT
+    #define LULZBOT_AUTO_BED_LEVELING_LINEAR
+    //#define LULZBOT_AUTO_BED_LEVELING_3POINT
 #endif
 
 #if defined(LULZBOT_AUTO_BED_LEVELING_3POINT)
