@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".33" // Change this with each update
+#define LULZBOT_FW_VERSION ".34" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -441,11 +441,9 @@
   // using a degenerate 2x2 grid. This is the traditional behavior.
   #define LULZBOT_GRID_MAX_POINTS_X            2
   #define LULZBOT_GRID_MAX_POINTS_Y            2
-  #if defined(LULZBOT_IS_MINI)
-    // We can't control the order of probe points exactly,
-    // but on a Mini setting this makes the probe look better.
-    #define LULZBOT_PROBE_Y_FIRST
-  #endif
+  // We can't control the order of probe points exactly, but
+  // this makes the probe start closer to the wiper pad.
+  #define LULZBOT_PROBE_Y_FIRST
 #endif
 
 /* Auto-leveling was introduced on the Mini and TAZ 6.
