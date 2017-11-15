@@ -553,7 +553,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define CUSTOM_M_CODES
 #ifdef CUSTOM_M_CODES
   #define CUSTOM_M_CODE_SET_Z_PROBE_OFFSET 851
-  #define Z_PROBE_OFFSET_RANGE_MIN -2
+  #define Z_PROBE_OFFSET_RANGE_MIN -3
   #define Z_PROBE_OFFSET_RANGE_MAX 0
 #endif
 

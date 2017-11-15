@@ -1268,14 +1268,14 @@ static void run_z_probe() {
     feedrate = homing_feedrate[Z_AXIS];
 
     // move down until you find the bed
-    float zPosition = 0; // lowest position to move to
+    float zPosition = -0.5; // lowest position to move to
     plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS], feedrate/60, active_extruder);
     st_synchronize();
 
         // we have to let the planner know where we are right now as it is not where we said to go.
     zPosition = st_get_position_mm(Z_AXIS);
     plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS]);
-    if(zPosition == 0 && !digitalRead(Z_PROBE_PIN)^Z_PROBE_ENDSTOP_INVERTING)
+    if(zPosition == -0.5 && !digitalRead(Z_PROBE_PIN)^Z_PROBE_ENDSTOP_INVERTING)
     {
       probing_failed();
       return;
