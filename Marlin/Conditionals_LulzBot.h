@@ -13,19 +13,18 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".34" // Change this with each update
+#define LULZBOT_FW_VERSION ".35" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
-    !defined(LULZBOT_Hibiscus_Mini2) && \
     !defined(LULZBOT_Gladiola_MiniLCD) && \
-    !defined(LULZBOT_Hibiscus_Mini2LCD) && \
-    !defined(LULZBOT_Gladiola_EinsyMini) && \
-    !defined(LULZBOT_Hibiscus_EinsyMini2) && \
-    !defined(LULZBOT_Gladiola_EinsyMiniLCD) && \
-    !defined(LULZBOT_Hibiscus_EinsyMini2LCD) && \
     !defined(LULZBOT_Juniper_TAZ5) && \
     !defined(LULZBOT_Oliveoil_TAZ6) && \
+    !defined(LULZBOT_Hibiscus_Mini2) && \
+    !defined(LULZBOT_Hibiscus_Mini2LCD) && \
+    !defined(LULZBOT_Hibiscus_EinsyMini2) && \
+    !defined(LULZBOT_Hibiscus_EinsyMini2LCD) && \
+    !defined(LULZBOT_Hibiscus_SpeedyMini2) && \
     !defined(LULZBOT_Quiver_TAZ7) \
 ) || ( \
     !defined(TOOLHEAD_Gladiola_SingleExtruder) && \
@@ -60,87 +59,6 @@
     #define LULZBOT_UUID "351487b6-ca9a-4c1a-8765-d668b1da6585"
 #endif
 
-#if defined(LULZBOT_Gladiola_EinsyMini)
-    /* Modified Gladiola Mini with Einsy board and half-height
-     * X & Y motors (full-height Z motors must be re-wired in
-     * series). X & Y endstops replaced w/ bumpers. */
-    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
-    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy"
-    #define LULZBOT_IS_MINI
-    #define LULZBOT_MINI_BED
-    #define LULZBOT_USE_EINSYRAMBO
-    #define LULZBOT_USE_EARLY_EINSY
-    #define LULZBOT_USE_AUTOLEVELING
-    #define LULZBOT_SENSORLESS_HOMING
-    #define LULZBOT_USE_Z_SCREW
-    #define LULZBOT_BAUDRATE 115200
-    #define LULZBOT_UUID "4479bf92-7e47-4c2c-be95-64dd01bd413b"
-#endif
-
-#if defined(LULZBOT_Gladiola_EinsyMiniLCD)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
-    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy"
-    #define LULZBOT_IS_MINI
-    #define LULZBOT_MINI_BED
-    #define LULZBOT_USE_EINSYRAMBO
-    #define LULZBOT_USE_EARLY_EINSY
-    #define LULZBOT_USE_LCD_DISPLAY
-    #define LULZBOT_USE_AUTOLEVELING
-    #define LULZBOT_SENSORLESS_HOMING
-    #define LULZBOT_USE_Z_SCREW
-    #define LULZBOT_BAUDRATE 115200
-    #define LULZBOT_UUID "4479bf92-7e47-4c2c-be95-64dd01bd413b"
-#endif
-
-#if defined(LULZBOT_Hibiscus_Mini2)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
-    #define LULZBOT_LCD_MACHINE_NAME "Mini 2"
-    #define LULZBOT_IS_MINI
-    #define LULZBOT_MINI_BED
-    #define LULZBOT_TWO_PIECE_BED
-    #define LULZBOT_USE_AUTOLEVELING
-    #define LULZBOT_USE_MIN_ENDSTOPS
-    #define LULZBOT_USE_MAX_ENDSTOPS
-    #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
-    #define LULZBOT_USE_Z_BELT
-    #define LULZBOT_BAUDRATE 250000
-    #define LULZBOT_PRINTCOUNTER
-    #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
-#endif
-
-#if defined(LULZBOT_Hibiscus_EinsyMini2)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
-    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2"
-    #define LULZBOT_IS_MINI
-    #define LULZBOT_MINI_BED
-    #define LULZBOT_USE_EINSYRAMBO
-    #define LULZBOT_USE_EARLY_EINSY
-    #define LULZBOT_TWO_PIECE_BED
-    #define LULZBOT_USE_AUTOLEVELING
-    #define LULZBOT_SENSORLESS_HOMING
-    #define LULZBOT_USE_Z_BELT
-    #define LULZBOT_BAUDRATE 250000
-    #define LULZBOT_PRINTCOUNTER
-    #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
-#endif
-
-#if defined(LULZBOT_Hibiscus_EinsyMini2LCD)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
-    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2"
-    #define LULZBOT_IS_MINI
-    #define LULZBOT_MINI_BED
-    #define LULZBOT_USE_EINSYRAMBO
-    #define LULZBOT_USE_EARLY_EINSY
-    #define LULZBOT_USE_LCD_DISPLAY
-    #define LULZBOT_TWO_PIECE_BED
-    #define LULZBOT_USE_AUTOLEVELING
-    #define LULZBOT_SENSORLESS_HOMING
-    #define LULZBOT_USE_Z_BELT
-    #define LULZBOT_BAUDRATE 250000
-    #define LULZBOT_PRINTCOUNTER
-    #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
-#endif
-
 #if defined(LULZBOT_Gladiola_MiniLCD)
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
     #define LULZBOT_LCD_MACHINE_NAME "Mini LCD"
@@ -154,24 +72,6 @@
     #define LULZBOT_USE_Z_SCREW
     #define LULZBOT_BAUDRATE 115200
     #define LULZBOT_UUID "083f68f1-028e-494c-98e1-f2e0dfaee9a5"
-#endif
-
-#if defined(LULZBOT_Hibiscus_Mini2LCD)
-    // Prototype Mini w/ Z-Belt
-    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
-    #define LULZBOT_LCD_MACHINE_NAME "Mini 2 LCD"
-    #define LULZBOT_IS_MINI
-    #define LULZBOT_TWO_PIECE_BED
-    #define LULZBOT_MINI_BED
-    #define LULZBOT_USE_LCD_DISPLAY
-    #define LULZBOT_USE_AUTOLEVELING
-    #define LULZBOT_USE_MIN_ENDSTOPS
-    #define LULZBOT_USE_MAX_ENDSTOPS
-    #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
-    #define LULZBOT_USE_Z_BELT
-    #define LULZBOT_BAUDRATE 250000
-    #define LULZBOT_PRINTCOUNTER
-    #define LULZBOT_UUID "80fed4d6-4d15-4512-a02e-61b1dc4fb072"
 #endif
 
 #if defined(LULZBOT_Juniper_TAZ5)
@@ -203,6 +103,93 @@
     #define LULZBOT_UUID "845f003c-aebd-4e53-a6b9-7d0984fde609"
 #endif
 
+#if defined(LULZBOT_Hibiscus_Mini2)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini 2"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
+    #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_USE_Z_GEARBOX
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
+#endif
+
+#if defined(LULZBOT_Hibiscus_SpeedyMini2)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini 2"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
+    #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
+#endif
+
+#if defined(LULZBOT_Hibiscus_EinsyMini2)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EARLY_EINSY
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_USE_Z_GEARBOX
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
+#endif
+
+#if defined(LULZBOT_Hibiscus_EinsyMini2LCD)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EARLY_EINSY
+    #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_USE_Z_GEARBOX
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
+#endif
+
+#if defined(LULZBOT_Hibiscus_Mini2LCD)
+    // Prototype Mini w/ Z-Belt
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini 2 LCD"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
+    #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_USE_Z_GEARBOX
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "80fed4d6-4d15-4512-a02e-61b1dc4fb072"
+#endif
+
 #if defined(LULZBOT_Quiver_TAZ7)
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot TAZ 7"
     #define LULZBOT_LCD_MACHINE_NAME "TAZ 7"
@@ -215,6 +202,7 @@
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_USE_Z_GEARBOX
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "a952577d-8722-483a-999d-acdc9e772b7b"
@@ -349,11 +337,19 @@
     #define LULZBOT_QUICKHOME
 #endif
 
-#if defined(LULZBOT_MINI_BED)
+#if defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_BELT) && !defined(LULZBOT_USE_Z_GEARBOX)
+    #define LULZBOT_HOMING_FEEDRATE_XY             (50*60) // mm/m
+    #define LULZBOT_HOMING_FEEDRATE_Z              (50*60) // mm/m
+
+#elif defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_BELT) && defined(LULZBOT_USE_Z_GEARBOX)
     #define LULZBOT_HOMING_FEEDRATE_XY            (30*60) // mm/m
     #define LULZBOT_HOMING_FEEDRATE_Z              (8*60) // mm/m
 
-#elif defined(LULZBOT_TAZ_BED) && defined(LULZBOT_USE_Z_BELT)
+#elif defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_SCREW)
+    #define LULZBOT_HOMING_FEEDRATE_XY            (30*60) // mm/m
+    #define LULZBOT_HOMING_FEEDRATE_Z              (8*60) // mm/m
+
+#elif defined(LULZBOT_TAZ_BED) && defined(LULZBOT_USE_Z_BELT) && defined(LULZBOT_USE_Z_GEARBOX)
     #define LULZBOT_HOMING_FEEDRATE_XY            (50*60) // mm/m
     #define LULZBOT_HOMING_FEEDRATE_Z             (10*60) // mm/m
 
@@ -464,7 +460,11 @@
 #define LULZBOT_Z_PROBE_OFFSET_RANGE_MAX      5
 #define LULZBOT_XY_PROBE_SPEED                6000
 #define LULZBOT_Z_PROBE_SPEED_SLOW           (1*60)
-#define LULZBOT_Z_PROBE_SPEED_FAST           (8*60)
+#if defined(LULZBOT_USE_Z_BELT) && !defined(LULZBOT_USE_Z_GEARBOX)
+    #define LULZBOT_Z_PROBE_SPEED_FAST       (50*60)
+#else
+    #define LULZBOT_Z_PROBE_SPEED_FAST       (8*60)
+#endif
 #define LULZBOT_Z_CLEARANCE_DEPLOY_PROBE      5
 #define LULZBOT_Z_CLEARANCE_BETWEEN_PROBES    5
 
@@ -541,8 +541,7 @@
 
 /****************************** BACKLASH COMPENSATION **************************/
 
-#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
-    //#define LULZBOT_AXIS_BACKLASH {0.27, 0.05, 0.4, 0}
+#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) && defined(LULZBOT_USE_Z_GEARBOX)
     #define LULZBOT_AXIS_BACKLASH {0.00, 0.00, 0.35, 0}
 #endif
 
@@ -553,13 +552,14 @@
             static const float backlash[NUM_AXIS] = LULZBOT_AXIS_BACKLASH; \
             static uint8_t last_direction_bits; \
             static bool is_correction = false; \
-            if(!is_correction) { \
+            if(!is_correction && leveling_is_active()) { \
                 uint8_t changed_dir = last_direction_bits ^ dm; \
                 /* Ignore direction change if no steps are taken in that direction */ \
                 if(da == 0) CBI(changed_dir, X_AXIS); \
                 if(db == 0) CBI(changed_dir, Y_AXIS); \
                 if(dc == 0) CBI(changed_dir, Z_AXIS); \
                 if(de == 0) CBI(changed_dir, E_AXIS); \
+                /* Update the direction bits */ \
                 last_direction_bits ^= changed_dir; \
                 /* When there is motion in an opposing direction, apply the backlash correction */ \
                 if(changed_dir) { \
@@ -1455,7 +1455,11 @@
     #define LULZBOT_MOTOR_CURRENT_XY              1300   // mA
     #define LULZBOT_MOTOR_CURRENT_Z               1630   // mA
 
-#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
+#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) && !defined(LULZBOT_USE_Z_GEARBOX)
+    #define LULZBOT_MOTOR_CURRENT_XY              1300   // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               2000   // mA
+
+#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) && defined(LULZBOT_USE_Z_GEARBOX)
     #define LULZBOT_MOTOR_CURRENT_XY              1300   // mA
     #define LULZBOT_MOTOR_CURRENT_Z               1000   // mA
 
@@ -1467,7 +1471,7 @@
     #define LULZBOT_MOTOR_CURRENT_XY              950    // mA
     #define LULZBOT_MOTOR_CURRENT_Z               1075   // mA
 
-#elif defined(LULZBOT_IS_TAZ) && defined(LULZBOT_USE_Z_BELT)
+#elif defined(LULZBOT_IS_TAZ) && defined(LULZBOT_USE_Z_BELT) && defined(LULZBOT_USE_Z_GEARBOX)
     #define LULZBOT_MOTOR_CURRENT_XY              950    // mA
     #define LULZBOT_MOTOR_CURRENT_Z               950    // mA
 #endif
@@ -1508,7 +1512,12 @@
 #if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_Z_STEPS                       1600
 
-#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
+#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) && !defined(LULZBOT_USE_Z_GEARBOX)
+    #define LULZBOT_Z_STEPS                       100.5
+    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 300, 40}      // (mm/sec)
+    #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,9000,1000}
+
+#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) && defined(LULZBOT_USE_Z_GEARBOX)
     #define Z_FULL_STEPS_PER_ROTATION             200
     #define Z_MICROSTEPS                          16
     #define Z_BELT_PITCH                          2
