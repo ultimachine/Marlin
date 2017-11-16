@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".35" // Change this with each update
+#define LULZBOT_FW_VERSION ".36" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1185,10 +1185,18 @@
 #if defined(LULZBOT_USE_EINSYRAMBO)
     #define LULZBOT_HAVE_TMC2130
 
-    // EinsyRambo uses a 220 mOhm sense resistor
+    // EinsyRambo uses a 0.1 mOhm sense resistor
     #define LULZBOT_R_SENSE         0.1
 
     #define LULZBOT_HOLD_MULTIPLIER 0.5
+
+    #define LULZBOT_COOLSTEP_DISABLED 1024UL * 1024UL - 1UL
+
+    #if defined(LULZBOT_USE_TMC_COOLSTEP)
+        #define LULZBOT_COOLSTEP_MIN 1UL
+    #else
+        #define LULZBOT_COOLSTEP_MIN LULZBOT_COOLSTEP_DISABLED
+    #endif
 
     #define LULZBOT_TMC_INIT(st) \
         /* The EinsyRambo connects both diag pins to the same */ \
@@ -1200,7 +1208,11 @@
         /* Reverse the motor direction so it matches the Rambo */ \
         st.shaft_dir(1); \
         st.external_ref(0);     /* I_scale_analog  = 0 */ \
-        st.internal_sense_R(0); /* internal_Rsense = 0 */
+        st.internal_sense_R(0); /* internal_Rsense = 0 */ \
+        /* Enable coolstep */ \
+        st.sg_min(1); \
+        st.sg_max(10);
+
 
     #define LULZBOT_TMC_REPORT(AXIS) \
         { \
@@ -1222,6 +1234,7 @@
             bool fsactive       = (DRVSTATUS >> 15) & 0b1; \
             uint16_t ihold      = (IHOLD_IRUN)      & 0b11111; \
             uint16_t irun       = (IHOLD_IRUN >> 8) & 0b11111; \
+            uint16_t csactual   = (DRVSTATUS >> 16) & 0b11111; \
             bool vsense         = (CHOPCONF  >> 17) & 0b1; \
             SERIAL_ECHOPGM(" " #AXIS ":"); \
             SERIAL_ECHOPGM(" ihr:"); \
@@ -1230,13 +1243,15 @@
             SERIAL_ECHO(irun); \
             SERIAL_ECHOPGM(" vsen:"); \
             SERIAL_ECHO(vsense); \
-            if(stepper##AXIS.coolstep_min_speed() == 1024UL * 1024UL - 1UL) { \
+            if(stepper##AXIS.coolstep_min_speed() != 0) { \
                 SERIAL_ECHOPGM(" sgt:"); \
                 SERIAL_ECHO(LULZBOT_SIGN_EXTEND_SGT(SGT)); \
                 if(num_sg > 0) { \
                     SERIAL_ECHOPGM(" avg_sg:"); \
                     SERIAL_ECHO(sum_sg_##AXIS/num_sg); \
                 } \
+                SERIAL_ECHOPGM(" csact:"); \
+                SERIAL_ECHO(csactual); \
             } else { \
                 SERIAL_ECHOPGM(" stealth"); \
             } \
@@ -1278,6 +1293,19 @@
             } \
         }
 
+    #define TMC_CS_TO_mA(cs) (float(cs)+1)/32 * 0.325/(LULZBOT_R_SENSE+0.02) * 1/sqrt(2) * 1000
+
+    #define LULZBOT_TMC_REPORT_CURRENT_ADJUSTMENTS(AXIS) \
+        { \
+            static uint16_t last = 0; \
+            uint32_t DRVSTATUS  = stepper##AXIS.DRV_STATUS(); \
+            uint16_t csactual   = (DRVSTATUS >> 16) & 0b11111; \
+            if(csactual != last) { \
+                last = csactual; \
+                SERIAL_ECHOLNPAIR(#AXIS " current set to ", TMC_CS_TO_mA(csactual)); \
+            } \
+        }
+
     #define LULZBOT_TMC_M119_STALLGUARD_REPORT \
         SERIAL_ECHOLNPGM("TMC2130 Status:"); \
         LULZBOT_TMC_REPORT(X) \
@@ -1287,7 +1315,7 @@
 
     #define LULZBOT_ENABLE_STALLGUARD(st) \
         /* Enable stallguard by disabling steathchop */ \
-        st.coolstep_min_speed(1024UL * 1024UL - 1UL); \
+        st.coolstep_min_speed(LULZBOT_COOLSTEP_MIN); \
         st.stealthChop(0);
 
     #define LULZBOT_ENABLE_STEALTHCHOP(st) \
@@ -1332,6 +1360,7 @@
     #define LULZBOT_TMC_M119_STALLGUARD_REPORT
     #define LULZBOT_TMC_STALLGUARD_AVG_VARS
     #define LULZBOT_TMC_STALLGUARD_AVG_FUNC
+    #define LULZBOT_TMC_REPORT_CURRENT_ADJUSTMENTS(AXIS)
 #endif
 
 #if defined(LULZBOT_SENSORLESS_HOMING)
@@ -1457,9 +1486,9 @@
 
 #elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) && !defined(LULZBOT_USE_Z_GEARBOX)
     #define LULZBOT_MOTOR_CURRENT_XY              1300   // mA
-    #define LULZBOT_MOTOR_CURRENT_Z               2000   // mA
+    #define LULZBOT_MOTOR_CURRENT_Z               1630   // mA
 
-#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) && defined(LULZBOT_USE_Z_GEARBOX)
+#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) &&  defined(LULZBOT_USE_Z_GEARBOX)
     #define LULZBOT_MOTOR_CURRENT_XY              1300   // mA
     #define LULZBOT_MOTOR_CURRENT_Z               1000   // mA
 
