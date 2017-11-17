@@ -967,7 +967,7 @@
   #define Y_MICROSTEPS        16
 
   #define Z_CURRENT LULZBOT_Z_CURRENT
-  #define Z_MICROSTEPS        16
+  #define Z_MICROSTEPS        LULZBOT_Z_MICROSTEPS
 
   //#define X2_CURRENT      1000
   //#define X2_MICROSTEPS     16

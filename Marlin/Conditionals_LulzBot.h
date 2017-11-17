@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".36" // Change this with each update
+#define LULZBOT_FW_VERSION ".37" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -25,6 +25,7 @@
     !defined(LULZBOT_Hibiscus_EinsyMini2) && \
     !defined(LULZBOT_Hibiscus_EinsyMini2LCD) && \
     !defined(LULZBOT_Hibiscus_SpeedyMini2) && \
+    !defined(LULZBOT_Hibiscus_SpeedyEinsyMini2) && \
     !defined(LULZBOT_Quiver_TAZ7) \
 ) || ( \
     !defined(TOOLHEAD_Gladiola_SingleExtruder) && \
@@ -136,6 +137,23 @@
     #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
 #endif
 
+#if defined(LULZBOT_Hibiscus_SpeedyEinsyMini2)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EARLY_EINSY
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_USE_SERIES_Z_MOTORS
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
+#endif
+
 #if defined(LULZBOT_Hibiscus_EinsyMini2)
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
     #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2"
@@ -166,6 +184,7 @@
     #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_USE_Z_BELT
     #define LULZBOT_USE_Z_GEARBOX
+    #define LULZBOT_USE_STATUS_LED
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
@@ -1113,6 +1132,15 @@
 #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       LULZBOT_NORMALLY_OPEN_ENDSTOP
 #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING LULZBOT_NORMALLY_OPEN_ENDSTOP
 
+/********************************* STATUS LIGHTS ********************************/
+
+#if defined(LULZBOT_USE_STATUS_LED)
+    #define LULZBOT_NEOPIXEL_RGBW_LED
+    #define LULZBOT_NEOPIXEL_PIN        BOARD_X_MAX_PIN
+    #define LULZBOT_NEOPIXEL_PIXELS     8
+    #undef  LULZBOT_USE_XMAX_PLUG
+#endif
+
 /******************************* SENSORLESS HOMING ******************************/
 
 #if defined(LULZBOT_SENSORLESS_HOMING)
@@ -1322,11 +1350,35 @@
         st.coolstep_min_speed(0); \
         st.stealthChop(1);
 
+    #if defined(LULZBOT_USE_SERIES_Z_MOTORS)
+        #define LULZBOT_Z_TOFF           1
+        #define LULZBOT_Z_HSTRT          0
+        #define LULZBOT_Z_HEND           0
+        #define LULZBOT_Z_TBL            1
+    #else
+        /* Marlin Defaults - Matches Quick Configuration Guide values*/
+        #define LULZBOT_Z_TOFF         5
+        #define LULZBOT_Z_HSTRT        0
+        #define LULZBOT_Z_HEND         0
+        #define LULZBOT_Z_TBL          2
+    #endif
+
+    #define LULZBOT_MOTOR_INIT_XY \
+        /* Set TOFF to reduce audible chopping noise */ \
+        stepperX.toff(3); \
+        stepperY.toff(3);
+
+    #define LULZBOT_MOTOR_INIT_Z \
+        /* Set TOFF to reduce audible chopping noise */ \
+        stepperZ.toff(LULZBOT_Z_TOFF);       /* TOFF   = [1..15]  */ \
+        stepperZ.hstrt(LULZBOT_Z_HSTRT);     /* HSTART = [0..7]   */ \
+        stepperZ.hend(LULZBOT_Z_HEND);       /* HEND   = [0..15]  */ \
+        stepperZ.tbl(LULZBOT_Z_TBL);         /* TBL    = [0..3]   */ \
+
     #define LULZBOT_TMC2130_ADV { \
             LULZBOT_SENSORLESS_HOMING_Z_INIT \
-            /* Set TOFF to reduce audible chopping noise */ \
-            stepperX.toff(3); \
-            stepperY.toff(3); \
+            LULZBOT_MOTOR_INIT_XY \
+            LULZBOT_MOTOR_INIT_Z \
         }
 
     /* When STEALTHCHOP is disabled, sometimes the X axis refuses to
@@ -1471,14 +1523,10 @@
 // Values for XYZ vary by printer model, values for E vary by toolhead.
 
 #if defined(LULZBOT_USE_EINSYRAMBO)
-    #define LULZBOT_MOTOR_CURRENT_XY              800    // mA
+    // This value will be ignored due to the automatic
+    // current regulation provided by COOLCONF
+    #define LULZBOT_MOTOR_CURRENT_XY              960    // mA
     #define LULZBOT_MOTOR_CURRENT_Z               960    // mA
-
-    #if LULZBOT_MOTOR_CURRENT_E  > 960
-        #warning This toolhead may not work properly with the EinsyRambo
-        #undef  LULZBOT_MOTOR_CURRENT_E
-        #define LULZBOT_MOTOR_CURRENT_E           960    // mA
-    #endif
 
 #elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_MOTOR_CURRENT_XY              1300   // mA
@@ -1540,9 +1588,11 @@
 
 #if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_Z_STEPS                       1600
+    #define LULZBOT_Z_MICROSTEPS                  16
 
 #elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) && !defined(LULZBOT_USE_Z_GEARBOX)
-    #define LULZBOT_Z_STEPS                       100.5
+    #define LULZBOT_Z_STEPS                       201
+    #define LULZBOT_Z_MICROSTEPS                  32
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 300, 40}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,9000,1000}
 
@@ -1553,6 +1603,7 @@
     #define Z_PULLEY_TEETH                        24
     #define Z_MOTOR_GEAR_REDUCTION                26.8512396694
     #define LULZBOT_Z_STEPS (Z_FULL_STEPS_PER_ROTATION * Z_MICROSTEPS * Z_MOTOR_GEAR_REDUCTION / double(Z_BELT_PITCH) / double(Z_PULLEY_TEETH))
+    #define LULZBOT_Z_MICROSTEPS                  16
 
     #undef  LULZBOT_DEFAULT_MAX_FEEDRATE
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 8, 25}      // (mm/sec)
@@ -1561,25 +1612,19 @@
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 3, 25}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
     #define LULZBOT_Z_STEPS                       1600
+    #define LULZBOT_Z_MICROSTEPS                  16
 
 #elif defined(LULZBOT_IS_TAZ) && defined(LULZBOT_USE_Z_BELT)
     // Prototype Z-belt driven TAZ 7
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 10, 25}     // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,10,10000}
     #define LULZBOT_Z_STEPS                       1790.08264463
+    #define LULZBOT_Z_MICROSTEPS                  16
 #endif
 
 #if defined(LULZBOT_USE_EINSYRAMBO)
     // Neither define LULZBOT_PWM_MOTOR_CURRENT nor LULZBOT_DIGIPOT_MOTOR_CURRENT,
     // as the current is set in Configuration_adv.h under the HAVE_TMC2130 block
-
-    // Make sure the current is in range, as setting it above this causes the
-    // value in irun to wrap around to zero, which fails silently!
-    #if LULZBOT_MOTOR_CURRENT_XY  > 960 || \
-        LULZBOT_MOTOR_CURRENT_Z   > 960 || \
-        LULZBOT_MOTOR_CURRENT_E   > 960
-        #error Motor currents exceed the maximum values that can be set on the EinsyRambo
-    #endif
 
     #define LULZBOT_X_CURRENT  LULZBOT_MOTOR_CURRENT_XY
     #define LULZBOT_Y_CURRENT  LULZBOT_MOTOR_CURRENT_XY

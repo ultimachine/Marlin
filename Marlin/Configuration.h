@@ -1615,10 +1615,10 @@
 #endif
 
 // Support for Adafruit Neopixel LED driver
-//#define NEOPIXEL_RGBW_LED
+#define NEOPIXEL_RGBW_LED LULZBOT_NEOPIXEL_RGBW_LED
 #if ENABLED(NEOPIXEL_RGBW_LED)
-  #define NEOPIXEL_PIN    4       // D4 (EXP2-5 on Printrboard)
-  #define NEOPIXEL_PIXELS 3
+  #define NEOPIXEL_PIN    LULZBOT_NEOPIXEL_PIN       // D4 (EXP2-5 on Printrboard)
+  #define NEOPIXEL_PIXELS LULZBOT_NEOPIXEL_PIXELS
   //#define NEOPIXEL_STARTUP_TEST // Cycle through colors at startup
 #endif
 

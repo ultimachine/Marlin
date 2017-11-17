@@ -85,6 +85,9 @@ WIRE               ?= 0
 # this defines if U8GLIB is needed (may require RELOC_WORKAROUND)
 U8GLIB             ?= 1
 
+# this defines if NEOPIXEL is needed
+NEOPIXEL           ?= 1
+
 # this defines whether to add a workaround for the avr-gcc relocation bug
 #	  https://www.stix.id.au/wiki/AVR_relocation_truncations_workaround
 RELOC_WORKAROUND   ?= 1
