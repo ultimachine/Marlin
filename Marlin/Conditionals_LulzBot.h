@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".37" // Change this with each update
+#define LULZBOT_FW_VERSION ".38" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -184,7 +184,7 @@
     #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_USE_Z_BELT
     #define LULZBOT_USE_Z_GEARBOX
-    #define LULZBOT_USE_STATUS_LED
+    //#define LULZBOT_USE_STATUS_LED
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
@@ -1491,7 +1491,7 @@
 
 /*************************** REWIPE FUNCTIONALITY *******************************/
 
-#define LULZBOT_NUM_REWIPES      1
+#define LULZBOT_NUM_REWIPES      3
 #if defined(LULZBOT_IS_TAZ)
     #define LULZBOT_BED_PROBE_MIN    0 // Limit on pushing into the bed
 #else defined(LULZBOT_IS_MINI)
@@ -1508,6 +1508,10 @@
             BUZZ(25, 880); BUZZ(50, 0); \
             BUZZ(25, 880); BUZZ(50, 0); \
             do_blocking_move_to_z(100, MMM_TO_MMS(Z_PROBE_SPEED_FAST)); /* raise head */ \
+            current_position[E_AXIS] = 0;             /* prime nozzle */ \
+            line_to_current_position(); \
+            sync_plan_position_e(); \
+            stepper.synchronize(); \
             stop();                                   /* stop print job */ \
             LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);   /* stop changes the message... */ \
             return NAN;                               /* abort the leveling in progress */ \
@@ -1515,7 +1519,7 @@
         SERIAL_ERRORLNPGM(MSG_REWIPE); \
         LCD_MESSAGEPGM(MSG_REWIPE); \
         do_blocking_move_to_z(10, MMM_TO_MMS(speed)); /* raise nozzle */ \
-        Nozzle::clean(0, 2, 0, 0);                    /* wipe nozzle */ \
+        Nozzle::clean(0, 12, 0, 0);                    /* wipe nozzle */ \
     }
 
 /******************************** MOTOR CURRENTS *******************************/
