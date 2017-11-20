@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".39" // Change this with each update
+#define LULZBOT_FW_VERSION ".40" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -26,6 +26,7 @@
     !defined(LULZBOT_Hibiscus_EinsyMini2LCD) && \
     !defined(LULZBOT_Hibiscus_SpeedyMini2) && \
     !defined(LULZBOT_Hibiscus_SpeedyEinsyMini2) && \
+    !defined(LULZBOT_Hibiscus_SpeedyEinsyMini2LCD) && \
     !defined(LULZBOT_Quiver_TAZ7) \
 ) || ( \
     !defined(TOOLHEAD_Gladiola_SingleExtruder) && \
@@ -154,6 +155,24 @@
     #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
 #endif
 
+#if defined(LULZBOT_Hibiscus_SpeedyEinsyMini2LCD)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2 LCD"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EARLY_EINSY
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_USE_SERIES_Z_MOTORS
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
+#endif
+
 #if defined(LULZBOT_Hibiscus_EinsyMini2)
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
     #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2"
@@ -184,7 +203,7 @@
     #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_USE_Z_BELT
     #define LULZBOT_USE_Z_GEARBOX
-    //#define LULZBOT_USE_STATUS_LED
+    #define LULZBOT_USE_STATUS_LED
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
@@ -1146,6 +1165,7 @@
 #if defined(LULZBOT_SENSORLESS_HOMING)
     #define LULZBOT_X_HOMING_SENSITIVITY 5
     #define LULZBOT_Y_HOMING_SENSITIVITY 5
+    #define LULZBOT_Z_HOMING_SENSITIVITY 5
 #endif
 
 #if defined(LULZBOT_SENSORLESS_HOMING_Z)
@@ -1266,9 +1286,9 @@
             bool vsense         = (CHOPCONF  >> 17) & 0b1; \
             SERIAL_ECHOPGM(" " #AXIS ":"); \
             SERIAL_ECHOPGM(" ihr:"); \
-            SERIAL_ECHO(ihold); \
+            SERIAL_ECHO(ihold+1); \
             SERIAL_ECHOPGM("/"); \
-            SERIAL_ECHO(irun); \
+            SERIAL_ECHO(irun+1); \
             SERIAL_ECHOPGM(" vsen:"); \
             SERIAL_ECHO(vsense); \
             if(stepper##AXIS.coolstep_min_speed() != 0) { \
@@ -1321,7 +1341,7 @@
             } \
         }
 
-    #define TMC_CS_TO_mA(cs) (float(cs)+1)/32 * 0.325/(LULZBOT_R_SENSE+0.02) * 1/sqrt(2) * 1000
+    #define TMC_CS_TO_mA(cs,vsense) (float(cs)+1)/32 * (vsense?0.180:0.325)/(LULZBOT_R_SENSE+0.02) * 1/sqrt(2) * 1000
 
     #define LULZBOT_TMC_REPORT_CURRENT_ADJUSTMENTS(AXIS) \
         { \
@@ -1330,7 +1350,13 @@
             uint16_t csactual   = (DRVSTATUS >> 16) & 0b11111; \
             if(csactual != last) { \
                 last = csactual; \
-                SERIAL_ECHOLNPAIR(#AXIS " current set to ", TMC_CS_TO_mA(csactual)); \
+                SERIAL_ECHOPGM(#AXIS " current set to "); \
+                SERIAL_ECHO(TMC_CS_TO_mA(csactual,stepper##AXIS.vsense())); \
+                SERIAL_ECHOPGM(" mA (irun="); \
+                SERIAL_ECHO(csactual+1); \
+                SERIAL_ECHOPGM("/32, vsense="); \
+                SERIAL_ECHO(stepper##AXIS.vsense()); \
+                SERIAL_ECHOLNPGM(")"); \
             } \
         }
 
@@ -1374,11 +1400,14 @@
         stepperZ.hstrt(LULZBOT_Z_HSTRT);     /* HSTART = [0..7]   */ \
         stepperZ.hend(LULZBOT_Z_HEND);       /* HEND   = [0..15]  */ \
         stepperZ.tbl(LULZBOT_Z_TBL);         /* TBL    = [0..3]   */ \
+        /* Set Z homing sensitivity */ \
+        stepperZ.sg_stall_value(LULZBOT_Z_HOMING_SENSITIVITY);
+
 
     #define LULZBOT_TMC2130_ADV { \
-            LULZBOT_SENSORLESS_HOMING_Z_INIT \
             LULZBOT_MOTOR_INIT_XY \
             LULZBOT_MOTOR_INIT_Z \
+            LULZBOT_SENSORLESS_HOMING_Z_INIT \
         }
 
     /* When STEALTHCHOP is disabled, sometimes the X axis refuses to
@@ -1527,8 +1556,9 @@
 // Values for XYZ vary by printer model, values for E vary by toolhead.
 
 #if defined(LULZBOT_USE_EINSYRAMBO)
-    // This value will be ignored due to the automatic
-    // current regulation provided by COOLCONF
+    // These values specify the maximum current, but actual
+    // currents may be lower due to the regulation provided
+    // by COOLCONF
     #define LULZBOT_MOTOR_CURRENT_XY              960    // mA
     #define LULZBOT_MOTOR_CURRENT_Z               960    // mA
 
@@ -1598,7 +1628,7 @@
     #define LULZBOT_Z_STEPS                       201
     #define LULZBOT_Z_MICROSTEPS                  32
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 300, 40}      // (mm/sec)
-    #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,9000,1000}
+    #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,200,1000}
 
 #elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) && defined(LULZBOT_USE_Z_GEARBOX)
     #define Z_FULL_STEPS_PER_ROTATION             200
