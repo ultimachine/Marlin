@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".38" // Change this with each update
+#define LULZBOT_FW_VERSION ".39" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -61,7 +61,7 @@
 #endif
 
 #if defined(LULZBOT_Gladiola_MiniLCD)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini LCD"
     #define LULZBOT_LCD_MACHINE_NAME "Mini LCD"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
@@ -172,7 +172,7 @@
 #endif
 
 #if defined(LULZBOT_Hibiscus_EinsyMini2LCD)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2 LCD"
     #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
@@ -192,7 +192,7 @@
 
 #if defined(LULZBOT_Hibiscus_Mini2LCD)
     // Prototype Mini w/ Z-Belt
-    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2 LCD"
     #define LULZBOT_LCD_MACHINE_NAME "Mini 2 LCD"
     #define LULZBOT_IS_MINI
     #define LULZBOT_TWO_PIECE_BED
