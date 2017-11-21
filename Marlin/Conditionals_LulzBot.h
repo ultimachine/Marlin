@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".41" // Change this with each update
+#define LULZBOT_FW_VERSION ".42" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1566,8 +1566,7 @@
             line_to_current_position(); \
             sync_plan_position_e(); \
             stepper.synchronize(); \
-            stop();                                   /* stop print job */ \
-            LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);   /* stop changes the message... */ \
+            kill(MSG_ERR_PROBING_FAILED);             /* stop print job */ \
             return NAN;                               /* abort the leveling in progress */ \
         } \
         SERIAL_ERRORLNPGM(MSG_REWIPE); \
