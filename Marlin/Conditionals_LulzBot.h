@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".43" // Change this with each update
+#define LULZBOT_FW_VERSION ".44" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1767,12 +1767,14 @@
     #define LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD
     #define LULZBOT_SCROLL_LONG_FILE_NAMES
     #define LULZBOT_REORDERED_MENUS
-    #define LULZBOT_STRINGIFY(msg) msg
-    #define LULZBOT_ENHANCED_TEMP_ERROR_MSG(msg, e) \
-        /* Marlin requires PSTR in order to display on the LCD display, this uses a */ \
-        /* preprocessor trick to append the heater name depending on the value of e */ \
-        ((e == -1) ? PSTR(LULZBOT_STRINGIFY(msg) " BED") : ((e == 0) ? PSTR(LULZBOT_STRINGIFY(msg) " E0") : PSTR(LULZBOT_STRINGIFY(msg) " E1")) )
 #endif
+
+/* Marlin requires static PSTRs to display on the LCD display, because of this */
+/* we have to use a preprocessor trick to append the heater name on temp errors */
+/* such that an appropriate PSTR is selected depending on the value of e */
+#define LULZBOT_STRINGIFY(msg) msg
+#define LULZBOT_ENHANCED_TEMP_ERROR_MSG(msg, e) \
+    ((e == -1) ? PSTR(LULZBOT_STRINGIFY(msg) " BED") : ((e == 0) ? PSTR(LULZBOT_STRINGIFY(msg) " E0") : PSTR(LULZBOT_STRINGIFY(msg) " E1")) )
 
 /***************************** CUSTOM SPLASH SCREEN *****************************/
 
