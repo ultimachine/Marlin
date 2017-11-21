@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".42" // Change this with each update
+#define LULZBOT_FW_VERSION ".43" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -152,7 +152,7 @@
     #define LULZBOT_USE_SERIES_Z_MOTORS
     #define LULZBOT_USE_32_MICROSTEPS_ON_Z
     #define LULZBOT_USE_TMC_COOLSTEP
-    #define LULZBOT_USE_TMC_STEALTHCHOP
+    //#define LULZBOT_USE_TMC_STEALTHCHOP
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
@@ -173,7 +173,7 @@
     #define LULZBOT_USE_SERIES_Z_MOTORS
     #define LULZBOT_USE_32_MICROSTEPS_ON_Z
     #define LULZBOT_USE_TMC_COOLSTEP
-    #define LULZBOT_USE_TMC_STEALTHCHOP
+    //#define LULZBOT_USE_TMC_STEALTHCHOP
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
@@ -1395,7 +1395,7 @@
 
     #define LULZBOT_ENABLE_STALLGUARD(st) \
         /* Enable stallguard by disabling steathchop */ \
-        st.coolstep_min_speed(LULZBOT_COOLSTEP_MIN); \
+        st.coolstep_min_speed(LULZBOT_COOLSTEP_DISABLED); \
         st.stealthChop(0);
 
     #define LULZBOT_ENABLE_STEALTHCHOP(st) \
@@ -1566,7 +1566,7 @@
             line_to_current_position(); \
             sync_plan_position_e(); \
             stepper.synchronize(); \
-            kill(MSG_ERR_PROBING_FAILED);             /* stop print job */ \
+            kill(PSTR(MSG_ERR_PROBING_FAILED));       /* stop print job */ \
             return NAN;                               /* abort the leveling in progress */ \
         } \
         SERIAL_ERRORLNPGM(MSG_REWIPE); \
@@ -1767,19 +1767,11 @@
     #define LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD
     #define LULZBOT_SCROLL_LONG_FILE_NAMES
     #define LULZBOT_REORDERED_MENUS
+    #define LULZBOT_STRINGIFY(msg) msg
     #define LULZBOT_ENHANCED_TEMP_ERROR_MSG(msg, e) \
-        { \
-            /* Must be static since the ultralcd code */ \
-            /* will hold a pointer to this buffer */ \
-            static char str[30] = {'\0'}; \
-            strncpy(str, msg, 25); \
-            switch(e) { \
-                case -1: strcat(str, " BED"); break; \
-                case  0: strcat(str, " E0");  break; \
-                case  1: strcat(str, " E1");  break; \
-            } \
-            kill(str); \
-        }
+        /* Marlin requires PSTR in order to display on the LCD display, this uses a */ \
+        /* preprocessor trick to append the heater name depending on the value of e */ \
+        ((e == -1) ? PSTR(LULZBOT_STRINGIFY(msg) " BED") : ((e == 0) ? PSTR(LULZBOT_STRINGIFY(msg) " E0") : PSTR(LULZBOT_STRINGIFY(msg) " E1")) )
 #endif
 
 /***************************** CUSTOM SPLASH SCREEN *****************************/

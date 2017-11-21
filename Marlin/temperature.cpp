@@ -518,11 +518,7 @@ void Temperature::_temp_error(const int8_t e, const char * const serial_msg, con
     if (!killed) {
       Running = false;
       killed = true;
-      #if defined(LULZBOT_ENHANCED_TEMP_ERROR_MSG)
-        LULZBOT_ENHANCED_TEMP_ERROR_MSG(lcd_msg, e)
-      #else
       kill(lcd_msg);
-      #endif
     }
     else
       disable_all_heaters(); // paranoia
@@ -531,7 +527,7 @@ void Temperature::_temp_error(const int8_t e, const char * const serial_msg, con
 
 void Temperature::max_temp_error(const int8_t e) {
   #if HAS_TEMP_BED
-    _temp_error(e, PSTR(MSG_T_MAXTEMP), e >= 0 ? PSTR(MSG_ERR_MAXTEMP) : PSTR(MSG_ERR_MAXTEMP_BED));
+    _temp_error(e, PSTR(MSG_T_MAXTEMP), LULZBOT_ENHANCED_TEMP_ERROR_MSG(MSG_ERR_MAXTEMP, e));
   #else
     _temp_error(HOTEND_INDEX, PSTR(MSG_T_MAXTEMP), PSTR(MSG_ERR_MAXTEMP));
     #if HOTENDS == 1
@@ -541,7 +537,7 @@ void Temperature::max_temp_error(const int8_t e) {
 }
 void Temperature::min_temp_error(const int8_t e) {
   #if HAS_TEMP_BED
-    _temp_error(e, PSTR(MSG_T_MINTEMP), e >= 0 ? PSTR(MSG_ERR_MINTEMP) : PSTR(MSG_ERR_MINTEMP_BED));
+    _temp_error(e, PSTR(MSG_T_MINTEMP), LULZBOT_ENHANCED_TEMP_ERROR_MSG(MSG_ERR_MINTEMP, e));
   #else
     _temp_error(HOTEND_INDEX, PSTR(MSG_T_MINTEMP), PSTR(MSG_ERR_MINTEMP));
     #if HOTENDS == 1
@@ -748,7 +744,7 @@ void Temperature::manage_heater() {
       // Make sure temperature is increasing
       if (watch_heater_next_ms[e] && ELAPSED(ms, watch_heater_next_ms[e])) { // Time to check this extruder?
         if (degHotend(e) < watch_target_temp[e])                             // Failed to increase enough?
-          _temp_error(e, PSTR(MSG_T_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
+          _temp_error(e, PSTR(MSG_T_HEATING_FAILED), LULZBOT_ENHANCED_TEMP_ERROR_MSG(MSG_HEATING_FAILED_LCD,e));
         else                                                                 // Start again if the target is still far off
           start_watching_heater(e);
       }
@@ -787,7 +783,7 @@ void Temperature::manage_heater() {
     // Make sure temperature is increasing
     if (watch_bed_next_ms && ELAPSED(ms, watch_bed_next_ms)) {        // Time to check the bed?
       if (degBed() < watch_target_bed_temp)                           // Failed to increase enough?
-        _temp_error(-1, PSTR(MSG_T_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
+        _temp_error(-1, PSTR(MSG_T_HEATING_FAILED), LULZBOT_ENHANCED_TEMP_ERROR_MSG(MSG_HEATING_FAILED_LCD,-1));
       else                                                            // Start again if the target is still far off
         start_watching_bed();
     }
@@ -1344,7 +1340,7 @@ void Temperature::init() {
         else if (PENDING(millis(), *timer)) break;
         *state = TRRunaway;
       case TRRunaway:
-        _temp_error(heater_id, PSTR(MSG_T_THERMAL_RUNAWAY), PSTR(MSG_THERMAL_RUNAWAY));
+        _temp_error(heater_id, PSTR(MSG_T_THERMAL_RUNAWAY), LULZBOT_ENHANCED_TEMP_ERROR_MSG(MSG_THERMAL_RUNAWAY, heater_id));
     }
   }
 
