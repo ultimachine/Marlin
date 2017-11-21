@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".40" // Change this with each update
+#define LULZBOT_FW_VERSION ".41" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -150,6 +150,9 @@
     #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_USE_Z_BELT
     #define LULZBOT_USE_SERIES_Z_MOTORS
+    #define LULZBOT_USE_32_MICROSTEPS_ON_Z
+    #define LULZBOT_USE_TMC_COOLSTEP
+    #define LULZBOT_USE_TMC_STEALTHCHOP
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
@@ -168,6 +171,9 @@
     #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_USE_Z_BELT
     #define LULZBOT_USE_SERIES_Z_MOTORS
+    #define LULZBOT_USE_32_MICROSTEPS_ON_Z
+    #define LULZBOT_USE_TMC_COOLSTEP
+    #define LULZBOT_USE_TMC_STEALTHCHOP
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "1b8d32d3-0596-4335-8cd4-f3741a095087"
@@ -1240,9 +1246,22 @@
 
     #define LULZBOT_COOLSTEP_DISABLED 1024UL * 1024UL - 1UL
 
-    #if defined(LULZBOT_USE_TMC_COOLSTEP)
+    #if defined(LULZBOT_USE_TMC_COOLSTEP)   && defined(LULZBOT_USE_TMC_STEALTHCHOP)
+        // If both using COOLSTEP and STEALTHCHOP, then set a transition velocity
+        #define LULZBOT_COOLSTEP_MIN 200UL
+        #define LULZBOT_STEALTHCHOP
+
+    #elif defined(LULZBOT_USE_TMC_COOLSTEP) && !defined(LULZBOT_USE_TMC_STEALTHCHOP)
+        // Enable COOLSTEP for all velocities
         #define LULZBOT_COOLSTEP_MIN 1UL
+
+    #elif !defined(LULZBOT_USE_TMC_COOLSTEP) && defined(LULZBOT_USE_TMC_STEALTHCHOP)
+        // Disable COOLSTEP for all velocities
+        #define LULZBOT_COOLSTEP_MIN LULZBOT_COOLSTEP_DISABLED
+        #define LULZBOT_STEALTHCHOP
     #else
+
+        // Disable COOLSTEP for all velocities
         #define LULZBOT_COOLSTEP_MIN LULZBOT_COOLSTEP_DISABLED
     #endif
 
@@ -1260,7 +1279,6 @@
         /* Enable coolstep */ \
         st.sg_min(1); \
         st.sg_max(10);
-
 
     #define LULZBOT_TMC_REPORT(AXIS) \
         { \
@@ -1303,6 +1321,8 @@
             } else { \
                 SERIAL_ECHOPGM(" stealth"); \
             } \
+            SERIAL_ECHOPGM(" tstep_avg:"); \
+            SERIAL_ECHO(sum_tstep_##AXIS/num_sg); \
             if(!drv_enn) SERIAL_ECHOPGM(" en"); \
             if(stst)     SERIAL_ECHOPGM(" st"); \
             if(olb)      SERIAL_ECHOPGM(" olb"); \
@@ -1321,7 +1341,8 @@
        stallguard values during a planner move */
     #define LULZBOT_TMC_STALLGUARD_AVG_VARS \
         static uint8_t   current_tail, tally_freq = 10; \
-        static uint32_t  sum_sg_X = 0, sum_sg_Y = 0, sum_sg_Z = 0, sum_sg_E0 = 0, num_sg = 0;
+        static uint32_t  sum_sg_X = 0, sum_sg_Y = 0, sum_sg_Z = 0, sum_sg_E0 = 0, num_sg = 0; \
+        static uint32_t  sum_tstep_X = 0, sum_tstep_Y = 0, sum_tstep_Z = 0, sum_tstep_E0 = 0;
 
     #define LULZBOT_TMC_STALLGUARD_AVG_FUNC \
         if(--tally_freq == 0) { \
@@ -1330,13 +1351,18 @@
                 /* Reset accumulators at the start of each movement */ \
                 if(current_tail != planner.block_buffer_tail) { \
                     current_tail = planner.block_buffer_tail; \
-                    sum_sg_X = sum_sg_Y = sum_sg_Z = sum_sg_E0 = num_sg = 0; \
+                    sum_sg_X = sum_sg_Y = sum_sg_Z = sum_sg_E0 = 0; \
+                    sum_tstep_X = sum_tstep_Y = sum_tstep_Z = sum_tstep_E0 = num_sg = 0; \
                 } \
                 /* While in motion, accumulate sg values */ \
-                sum_sg_X  += stepperX.DRV_STATUS()  & 0b111111111; \
-                sum_sg_Y  += stepperY.DRV_STATUS()  & 0b111111111; \
-                sum_sg_Z  += stepperZ.DRV_STATUS()  & 0b111111111; \
-                sum_sg_E0 += stepperE0.DRV_STATUS() & 0b111111111; \
+                sum_tstep_X += stepperX.TSTEP(); \
+                sum_tstep_Y += stepperY.TSTEP(); \
+                sum_tstep_Z += stepperZ.TSTEP(); \
+                sum_tstep_E0 += stepperE0.TSTEP(); \
+                sum_sg_X    += stepperX.DRV_STATUS()  & 0b111111111; \
+                sum_sg_Y    += stepperY.DRV_STATUS()  & 0b111111111; \
+                sum_sg_Z    += stepperZ.DRV_STATUS()  & 0b111111111; \
+                sum_sg_E0   += stepperE0.DRV_STATUS() & 0b111111111; \
                 num_sg++; \
             } \
         }
@@ -1401,8 +1427,9 @@
         stepperZ.hend(LULZBOT_Z_HEND);       /* HEND   = [0..15]  */ \
         stepperZ.tbl(LULZBOT_Z_TBL);         /* TBL    = [0..3]   */ \
         /* Set Z homing sensitivity */ \
-        stepperZ.sg_stall_value(LULZBOT_Z_HOMING_SENSITIVITY);
-
+        stepperZ.sg_stall_value(LULZBOT_Z_HOMING_SENSITIVITY); \
+        /* Always disable STEALHCHOP on E0 */ \
+        LULZBOT_ENABLE_STALLGUARD(stepperE0)
 
     #define LULZBOT_TMC2130_ADV { \
             LULZBOT_MOTOR_INIT_XY \
@@ -1464,8 +1491,6 @@
     // It also appears that when this is enabled
     // stallguard is never cleared.
     //#define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
-
-    //#define LULZBOT_STEALTHCHOP
 
     #undef LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
 
@@ -1625,8 +1650,13 @@
     #define LULZBOT_Z_MICROSTEPS                  16
 
 #elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) && !defined(LULZBOT_USE_Z_GEARBOX)
-    #define LULZBOT_Z_STEPS                       201
-    #define LULZBOT_Z_MICROSTEPS                  32
+    #if defined(LULZBOT_USE_32_MICROSTEPS_ON_Z)
+        #define LULZBOT_Z_STEPS                       201
+        #define LULZBOT_Z_MICROSTEPS                  32
+    #else
+        #define LULZBOT_Z_STEPS                       100.5
+        #define LULZBOT_Z_MICROSTEPS                  16
+    #endif
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 300, 40}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,200,1000}
 
