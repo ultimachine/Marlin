@@ -2961,7 +2961,9 @@ static void do_homing_move(const AxisEnum axis, const float distance, const floa
  */
 #if ENABLED(SENSORLESS_HOMING)
   void tmc2130_sensorless_homing(TMC2130Stepper &st, bool enable=true) {
-    #if ENABLED(STEALTHCHOP)
+    #if defined(LULZBOT_SENSORLESS_HOMING_TOGGLE)
+      LULZBOT_SENSORLESS_HOMING_TOGGLE(st, enable)
+    #elif ENABLED(STEALTHCHOP)
       if (enable) {
         st.coolstep_min_speed(1024UL * 1024UL - 1UL);
         st.stealthChop(0);
@@ -2970,8 +2972,6 @@ static void do_homing_move(const AxisEnum axis, const float distance, const floa
         st.coolstep_min_speed(0);
         st.stealthChop(1);
       }
-    #else
-      LULZBOT_CLEAR_STALLGUARD_FLAG(st)
     #endif
     st.diag1_stall(enable ? 1 : 0);
   }

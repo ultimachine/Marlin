@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".44" // Change this with each update
+#define LULZBOT_FW_VERSION ".45" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -648,7 +648,12 @@
     #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ       0
-    #define LULZBOT_MOTOR_CURRENT_E         1250 // mA
+
+    #if defined(LULZBOT_USE_EINSYRAMBO)
+        #define LULZBOT_MOTOR_CURRENT_E          960 // mA
+    #else
+        #define LULZBOT_MOTOR_CURRENT_E         1250 // mA
+    #endif
 #endif /* TOOLHEAD_Gladiola_SingleExtruder || TOOLHEAD_Albatross_Flexystruder || TOOLHEAD_Finch_Aerostruder */
 
 #if defined(TOOLHEAD_Gladiola_SingleExtruder)
@@ -1393,13 +1398,18 @@
         LULZBOT_TMC_REPORT(Z) \
         LULZBOT_TMC_REPORT(E0)
 
+    #define LULZBOT_ENABLE_COOLSTEP(st) \
+        /* Enable stallguard by disabling steathchop */ \
+        st.coolstep_min_speed(LULZBOT_COOLSTEP_MIN); \
+        st.stealthChop(0);
+
     #define LULZBOT_ENABLE_STALLGUARD(st) \
         /* Enable stallguard by disabling steathchop */ \
         st.coolstep_min_speed(LULZBOT_COOLSTEP_DISABLED); \
         st.stealthChop(0);
 
     #define LULZBOT_ENABLE_STEALTHCHOP(st) \
-        st.coolstep_min_speed(0); \
+        st.coolstep_min_speed(LULZBOT_COOLSTEP_MIN); \
         st.stealthChop(1);
 
     #if defined(LULZBOT_USE_SERIES_Z_MOTORS)
@@ -1429,7 +1439,7 @@
         /* Set Z homing sensitivity */ \
         stepperZ.sg_stall_value(LULZBOT_Z_HOMING_SENSITIVITY); \
         /* Always disable STEALHCHOP on E0 */ \
-        LULZBOT_ENABLE_STALLGUARD(stepperE0)
+        LULZBOT_ENABLE_COOLSTEP(stepperE0);
 
     #define LULZBOT_TMC2130_ADV { \
             LULZBOT_MOTOR_INIT_XY \
@@ -1437,12 +1447,25 @@
             LULZBOT_SENSORLESS_HOMING_Z_INIT \
         }
 
-    /* When STEALTHCHOP is disabled, sometimes the X axis refuses to
-     * move at the start of G28, because the stallguard is triggered.
-     * Toggling in and out of STEALHCHOP mode seems to resolve this. */
-    #define LULZBOT_CLEAR_STALLGUARD_FLAG(st) \
+    #define LULZBOT_SENSORLESS_HOMING_ENABLE(st) \
+        /* Sometimes the X axis refuses to move at the start of G28, */ \
+        /* because the stallguard is triggered. Toggling in and out */ \
+        /* of STEALHCHOP mode seems to resolve this. */ \
         LULZBOT_ENABLE_STEALTHCHOP(st) \
         LULZBOT_ENABLE_STALLGUARD(st)
+
+    #if defined(LULZBOT_STEALTHCHOP)
+        #define LULZBOT_SENSORLESS_HOMING_DISABLE(st) LULZBOT_ENABLE_STEALTHCHOP(st)
+    #else
+        #define LULZBOT_SENSORLESS_HOMING_DISABLE(st) LULZBOT_ENABLE_COOLSTEP(st)
+    #endif
+
+    #define LULZBOT_SENSORLESS_HOMING_TOGGLE(st, enable) \
+        if (enable) { \
+            LULZBOT_SENSORLESS_HOMING_ENABLE(st) \
+        } else { \
+            LULZBOT_SENSORLESS_HOMING_DISABLE(st) \
+        }
 
     /* Leaving the toolhead resting on the endstops will likely cause
      * chatter if the machine is immediately re-homed, so don't leave
