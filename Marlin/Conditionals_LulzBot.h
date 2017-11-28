@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".47" // Change this with each update
+#define LULZBOT_FW_VERSION ".48" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1584,7 +1584,6 @@
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.377
 
 #elif defined(LULZBOT_IS_TAZ)
-    #define LULZBOT_XY_STEPS                      100.5
     #define LULZBOT_DEFAULT_XJERK                 8.0
     #define LULZBOT_DEFAULT_YJERK                 8.0
     #define LULZBOT_DEFAULT_ZJERK                 0.4
@@ -1607,10 +1606,10 @@
 
 #elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
     #if defined(LULZBOT_USE_32_MICROSTEPS_ON_Z)
-        #define LULZBOT_Z_STEPS                       201
+        #define LULZBOT_Z_STEPS                       200
         #define LULZBOT_Z_MICROSTEPS                  32
     #else
-        #define LULZBOT_Z_STEPS                       100.5
+        #define LULZBOT_Z_STEPS                       100
         #define LULZBOT_Z_MICROSTEPS                  16
     #endif
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 300, 40}      // (mm/sec)
