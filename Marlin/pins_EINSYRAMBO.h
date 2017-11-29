@@ -31,6 +31,8 @@
 #define BOARD_NAME          "Einsy Rambo"
 #define LARGE_FLASH         true
 
+#define SERVO0_PIN 10
+
 //
 // TMC2130 Configuration_adv defaults for EinsyRambo
 //
@@ -75,8 +77,8 @@
 #define X_MAX_PIN          64 //Diag pin for sensorless homing
 #define Y_MIN_PIN          69 //Diag pin for sensorless homing
 #define Y_MAX_PIN          69 //Diag pin for sensorless homing
-#define Z_MIN_PIN          10 //Z-PROBE connector
-#define Z_MAX_PIN          11 //Temporary connection to Y-MIN connector until SENSORLESS HOMING is implemented for Z axis
+#define Z_MIN_PIN          11 //Y-MIN on board.
+#define Z_MAX_PIN          -1
 
 //
 // Z Probe (when not Z_MIN_PIN)
