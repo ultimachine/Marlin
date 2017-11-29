@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".49" // Change this with each update
+#define LULZBOT_FW_VERSION ".50" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1187,6 +1187,9 @@
     #define LULZBOT_STEALTHCHOP LULZBOT_USE_TMC_STEALTHCHOP
 
     #define LULZBOT_HYBRID_THRESHOLD
+
+    #define LULZBOT_Y_HYBRID_THRESHOLD 72
+    #define LULZBOT_X_HYBRID_THRESHOLD 72
 
     #define LULZBOT_TMC_INIT(st) \
         /* The EinsyRambo connects both diag pins to the same */ \
