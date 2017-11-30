@@ -61,9 +61,14 @@
   #define X_MIN_PIN          BOARD_X_MIN_PIN
   #define Y_MIN_PIN          BOARD_Y_MIN_PIN
   #define Z_MIN_PIN          BOARD_Z_MIN_PIN
-  #define X_MAX_PIN          -1 // 30
-  #define Y_MAX_PIN          -1 // 24
-  #define Z_MAX_PIN          BOARD_Z_THRES_PIN
+  // EINSY RETRO
+  #define X_MAX_PIN          81
+  #define Y_MAX_PIN          57
+  #define Z_MAX_PIN           7
+  // EINSY
+  //#define X_MAX_PIN          -1 // 30
+  //#define Y_MAX_PIN          -1 // 24
+  //#define Z_MAX_PIN          BOARD_Z_THRES_PIN
 #endif
 
 //
@@ -133,8 +138,8 @@
 //
 // Misc. Functions
 //
-//#define SDSS             53 // EINY 0-.1 - EINSY 0.3
-#define SDSS               77 // EINSY 0.4
+#define SDSS             53 // EINY 0-.1 - EINSY 0.3 - EinsyRetro
+//#define SDSS               77 // EINSY 0.4
 #define LED_PIN            13
 
 //
@@ -150,12 +155,12 @@
     #define BEEPER_PIN     84
 
     #define LCD_PINS_RS    82
-    // EINY 0.1- EINSY-0.3
-    //#define LCD_PINS_ENABLE 18
-    //#define LCD_PINS_D4     19
+    // EINY 0.1- EINSY-0.3- EinsyRetro
+    #define LCD_PINS_ENABLE 18
+    #define LCD_PINS_D4     19
     // EINSY 0.4+
-    #define LCD_PINS_ENABLE 61
-    #define LCD_PINS_D4     59
+    //#define LCD_PINS_ENABLE 61
+    //#define LCD_PINS_D4     59
     #define LCD_PINS_D5    70
     #define LCD_PINS_D6    85
     #define LCD_PINS_D7    71
