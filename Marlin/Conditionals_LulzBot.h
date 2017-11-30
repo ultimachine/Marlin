@@ -1737,7 +1737,9 @@
     #define LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD
     #define LULZBOT_SCROLL_LONG_FILE_NAMES
     #define LULZBOT_REORDERED_MENUS
+    #define LULZBOT_ESTEP_REDUCED_LCD_PRECISION
 #endif
+
 
 /* Marlin requires static PSTRs to display on the LCD display, because of this */
 /* we have to use a preprocessor trick to append the heater name on temp errors */

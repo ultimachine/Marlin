@@ -31,8 +31,6 @@
 #include "configuration_store.h"
 #include "utility.h"
 
-#include "Configuration_LulzBot.h"
-
 #if HAS_BUZZER && DISABLED(LCD_USE_I2C_BUZZER)
   #include "buzzer.h"
 #endif
@@ -3513,8 +3511,13 @@ void kill_screen(const char* lcd_msg) {
       #if not defined(LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD)
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float62, MSG_ESTEPS, &planner.axis_steps_per_mm[E_AXIS + active_extruder], 5, 9999, _planner_refresh_positioning);
       #endif
+      #if defined(LULZBOT_ESTEP_REDUCED_LCD_PRECISION)
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float3, MSG_E1STEPS, &planner.axis_steps_per_mm[E_AXIS], 5, 9999, _planner_refresh_e0_positioning);
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float3, MSG_E2STEPS, &planner.axis_steps_per_mm[E_AXIS + 1], 5, 9999, _planner_refresh_e1_positioning);
+      #else
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float62, MSG_E1STEPS, &planner.axis_steps_per_mm[E_AXIS], 5, 9999, _planner_refresh_e0_positioning);
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float62, MSG_E2STEPS, &planner.axis_steps_per_mm[E_AXIS + 1], 5, 9999, _planner_refresh_e1_positioning);
+      #endif
       #if E_STEPPERS > 2
         MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float62, MSG_E3STEPS, &planner.axis_steps_per_mm[E_AXIS + 2], 5, 9999, _planner_refresh_e2_positioning);
         #if E_STEPPERS > 3
@@ -3525,7 +3528,11 @@ void kill_screen(const char* lcd_msg) {
         #endif // E_STEPPERS > 3
       #endif // E_STEPPERS > 2
     #else
+      #if defined(LULZBOT_ESTEP_REDUCED_LCD_PRECISION)
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float3, MSG_ESTEPS, &planner.axis_steps_per_mm[E_AXIS], 5, 9999, _planner_refresh_positioning);
+      #else
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float62, MSG_ESTEPS, &planner.axis_steps_per_mm[E_AXIS], 5, 9999, _planner_refresh_positioning);
+      #endif
     #endif
 
     END_MENU();
