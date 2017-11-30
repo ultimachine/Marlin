@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".52" // Change this with each update
+#define LULZBOT_FW_VERSION ".53" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1525,8 +1525,8 @@
             BUZZ(25, 880); BUZZ(50, 0); \
             BUZZ(25, 880); BUZZ(50, 0); \
             do_blocking_move_to_z(100, MMM_TO_MMS(Z_PROBE_SPEED_FAST)); /* raise head */ \
-            current_position[E_AXIS] = 0;             /* prime nozzle */ \
-            line_to_current_position(); \
+            current_position[E_AXIS] = 0;             /* prime nozzle at 75 mm/sec */ \
+            planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], 75./60, active_extruder); \
             sync_plan_position_e(); \
             stepper.synchronize(); \
             kill(PSTR(MSG_ERR_PROBING_FAILED));       /* stop print job */ \
