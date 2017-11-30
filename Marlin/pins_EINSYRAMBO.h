@@ -59,12 +59,18 @@
   #define BOARD_Y_MAX_PIN     24
   #define BOARD_Z_MAX_PIN     23
 #endif
+#if defined(LULZBOT_USE_EINSY_RETRO)
+  // Einsy Rambo Retro 0.0b
+  #define BOARD_X_MAX_PIN     81
+  #define BOARD_Y_MAX_PIN     57
+  #define BOARD_Z_MAX_PIN      7
+#endif
 
 //
 // Limit Switches
 //
 // EINY 0-.1 - EINSY 0.3 have MAX switches
-#if   defined(LULZBOT_USE_EARLY_EINSY) && defined(LULZBOT_SENSORLESS_HOMING)
+#if  (defined(LULZBOT_USE_EARLY_EINSY) || defined(LULZBOT_USE_EINSY_RETRO)) && defined(LULZBOT_SENSORLESS_HOMING)
   #define X_MIN_PIN          BOARD_X_DIAG_PIN
   #define Y_MIN_PIN          BOARD_Y_MIN_PIN
   #define X_MAX_PIN          BOARD_X_MAX_PIN
@@ -78,7 +84,7 @@
     #define Z_MAX_PIN          BOARD_Z_MAX_PIN
   #endif
 
-#elif defined(LULZBOT_USE_EARLY_EINSY)
+#elif (defined(LULZBOT_USE_EARLY_EINSY) || defined(LULZBOT_USE_EINSY_RETRO))
   #define X_MIN_PIN          BOARD_X_MIN_PIN
   #define Y_MIN_PIN          BOARD_Y_MIN_PIN
   #define Z_MIN_PIN          BOARD_Z_MIN_PIN
@@ -154,15 +160,15 @@
 // Temperature Sensors
 //
 #define TEMP_0_PIN          0   // Analog Input
-#define TEMP_1_PIN          1   // Analog Input
+//#define TEMP_1_PIN          1   // Analog Input
 #define TEMP_BED_PIN        2   // Analog Input
 
 //
 // Heaters / Fans
 //
 #define HEATER_0_PIN        3
-#define HEATER_1_PIN        7
-#define HEATER_2_PIN        6
+//#define HEATER_1_PIN        7
+//#define HEATER_2_PIN        6
 #define HEATER_BED_PIN      4
 
 #define FAN_PIN             8
@@ -171,8 +177,8 @@
 //
 // Misc. Functions
 //
-#if defined(LULZBOT_USE_EARLY_EINSY)
-  #define SDSS             53 // EINY 0-.1 - EINSY 0.3
+#if defined(LULZBOT_USE_EARLY_EINSY) || defined(LULZBOT_USE_EINSY_RETRO)
+  #define SDSS             53 // EINY 0-.1, EINSY 0.3, EinsyRetro
 #else
   #define SDSS             77 // EINSY 0.4
 #endif
@@ -191,8 +197,8 @@
     #define BEEPER_PIN     84
 
     #define LCD_PINS_RS    82
-    #if defined(LULZBOT_USE_EARLY_EINSY)
-      // EINY 0.1- EINSY-0.3
+    #if defined(LULZBOT_USE_EARLY_EINSY) || defined(LULZBOT_USE_EINSY_RETRO)
+      // EINY 0.1, EINSY-0.3, EinsyRetro
       #define LCD_PINS_ENABLE 18
       #define LCD_PINS_D4     19
     #else

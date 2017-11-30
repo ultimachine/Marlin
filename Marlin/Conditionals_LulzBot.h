@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".50" // Change this with each update
+#define LULZBOT_FW_VERSION ".51" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -124,7 +124,7 @@
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_EINSYRAMBO
-    #define LULZBOT_USE_EARLY_EINSY
+    #define LULZBOT_USE_EINSY_RETRO
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
@@ -142,7 +142,7 @@
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_EINSYRAMBO
-    #define LULZBOT_USE_EARLY_EINSY
+    #define LULZBOT_USE_EINSY_RETRO
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
@@ -377,6 +377,18 @@
         }
 #else
     #define LULZBOT_AFTER_Z_HOME_ACTION
+#endif
+
+/************************ STEPPER INACTIVITY TIMEOUT ****************************/
+
+#if !defined(LULZBOT_USE_MAX_ENDSTOPS)
+    #define LULZBOT_HOME_AFTER_DEACTIVATE
+#endif
+
+#if defined(LULZBOT_USE_Z_BELT)
+    #define LULZBOT_DISABLE_INACTIVE_Z false
+#else
+    #define LULZBOT_DISABLE_INACTIVE_Z true
 #endif
 
 /*********************** AUTOLEVELING / BED PROBE *******************************/
@@ -1178,8 +1190,11 @@
 #if defined(LULZBOT_USE_EINSYRAMBO)
     #define LULZBOT_HAVE_TMC2130
 
-    // EinsyRambo uses a 0.1 mOhm sense resistor
-    #define LULZBOT_R_SENSE         0.1
+    #if defined(LULZBOT_USE_EINSY_RETRO)
+        #define LULZBOT_R_SENSE         0.12
+    #else
+        #define LULZBOT_R_SENSE         0.1
+    #endif
 
     #define LULZBOT_HOLD_MULTIPLIER 0.5
 
