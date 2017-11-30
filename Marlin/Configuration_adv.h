@@ -948,7 +948,7 @@
    * Stepper driver settings
    */
 
-  #define R_SENSE           0.22  // R_sense resistor for SilentStepStick2130
+  #define R_SENSE           0.12  // R_sense resistor for EinsyRetro
   #define HOLD_MULTIPLIER    0.5  // Scales down the holding current from run current
   #define INTERPOLATE          1  // Interpolate X/Y/Z_MICROSTEPS to 256
 
