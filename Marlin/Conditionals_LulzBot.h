@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".54" // Change this with each update
+#define LULZBOT_FW_VERSION ".55" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -235,10 +235,15 @@
 #define LULZBOT_NO_PIN_PROTECTION_ON_M226
 
 // Marlin 1.1.5 has an issue where bed leveling is disabled when homing,
-// this causes problems when rehoming X/Y after pausing a print.
+// this causes problems when rehoming X/Y after pausing a print. This
+// bug has been reported upstream as bug #8670
 #if defined(LULZBOT_USE_AUTOLEVELING)
     #define LULZBOT_G28_DISABLES_LEVELING_WORKAROUND
 #endif
+
+// Marlin 1.1.5 does not respect Z_HOMING_HEIGHT on the Mini. This has
+// been reported upstream as bug #8669
+#define LULZBOT_Z_HOMING_HEIGHT_WORKAROUND
 
 /******************** MOTHERBOARD AND PIN CONFIGURATION ***********************/
 
@@ -359,7 +364,8 @@
     #define LULZBOT_Z_SAFE_HOMING_Y_POINT         10
     #define LULZBOT_Z_HOMING_HEIGHT               5
 #else
-    #define LULZBOT_Z_HOMING_HEIGHT               0
+    // On the Mini, raise nozzle to clear wiper pad before homing
+    #define LULZBOT_Z_HOMING_HEIGHT               4
 #endif  // LULZBOT_USE_HOME_BUTTON
 
 #define LULZBOT_G92_Z(z) \
@@ -397,7 +403,13 @@
 
 /*********************** AUTOLEVELING / BED PROBE *******************************/
 
-#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
+#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_BELT)
+    #define LULZBOT_LEFT_PROBE_BED_POSITION        0
+    #define LULZBOT_RIGHT_PROBE_BED_POSITION     165
+    #define LULZBOT_BACK_PROBE_BED_POSITION      165
+    #define LULZBOT_FRONT_PROBE_BED_POSITION      -6
+
+#elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     #define LULZBOT_LEFT_PROBE_BED_POSITION        0
     #define LULZBOT_RIGHT_PROBE_BED_POSITION     164
     #define LULZBOT_BACK_PROBE_BED_POSITION      162

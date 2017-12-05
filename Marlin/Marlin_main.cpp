@@ -3999,8 +3999,9 @@ inline void gcode_G28(const bool always_home_all) {
         #endif
       }
 
-    #else
+    #endif
 
+    #if defined(LULZBOT_Z_HOMING_HEIGHT_WORKAROUND)
       if (home_all || homeX || homeY) {
         // Raise Z before homing any other axes and z is not already high enough (never lower z)
         destination[Z_AXIS] = LOGICAL_Z_POSITION(Z_HOMING_HEIGHT);
