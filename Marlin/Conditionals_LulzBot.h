@@ -985,7 +985,7 @@
 #define LULZBOT_USE_CONTROLLER_FAN
 #if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_EINSYRAMBO)
     // The TMC drivers need a bit more cooling.
-    #define LULZBOT_CONTROLLERFAN_SPEED         140
+    #define LULZBOT_CONTROLLERFAN_SPEED         160
 #elif defined(LULZBOT_IS_MINI)
     // The Mini fan runs rather loud at full speed.
     #define LULZBOT_CONTROLLERFAN_SPEED         120
