@@ -245,6 +245,10 @@
 // been reported upstream as bug #8669
 #define LULZBOT_Z_HOMING_HEIGHT_WORKAROUND
 
+// Marlin 1.1.5 does not respect ENDSTOPS_ALWAYS_ON_DEFAULT at startup,
+// as described in T1393
+#define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT_WORKAROUND
+
 /******************** MOTHERBOARD AND PIN CONFIGURATION ***********************/
 
 #if defined(TOOLHEAD_Devel_ServoDual)
@@ -1509,6 +1513,8 @@
     // stallguard is never cleared.
     //#define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
 
+    // ENDSTOPS_ALWAYS_ON_DEFAULT causes false positives
+    // with stallguard.
     #undef LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
 
     // According to Jason at UltiMachine, setting the lower the

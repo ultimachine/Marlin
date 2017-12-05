@@ -13642,6 +13642,16 @@ void setup() {
       pe_deactivate_magnet(1);
     #endif
   #endif
+
+  #if defined(LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT_WORKAROUND)
+    endstops.enable_globally(
+    #if ENABLED(ENDSTOPS_ALWAYS_ON_DEFAULT)
+      true
+    #else
+      false
+    #endif
+    );
+  #endif
 }
 
 /**
