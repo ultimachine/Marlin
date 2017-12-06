@@ -6343,6 +6343,10 @@ inline void gcode_M17() {
     KEEPALIVE_STATE(IN_HANDLER);
   }
 
+  #if defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
+    void LULZBOT_RESTORE_ACTIVE_TOOLHEAD();
+  #endif
+
   static void resume_print(const float &load_length = 0, const float &initial_extrude_length = 0, const int8_t max_beep_count = 0) {
     bool nozzle_timed_out = false;
 
@@ -6358,6 +6362,10 @@ inline void gcode_M17() {
 
     #if HAS_BUZZER
       filament_change_beep(max_beep_count, true);
+    #endif
+
+    #if defined(LULZBOT_M600_BACKPORT_T7811)
+    set_destination_to_current();
     #endif
 
     if (load_length != 0) {
@@ -6439,6 +6447,10 @@ inline void gcode_M17() {
       lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_STATUS);
     #endif
 
+    #if defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
+    LULZBOT_RESTORE_ACTIVE_TOOLHEAD();
+    #endif
+
     #if ENABLED(SDSUPPORT)
       if (sd_print_paused) {
         card.startFileprint();
@@ -6447,6 +6459,7 @@ inline void gcode_M17() {
     #endif
 
     move_away_flag = false;
+
   }
 #endif // ADVANCED_PAUSE_FEATURE
 

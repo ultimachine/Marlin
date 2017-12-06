@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".55" // Change this with each update
+#define LULZBOT_FW_VERSION ".56" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -130,7 +130,7 @@
     #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_USE_TMC_STEALTHCHOP_Z
     #define LULZBOT_USE_Z_BELT
-    #define LULZBOT_USE_STATUS_LED
+    #define LULZBOT_USE_EXPERIMENTAL_FEATURES
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
@@ -149,7 +149,7 @@
     #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_USE_TMC_STEALTHCHOP_Z
     #define LULZBOT_USE_Z_BELT
-    #define LULZBOT_USE_STATUS_LED
+    #define LULZBOT_USE_EXPERIMENTAL_FEATURES
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
@@ -248,6 +248,15 @@
 // Marlin 1.1.5 does not respect ENDSTOPS_ALWAYS_ON_DEFAULT at startup,
 // as described in T1393
 #define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT_WORKAROUND
+
+// Backport of upstream Marlin fix T7811 related to M600 resume_print
+#define LULZBOT_M600_BACKPORT_T7811
+
+/************************* EXPERIMENTAL FEATURES ******************************/
+
+#if defined(LULZBOT_USE_EXPERIMENTAL_FEATURES)
+    #define LULZBOT_USE_STATUS_LED
+#endif
 
 /******************** MOTHERBOARD AND PIN CONFIGURATION ***********************/
 
@@ -1798,8 +1807,10 @@
     #define LULZBOT_SCROLL_LONG_FILE_NAMES
     #define LULZBOT_REORDERED_MENUS
     #define LULZBOT_ESTEP_REDUCED_LCD_PRECISION
+    #if LULZBOT_EXTRUDERS > 0
+      #define LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT
+    #endif
 #endif
-
 
 /* Marlin requires static PSTRs to display on the LCD display, because of this */
 /* we have to use a preprocessor trick to append the heater name on temp errors */

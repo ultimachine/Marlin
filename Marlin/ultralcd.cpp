@@ -899,6 +899,33 @@ void kill_screen(const char* lcd_msg) {
   static void lcd_store_settings();
   static void lcd_load_settings();
 
+  #if defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
+
+  void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool no_move/*=false*/);
+
+  static uint8_t active_extruder_before_filament_change = -1;
+
+  void lcd_enqueue_filament_change_e0() {
+    if (axis_unhomed_error()) {lcd_return_to_status(); return;};
+    active_extruder_before_filament_change = active_extruder;
+    tool_change(0, 0, true);
+    lcd_enqueue_filament_change();
+  }
+
+  void lcd_enqueue_filament_change_e1() {
+    if (axis_unhomed_error()) {lcd_return_to_status(); return;};
+    active_extruder_before_filament_change = active_extruder;
+    tool_change(1, 0, true);
+    lcd_enqueue_filament_change();
+  }
+
+  void LULZBOT_RESTORE_ACTIVE_TOOLHEAD() {
+    if(active_extruder_before_filament_change > -1) {
+      tool_change(active_extruder_before_filament_change, 0, true);
+      active_extruder_before_filament_change = -1;
+    }
+  }
+  #endif
 
   void lcd_main_menu() {
     START_MENU();
@@ -908,15 +935,23 @@ void kill_screen(const char* lcd_msg) {
 
     if (isPrinting) {
       MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
-      #if ENABLED(ADVANCED_PAUSE_FEATURE)
-        if (!thermalManager.tooColdToExtrude(active_extruder))
-          MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_enqueue_filament_change);
-      #endif
     } else {
       MENU_ITEM(submenu, _UxGT("Movement"), lcd_movement_menu);
       MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
       MENU_ITEM(submenu, _UxGT("Configuration"), lcd_configuration_menu);
     }
+
+    #if ENABLED(ADVANCED_PAUSE_FEATURE)
+      #if defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
+        if (!thermalManager.tooColdToExtrude(0))
+          MENU_ITEM(function, MSG_FILAMENTCHANGE " E1", lcd_enqueue_filament_change_e0);
+        if (!thermalManager.tooColdToExtrude(1))
+          MENU_ITEM(function, MSG_FILAMENTCHANGE " E2", lcd_enqueue_filament_change_e1);
+      #else
+        if (!thermalManager.tooColdToExtrude(active_extruder))
+          MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_enqueue_filament_change_e0);
+      #endif
+    #endif
 
     #if ENABLED(SDSUPPORT)
       if (card.cardOK) {
