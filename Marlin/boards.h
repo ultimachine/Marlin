@@ -86,6 +86,7 @@
 #define BOARD_MEGATRONICS_31    704  // Megatronics v3.1
 #define BOARD_OMCA_A            90   // Alpha OMCA board
 #define BOARD_OMCA              91   // Final OMCA board
+#define BOARD_EINSYRETRO        299  // Einsy Retro
 #define BOARD_EINSYRAMBO        300  // Einsy Rambo
 #define BOARD_RAMBO             301  // Rambo
 #define BOARD_MINIRAMBO         302  // Mini-Rambo
