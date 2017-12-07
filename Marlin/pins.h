@@ -144,6 +144,8 @@
   #include "pins_MINIRAMBO.h"         // ATmega2560
 #elif MB(EINSYRAMBO)
   #include "pins_EINSYRAMBO.h"        // ATmega2560
+#elif MB(EINSYRETRO)
+  #include "pins_EINSYRETRO.h"        // ATmega2560
 #elif MB(ELEFU_3)
   #include "pins_ELEFU_3.h"           // ATmega2560
 #elif MB(LEAPFROG)
