@@ -6189,6 +6189,9 @@ inline void gcode_M17() {
         }
       }
     }
+    #if ENABLED(ULTIPANEL) && defined(LULZBOT_LCD_PAUSE_WORKAROUND)
+      lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_STATUS);
+    #endif
   }
 
   static bool pause_print(const float &retract, const float &z_lift, const float &x_pos, const float &y_pos,

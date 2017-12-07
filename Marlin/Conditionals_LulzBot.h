@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".56" // Change this with each update
+#define LULZBOT_FW_VERSION ".57" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -251,6 +251,12 @@
 
 // Backport of upstream Marlin fix T7811 related to M600 resume_print
 #define LULZBOT_M600_BACKPORT_T7811
+
+// In Marlin 1.1.5, a paused print cannot be resumed from the LCD if
+// PAUSE_PARK_RETRACT_LENGTH is non-zero. This has been submitted as
+// bug #8703
+
+#define LULZBOT_LCD_PAUSE_WORKAROUND
 
 /************************* EXPERIMENTAL FEATURES ******************************/
 
