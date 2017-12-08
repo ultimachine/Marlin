@@ -813,8 +813,8 @@
     #define LULZBOT_AFTER_Z_HOME_Z_RAISE           16
     #undef  LULZBOT_AFTER_Z_HOME_Z_ORIGIN
     #define LULZBOT_AFTER_Z_HOME_Z_ORIGIN          5.5
-    #define LULZBOT_TOOLHEAD_WIPE_X1_ADJ          -6
-    #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ          -6
+    #define LULZBOT_TOOLHEAD_WIPE_X1_ADJ          -5
+    #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ          -5
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ           0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ           0
     #undef  LULZBOT_Z_HOMING_HEIGHT
