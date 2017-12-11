@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".57" // Change this with each update
+#define LULZBOT_FW_VERSION ".58" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -824,7 +824,9 @@
     #undef  LULZBOT_Z_CLEARANCE_BETWEEN_PROBES
     #define LULZBOT_Z_CLEARANCE_BETWEEN_PROBES     10
     #undef  LULZBOT_BACK_PROBE_BED_POSITION
-    #define LULZBOT_BACK_PROBE_BED_POSITION       293
+    #define LULZBOT_BACK_PROBE_BED_POSITION       300
+    #undef  LULZBOT_LEFT_PROBE_BED_POSITION
+    #define LULZBOT_LEFT_PROBE_BED_POSITION       -6
     #if defined(LULZBOT_USE_HOME_BUTTON)
         #undef  LULZBOT_Z_SAFE_HOMING_X_POINT
         #undef  LULZBOT_Z_SAFE_HOMING_Y_POINT
