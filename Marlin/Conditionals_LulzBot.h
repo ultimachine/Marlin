@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".58" // Change this with each update
+#define LULZBOT_FW_VERSION ".59" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -490,6 +490,7 @@
 #else
     #define LULZBOT_Z_PROBE_SPEED_FAST       (8*60)
 #endif
+#define LULZBOT_Z_CLEARANCE_DEPLOY_PROBE_WORKAROUND
 #define LULZBOT_Z_CLEARANCE_DEPLOY_PROBE      5
 #define LULZBOT_Z_CLEARANCE_BETWEEN_PROBES    5
 
@@ -813,8 +814,12 @@
     #define LULZBOT_AFTER_Z_HOME_Z_RAISE           16
     #undef  LULZBOT_AFTER_Z_HOME_Z_ORIGIN
     #define LULZBOT_AFTER_Z_HOME_Z_ORIGIN          5.5
-    #define LULZBOT_TOOLHEAD_WIPE_X1_ADJ          -5
-    #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ          -5
+    #define LULZBOT_TOOLHEAD_X_MIN_ADJ             (-3+2)
+    #define LULZBOT_TOOLHEAD_X_MAX_ADJ             (-3+10)
+    #define LULZBOT_TOOLHEAD_Y_MIN_ADJ             7
+    #define LULZBOT_TOOLHEAD_Y_MAX_ADJ             7
+    #define LULZBOT_TOOLHEAD_WIPE_X1_ADJ          -2
+    #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ          -2
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ           0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ           0
     #undef  LULZBOT_Z_HOMING_HEIGHT
@@ -823,18 +828,15 @@
     #define LULZBOT_Z_CLEARANCE_DEPLOY_PROBE       10
     #undef  LULZBOT_Z_CLEARANCE_BETWEEN_PROBES
     #define LULZBOT_Z_CLEARANCE_BETWEEN_PROBES     10
+    // Move the rear homing position back to avoid the Z homing adaptor
     #undef  LULZBOT_BACK_PROBE_BED_POSITION
-    #define LULZBOT_BACK_PROBE_BED_POSITION       300
+    #define LULZBOT_BACK_PROBE_BED_POSITION       291
+    // Adjust so left nozzle probes on the left washers;
+    // right nozzles on the right nozzle.
     #undef  LULZBOT_LEFT_PROBE_BED_POSITION
-    #define LULZBOT_LEFT_PROBE_BED_POSITION       -6
-    #if defined(LULZBOT_USE_HOME_BUTTON)
-        #undef  LULZBOT_Z_SAFE_HOMING_X_POINT
-        #undef  LULZBOT_Z_SAFE_HOMING_Y_POINT
-        #define LULZBOT_Z_SAFE_HOMING_X_POINT    (-22)    // X point for Z homing when homing all axis (G28)
-        #define LULZBOT_Z_SAFE_HOMING_Y_POINT    (265)    // Y point for Z homing when homing all axis (G28)
-    #endif /* LULZBOT_USE_HOME_BUTTON */
-    #undef  LULZBOT_TOOLHEAD_X_MAX_ADJ
-    #define LULZBOT_TOOLHEAD_X_MAX_ADJ             10
+    #define LULZBOT_LEFT_PROBE_BED_POSITION        -3
+    #undef  LULZBOT_RIGHT_PROBE_BED_POSITION
+    #define LULZBOT_RIGHT_PROBE_BED_POSITION      282
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING       LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_SWAP_EXTRUDERS
     #undef  LULZBOT_INVERT_E1_DIR

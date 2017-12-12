@@ -2400,6 +2400,10 @@ static void clean_up_after_endstop_or_probe_move() {
 
     feedrate_mm_s = XY_PROBE_FEEDRATE_MM_S;
 
+    #if defined(LULZBOT_Z_CLEARANCE_DEPLOY_PROBE_WORKAROUND)
+    do_probe_raise(_Z_CLEARANCE_DEPLOY_PROBE);
+    #endif
+
     // Move the probe to the given XY
     do_blocking_move_to_xy(nx, ny);
 
