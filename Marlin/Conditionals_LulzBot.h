@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".59" // Change this with each update
+#define LULZBOT_FW_VERSION ".60" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -786,7 +786,7 @@
     #define LULZBOT_TOOLHEAD_WIPE_X1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
-    #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ     -48
+    #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ      48
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    LULZBOT_NORMALLY_OPEN_ENDSTOP
     #define LULZBOT_E_STEPS                    830
     #define LULZBOT_AO_Hexagon
@@ -799,7 +799,7 @@
     #define LULZBOT_TOOLHEAD_WIPE_X1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_X2_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
-    #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ     -48
+    #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ      48
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    LULZBOT_NORMALLY_OPEN_ENDSTOP
     #define LULZBOT_E_STEPS                  830
     #define LULZBOT_AO_Hexagon
