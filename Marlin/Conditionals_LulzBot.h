@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".60" // Change this with each update
+#define LULZBOT_FW_VERSION ".61" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1817,7 +1817,7 @@
     #define LULZBOT_SCROLL_LONG_FILE_NAMES
     #define LULZBOT_REORDERED_MENUS
     #define LULZBOT_ESTEP_REDUCED_LCD_PRECISION
-    #if LULZBOT_EXTRUDERS > 0
+    #if LULZBOT_EXTRUDERS > 1
       #define LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT
     #endif
 #endif
