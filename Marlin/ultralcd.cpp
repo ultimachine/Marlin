@@ -949,7 +949,7 @@ void kill_screen(const char* lcd_msg) {
           MENU_ITEM(function, MSG_FILAMENTCHANGE " E2", lcd_enqueue_filament_change_e1);
       #else
         if (!thermalManager.tooColdToExtrude(active_extruder))
-          MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_enqueue_filament_change_e0);
+          MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_enqueue_filament_change);
       #endif
     #endif
 
@@ -1271,6 +1271,9 @@ void kill_screen(const char* lcd_msg) {
   #if ENABLED(ADVANCED_PAUSE_FEATURE)
 
     void lcd_enqueue_filament_change() {
+      #if !defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
+        if (axis_unhomed_error()) {lcd_return_to_status(); return;}
+      #endif
 
       #if ENABLED(PREVENT_COLD_EXTRUSION)
         if (!DEBUGGING(DRYRUN) && !thermalManager.allow_cold_extrude &&
