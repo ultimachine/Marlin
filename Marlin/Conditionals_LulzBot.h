@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".62" // Change this with each update
+#define LULZBOT_FW_VERSION ".63" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -462,9 +462,15 @@
   // using a degenerate 2x2 grid. This is the traditional behavior.
   #define LULZBOT_GRID_MAX_POINTS_X            2
   #define LULZBOT_GRID_MAX_POINTS_Y            2
-  // We can't control the order of probe points exactly, but
-  // this makes the probe start closer to the wiper pad.
-  #define LULZBOT_PROBE_Y_FIRST
+  #if defined(LULZBOT_IS_MINI)
+    // We can't control the order of probe points exactly, but
+    // this makes the probe start closer to the wiper pad.
+    #define LULZBOT_PROBE_Y_FIRST
+  #else
+    // Restore the old probe sequence on the TAZ that starts
+    // probing on the washer underneath the wiper pad.
+    #define LULZBOT_LAST_PROBE_POINT_ON_BACK_LEFT_CORNER
+  #endif
 #endif
 
 /* Auto-leveling was introduced on the Mini and TAZ 6.
