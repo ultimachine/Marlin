@@ -6354,10 +6354,6 @@ inline void gcode_M17() {
     KEEPALIVE_STATE(IN_HANDLER);
   }
 
-  #if defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
-    void LULZBOT_RESTORE_ACTIVE_TOOLHEAD();
-  #endif
-
   static void resume_print(const float &load_length = 0, const float &initial_extrude_length = 0, const int8_t max_beep_count = 0) {
     bool nozzle_timed_out = false;
 
@@ -6456,10 +6452,6 @@ inline void gcode_M17() {
     #if ENABLED(ULTIPANEL)
       // Show status screen
       lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_STATUS);
-    #endif
-
-    #if defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
-    LULZBOT_RESTORE_ACTIVE_TOOLHEAD();
     #endif
 
     #if ENABLED(SDSUPPORT)
@@ -9725,6 +9717,7 @@ inline void gcode_M502() {
    *  U[distance] - Retract distance for removal (negative value) (manual reload)
    *  L[distance] - Extrude distance for insertion (positive value) (manual reload)
    *  B[count]    - Number of times to beep, -1 for indefinite (if equipped with a buzzer)
+   *  T[toolhead] - Select extruder for filament change
    *
    *  Default values are used for omitted arguments.
    *
@@ -9734,6 +9727,18 @@ inline void gcode_M502() {
     #if ENABLED(HOME_BEFORE_FILAMENT_CHANGE)
       // Don't allow filament change without homing first
       if (axis_unhomed_error()) home_all_axes();
+    #endif
+
+    #if defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
+    // Change toolhead if specified
+    uint8_t active_extruder_before_filament_change = -1;
+    if(parser.seen('T')) {
+      const uint8_t extruder = parser.value_byte();
+      if(active_extruder != extruder) {
+        active_extruder_before_filament_change = active_extruder;
+        tool_change(extruder, 0, true);
+      }
+    }
     #endif
 
     // Initial retract before move to filament change position
@@ -9790,6 +9795,13 @@ inline void gcode_M502() {
       wait_for_filament_reload(beep_count);
       resume_print(load_length, ADVANCED_PAUSE_EXTRUDE_LENGTH, beep_count);
     }
+
+    #if defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
+    // Change toolhead if specified
+    if(active_extruder_before_filament_change != -1) {
+      tool_change(active_extruder_before_filament_change, 0, true);
+    }
+    #endif
 
     // Resume the print job timer if it was running
     if (job_running) print_job_timer.start();

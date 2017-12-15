@@ -894,37 +894,16 @@ void kill_screen(const char* lcd_msg) {
 #if defined(LULZBOT_REORDERED_MENUS) && defined(LULZBOT_USE_LCD_DISPLAY)
   void lcd_configuration_menu();
   void lcd_movement_menu();
-  void lcd_enqueue_filament_change();
   void lcd_show_custom_bootscreen();
   static void lcd_store_settings();
   static void lcd_load_settings();
 
   #if defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
-
-  void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool no_move/*=false*/);
-
-  static uint8_t active_extruder_before_filament_change = -1;
-
-  void lcd_enqueue_filament_change_e0() {
-    if (axis_unhomed_error()) {lcd_return_to_status(); return;};
-    active_extruder_before_filament_change = active_extruder;
-    tool_change(0, 0, true);
-    lcd_enqueue_filament_change();
-  }
-
-  void lcd_enqueue_filament_change_e1() {
-    if (axis_unhomed_error()) {lcd_return_to_status(); return;};
-    active_extruder_before_filament_change = active_extruder;
-    tool_change(1, 0, true);
-    lcd_enqueue_filament_change();
-  }
-
-  void LULZBOT_RESTORE_ACTIVE_TOOLHEAD() {
-    if(active_extruder_before_filament_change > -1) {
-      tool_change(active_extruder_before_filament_change, 0, true);
-      active_extruder_before_filament_change = -1;
-    }
-  }
+  void lcd_enqueue_filament_change(uint8_t);
+  void lcd_enqueue_filament_change_e0() {lcd_enqueue_filament_change(0);}
+  void lcd_enqueue_filament_change_e1() {lcd_enqueue_filament_change(1);}
+  #else
+  void lcd_enqueue_filament_change();
   #endif
 
   void lcd_main_menu() {
@@ -1270,10 +1249,12 @@ void kill_screen(const char* lcd_msg) {
 
   #if ENABLED(ADVANCED_PAUSE_FEATURE)
 
-    void lcd_enqueue_filament_change() {
-      #if !defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
-        if (axis_unhomed_error()) {lcd_return_to_status(); return;}
+    void lcd_enqueue_filament_change(
+      #if defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
+        uint8_t extruder
       #endif
+    ) {
+
 
       #if ENABLED(PREVENT_COLD_EXTRUSION)
         if (!DEBUGGING(DRYRUN) && !thermalManager.allow_cold_extrude &&
@@ -1285,7 +1266,11 @@ void kill_screen(const char* lcd_msg) {
       #endif
 
       lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INIT);
+      #if defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
+      enqueue_and_echo_commands_P(extruder == 0 ? PSTR("M600 B0 T0") : PSTR("M600 B0 T1"));
+      #else
       enqueue_and_echo_commands_P(PSTR("M600 B0"));
+      #endif
     }
 
   #endif // ADVANCED_PAUSE_FEATURE
@@ -2642,7 +2627,7 @@ void kill_screen(const char* lcd_msg) {
     //
     // Change filament
     //
-    #if ENABLED(ADVANCED_PAUSE_FEATURE)
+    #if ENABLED(ADVANCED_PAUSE_FEATURE) && !defined(LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT)
       if (!thermalManager.tooColdToExtrude(active_extruder) && !IS_SD_FILE_OPEN)
         MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_enqueue_filament_change);
     #endif
