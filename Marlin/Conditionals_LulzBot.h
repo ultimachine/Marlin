@@ -1593,6 +1593,11 @@
     #define LULZBOT_STANDARD_WIPE_X2                       45
     #define LULZBOT_STANDARD_WIPE_Y1                       173
     #define LULZBOT_STANDARD_WIPE_Y2                       173
+    #if defined(LULZBOT_USE_Z_BELT)
+        #define LULZBOT_STANDARD_WIPE_Z                    1
+    #else
+        #define LULZBOT_STANDARD_WIPE_Z                   -0.5
+    #endif
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_TAZ_BED)
     // TAZ has a vertical wiping pad on the left side of the bed
@@ -1600,18 +1605,19 @@
     #define LULZBOT_STANDARD_WIPE_X2                      -16
     #define LULZBOT_STANDARD_WIPE_Y1                       95
     #define LULZBOT_STANDARD_WIPE_Y2                       25
+    #define LULZBOT_STANDARD_WIPE_Z                        1
 #endif
 
 #define LULZBOT_NOZZLE_CLEAN_START_POINT { \
     LULZBOT_STANDARD_WIPE_X1 + LULZBOT_TOOLHEAD_WIPE_X1_ADJ, \
     LULZBOT_STANDARD_WIPE_Y1 + LULZBOT_TOOLHEAD_WIPE_Y1_ADJ, \
-    1 \
+    LULZBOT_STANDARD_WIPE_Z \
 }
 
 #define LULZBOT_NOZZLE_CLEAN_END_POINT   { \
     LULZBOT_STANDARD_WIPE_X2 + LULZBOT_TOOLHEAD_WIPE_X2_ADJ, \
     LULZBOT_STANDARD_WIPE_Y2 + LULZBOT_TOOLHEAD_WIPE_Y2_ADJ, \
-    1 \
+    LULZBOT_STANDARD_WIPE_Z \
 }
 
 /*************************** REWIPE FUNCTIONALITY *******************************/
