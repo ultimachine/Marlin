@@ -28,6 +28,8 @@ void Nozzle::stroke(
       };
     #endif // NOZZLE_CLEAN_GOBACK
 
+    LULZBOT_REHOME_BEFORE_REWIPE
+
     // Move to the starting point
     do_blocking_move_to_xy(start.x, start.y);
     do_blocking_move_to_z(start.z);

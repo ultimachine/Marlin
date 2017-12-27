@@ -55,7 +55,7 @@
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
     #define LULZBOT_USE_Z_SCREW
-    #define LULZBOT_BAUDRATE 115200
+    #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_UUID "351487b6-ca9a-4c1a-8765-d668b1da6585"
 #endif
 
@@ -70,7 +70,7 @@
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
     #define LULZBOT_USE_Z_SCREW
-    #define LULZBOT_BAUDRATE 115200
+    #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_UUID "083f68f1-028e-494c-98e1-f2e0dfaee9a5"
 #endif
 
@@ -523,10 +523,10 @@
 #define LULZBOT_Z_CLEARANCE_DEPLOY_PROBE      5
 #define LULZBOT_Z_CLEARANCE_BETWEEN_PROBES    5
 
-/* On the Finch Aero toolhead, we need to disable the extruder
- * motor as it causes noise on the probe line on Foxglove Minis.
+/* We need to disable the extruder motor during probing as
+   it causes noise on the probe line of some Minis.
  */
-#if defined(LULZBOT_IS_MINI) && defined(TOOLHEAD_Finch_Aerostruder)
+#if defined(LULZBOT_IS_MINI)
     #define LULZBOT_EXTRUDER_MOTOR_SHUTOFF_ON_PROBE(probing) \
         if(probing) { \
             disable_E0(); \
@@ -1057,8 +1057,8 @@
  */
 
 #if defined(LULZBOT_IS_MINI)
-    #define LULZBOT_STANDARD_X_MAX_POS         165
-    #define LULZBOT_STANDARD_X_MIN_POS           0
+    #define LULZBOT_STANDARD_X_MAX_POS         164
+    #define LULZBOT_STANDARD_X_MIN_POS        -0.1
     #define LULZBOT_STANDARD_Y_MAX_POS         191
     #define LULZBOT_STANDARD_Y_MIN_POS          -6
 
@@ -1589,8 +1589,8 @@
 
 #if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     // Mini has a horizontal wiping pad on the back of the bed
-    #define LULZBOT_STANDARD_WIPE_X1                       115
-    #define LULZBOT_STANDARD_WIPE_X2                       45
+    #define LULZBOT_STANDARD_WIPE_X1                       45
+    #define LULZBOT_STANDARD_WIPE_X2                       115
     #define LULZBOT_STANDARD_WIPE_Y1                       173
     #define LULZBOT_STANDARD_WIPE_Y2                       173
     #if defined(LULZBOT_USE_Z_BELT)
@@ -1627,6 +1627,10 @@
     #define LULZBOT_BED_PROBE_MIN    0 // Limit on pushing into the bed
 #else defined(LULZBOT_IS_MINI)
     #define LULZBOT_BED_PROBE_MIN   -4 // Limit on pushing into the bed
+    #if defined(LULZBOT_USE_Z_SCREW)
+        // workaround for older minis where G29 shifts the coordinate system
+        #define LULZBOT_REHOME_BEFORE_REWIPE do_blocking_move_to_xy(X_MIN_POS,Y_MAX_POS);
+    #endif
 #endif
 
 #define LULZBOT_PROBE_Z_WITH_REWIPE(speed) \
@@ -1649,7 +1653,7 @@
         SERIAL_ERRORLNPGM(MSG_REWIPE); \
         LCD_MESSAGEPGM(MSG_REWIPE); \
         do_blocking_move_to_z(10, MMM_TO_MMS(speed)); /* raise nozzle */ \
-        Nozzle::clean(0, 12, 0, 0);                    /* wipe nozzle */ \
+        Nozzle::clean(0, 12, 0, 0);                   /* wipe nozzle */ \
     }
 
 /******************************** MOTOR CURRENTS *******************************/
