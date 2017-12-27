@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".64" // Change this with each update
+#define LULZBOT_FW_VERSION ".67" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -24,6 +24,7 @@
     !defined(LULZBOT_Hibiscus_Mini2LCD) && \
     !defined(LULZBOT_Hibiscus_EinsyMini2) && \
     !defined(LULZBOT_Hibiscus_EinsyMini2LCD) && \
+    !defined(LULZBOT_Hibiscus_EinsyGearedMini2LCD) && \
     !defined(LULZBOT_Quiver_TAZ7) \
 ) || ( \
     !defined(TOOLHEAD_Gladiola_SingleExtruder) && \
@@ -155,6 +156,26 @@
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
 #endif
 
+#if defined(LULZBOT_Hibiscus_EinsyGearedMini2LCD)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2 LCD"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini Einsy 2"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EINSY_RETRO
+    #define LULZBOT_USE_LCD_DISPLAY
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_USE_TMC_STEALTHCHOP_Z
+    #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_USE_Z_GEARBOX
+    #define LULZBOT_USE_EXPERIMENTAL_FEATURES
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
+#endif
+
 #if defined(LULZBOT_Hibiscus_Mini2LCD)
     // Prototype Mini w/ Z-Belt
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2 LCD"
@@ -193,6 +214,7 @@
 /****************************** DEBUGGING OPTIONS *******************************/
 
 //#define LULZBOT_TMC_SHOW_CURRENT_ADJUSTMENTS
+//#define LULZBOT_MONITOR_TMC_TEMPERATURE
 
 /**************************** GENERAL CONFIGURATION *****************************/
 
@@ -202,6 +224,7 @@
 #define LULZBOT_NOZZLE_PARK_FEATURE
 #define LULZBOT_AUTO_REPORT_TEMPERATURES
 #define LULZBOT_ADVANCED_OK
+#define LULZBOT_TX_BUFFER_SIZE 32
 #define LULZBOT_HOST_KEEPALIVE_FEATURE_DISABLED
 #define LULZBOT_CLARIFY_ERROR_MESSAGES
 
@@ -349,7 +372,7 @@
 
 #if defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_HOMING_FEEDRATE_XY             (50*60) // mm/m
-    #define LULZBOT_HOMING_FEEDRATE_Z              (50*60) // mm/m
+    #define LULZBOT_HOMING_FEEDRATE_Z              (40*60) // mm/m
 
 #elif defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_HOMING_FEEDRATE_XY            (30*60) // mm/m
@@ -1708,6 +1731,18 @@
 
     #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 8, 40}      // (mm/sec)
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,100,1000}
+
+#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) && defined(LULZBOT_USE_Z_GEARBOX)
+    #define LULZBOT_Z_STEPS                       500
+    #define LULZBOT_Z_MICROSTEPS                  16
+    #define LULZBOT_DEFAULT_MAX_FEEDRATE          {300, 300, 40, 40}      // (mm/sec)
+
+    #if defined(LULZBOT_USE_TMC_STEALTHCHOP_XY)
+        /* Stealthchop can skip steps if the acceleration is too high */
+        #define LULZBOT_DEFAULT_MAX_ACCELERATION      {3000,3000,200,1000}
+    #else
+        #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,200,1000}
+    #endif
 
 #elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
     #if defined(LULZBOT_USE_32_MICROSTEPS_ON_Z)
