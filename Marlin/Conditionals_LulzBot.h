@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".67" // Change this with each update
+#define LULZBOT_FW_VERSION ".68" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -446,16 +446,26 @@
 /*********************** AUTOLEVELING / BED PROBE *******************************/
 
 #if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_BELT)
-    #define LULZBOT_LEFT_PROBE_BED_POSITION        0
-    #define LULZBOT_RIGHT_PROBE_BED_POSITION     165
-    #define LULZBOT_BACK_PROBE_BED_POSITION      165
-    #define LULZBOT_FRONT_PROBE_BED_POSITION      -6
+    #define LULZBOT_LEFT_PROBE_BED_POSITION        -3
+    #define LULZBOT_RIGHT_PROBE_BED_POSITION      162
+    #define LULZBOT_BACK_PROBE_BED_POSITION       164
+    #define LULZBOT_FRONT_PROBE_BED_POSITION       -7
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
-    #define LULZBOT_LEFT_PROBE_BED_POSITION        0
-    #define LULZBOT_RIGHT_PROBE_BED_POSITION     164
-    #define LULZBOT_BACK_PROBE_BED_POSITION      162
-    #define LULZBOT_FRONT_PROBE_BED_POSITION      -6
+    // In order to work with the Gladiola printers, we need to
+    // perform the probe right against the left and front endstops.
+    // This is extremely problematic and leads to other problems
+    // which are corrected for in the start GCODE.
+    #define LULZBOT_LEFT_PROBE_BED_POSITION      LULZBOT_X_MIN_POS
+    #define LULZBOT_FRONT_PROBE_BED_POSITION     LULZBOT_Y_MIN_POS
+
+    // The Gladiola has the probe points spaced further apart than
+    // earlier models. Since Gladiola FW has to work on earlier
+    // printers, we need to add a workaround because G29 hits the
+    // endstops and shifts the coordinate system around.
+    #define LULZBOT_RIGHT_PROBE_BED_POSITION     161
+    #define LULZBOT_BACK_PROBE_BED_POSITION      161
+    #define LULZBOT_USE_PRE_GLADIOLA_G29_WORKAROUND
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_TAZ_BED)
     #define LULZBOT_LEFT_PROBE_BED_POSITION       -9
@@ -1057,10 +1067,10 @@
  */
 
 #if defined(LULZBOT_IS_MINI)
-    #define LULZBOT_STANDARD_X_MAX_POS         164
-    #define LULZBOT_STANDARD_X_MIN_POS        -0.1
-    #define LULZBOT_STANDARD_Y_MAX_POS         191
-    #define LULZBOT_STANDARD_Y_MIN_POS          -6
+    #define LULZBOT_STANDARD_X_MAX_POS         162
+    #define LULZBOT_STANDARD_X_MIN_POS          -3
+    #define LULZBOT_STANDARD_Y_MAX_POS         190
+    #define LULZBOT_STANDARD_Y_MIN_POS          -7
 
     #define LULZBOT_X_BED_SIZE                 155
     #define LULZBOT_Y_BED_SIZE                 155
@@ -1591,8 +1601,8 @@
     // Mini has a horizontal wiping pad on the back of the bed
     #define LULZBOT_STANDARD_WIPE_X1                       45
     #define LULZBOT_STANDARD_WIPE_X2                       115
-    #define LULZBOT_STANDARD_WIPE_Y1                       173
-    #define LULZBOT_STANDARD_WIPE_Y2                       173
+    #define LULZBOT_STANDARD_WIPE_Y1                       172
+    #define LULZBOT_STANDARD_WIPE_Y2                       172
     #if defined(LULZBOT_USE_Z_BELT)
         #define LULZBOT_STANDARD_WIPE_Z                    1
     #else
@@ -1627,10 +1637,18 @@
     #define LULZBOT_BED_PROBE_MIN    0 // Limit on pushing into the bed
 #else defined(LULZBOT_IS_MINI)
     #define LULZBOT_BED_PROBE_MIN   -4 // Limit on pushing into the bed
-    #if defined(LULZBOT_USE_Z_SCREW)
-        // workaround for older minis where G29 shifts the coordinate system
-        #define LULZBOT_REHOME_BEFORE_REWIPE do_blocking_move_to_xy(X_MIN_POS,Y_MAX_POS);
-    #endif
+#endif
+
+#if defined(LULZBOT_USE_PRE_GLADIOLA_G29_WORKAROUND)
+    // workaround for older minis where G29 shifts the coordinate system
+    #define LULZBOT_REHOME_BEFORE_REWIPE \
+        do_blocking_move_to_xy(X_MIN_POS + 5, Y_MAX_POS - 5); /* Approach home */ \
+        do_blocking_move_to_xy(X_MIN_POS + 5, Y_MAX_POS);     /* Trigger Y_MAX */ \
+        do_blocking_move_to_xy(X_MIN_POS + 5, Y_MAX_POS - 5); /* Clear endstops */ \
+        do_blocking_move_to_xy(X_MIN_POS,     Y_MAX_POS - 5); /* Trigger X_MIN */ \
+        do_blocking_move_to_xy(X_MIN_POS + 5, Y_MAX_POS - 5); /* Clear endstops */
+#else
+    #define LULZBOT_REHOME_BEFORE_REWIPE
 #endif
 
 #define LULZBOT_PROBE_Z_WITH_REWIPE(speed) \
