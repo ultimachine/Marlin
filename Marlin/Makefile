@@ -90,10 +90,23 @@ NEOPIXEL           ?= 1
 
 # this defines whether to add a workaround for the avr-gcc relocation bug
 #	  https://www.stix.id.au/wiki/AVR_relocation_truncations_workaround
-RELOC_WORKAROUND   ?= 1
+RELOC_WORKAROUND   ?= 0
 
 # this defines whether to include the Trinamic TMC2630Stepper
 TMC2630            ?= 1
+
+############
+# Try to automatically determine whether RELOC_WORKAROUND is needed based
+# on GCC versions:
+#   http://www.avrfreaks.net/comment/1789106#comment-1789106
+
+CC_MAJ:=$(shell $(CC) -dM -E - < /dev/null | grep __GNUC__ | cut -f3 -d\ )
+CC_MIN:=$(shell $(CC) -dM -E - < /dev/null | grep __GNUC_MINOR__ | cut -f3 -d\ )
+CC_PATCHLEVEL:=$(shell $(CC) -dM -E - < /dev/null | grep __GNUC_PATCHLEVEL__ | cut -f3 -d\ )
+CC_VER:=$(shell echo $$(( $(CC_MAJ) * 10000 + $(CC_MIN) * 100 + $(CC_PATCHLEVEL) )))
+ifeq ($(shell test $(CC_VER) -lt 40601 && echo 1),1)
+	RELOC_WORKAROUND = 1
+endif
 
 ############
 # The following added by AlephObjects for adjusting the name of the output
