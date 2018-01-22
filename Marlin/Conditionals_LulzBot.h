@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".70" // Change this with each update
+#define LULZBOT_FW_VERSION ".71" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -280,6 +280,11 @@
 // bug #8703
 
 #define LULZBOT_LCD_PAUSE_WORKAROUND
+
+// Fix for OctoPrint serial buffer overflow when using auto temperature
+// report.
+//      Back port of upstream https://github.com/MarlinFirmware/Marlin/commit/6ed284061580ffc6eef40df391afb30d2f8b45f5
+#define LULZBOT_OCTOPRINT_RX_BUFFER_OVERFLOW_WORKAROUND delay(2);
 
 /************************* EXPERIMENTAL FEATURES ******************************/
 

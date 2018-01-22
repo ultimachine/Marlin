@@ -7357,6 +7357,7 @@ inline void gcode_M104() {
       SERIAL_PROTOCOLPAIR(" (", r / OVERSAMPLENR);
       SERIAL_PROTOCOLCHAR(')');
     #endif
+    LULZBOT_OCTOPRINT_RX_BUFFER_OVERFLOW_WORKAROUND
   }
 
   void print_heaterstates() {
