@@ -468,6 +468,9 @@ inline void lcd_implementation_status_message(const bool blink) {
 
 //#define DOGM_SD_PERCENT
 
+#if defined(LULZBOT_MODERN_UI)
+#include "ultralcd_lulzbot.h"
+#else
 static void lcd_implementation_status_screen() {
 
   const bool blink = lcd_blink();
@@ -732,6 +735,7 @@ static void lcd_implementation_status_screen() {
     #endif
   }
 }
+#endif // LULZBOT_MODERN_UI
 
 #if ENABLED(ULTIPANEL)
 

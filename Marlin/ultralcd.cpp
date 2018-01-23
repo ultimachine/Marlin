@@ -656,6 +656,7 @@ void kill_screen(const char* lcd_msg) {
   lcd_init();
   lcd_setalertstatusPGM(lcd_msg);
   #if ENABLED(DOGLCD)
+    LULZBOT_LCD_CLEAR
     u8g.firstPage();
     do {
       lcd_kill_screen();
@@ -4670,6 +4671,9 @@ void lcd_update() {
       #endif
 
       #if ENABLED(DOGLCD)  // Changes due to different driver architecture of the DOGM display
+        #if defined(LULZBOT_MODERN_UI)
+        LULZBOT_ABOUT_TO_DRAW_SCREEN(currentScreen, lcd_status_screen)
+        #endif
         if (!drawing_screen) {
           u8g.firstPage();
           drawing_screen = 1;

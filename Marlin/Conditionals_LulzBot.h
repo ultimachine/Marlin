@@ -154,6 +154,7 @@
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
+    #define LULZBOT_MODERN_UI
 #endif
 
 #if defined(LULZBOT_Hibiscus_EinsyGearedMini2LCD)
@@ -174,6 +175,7 @@
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
+    #define LULZBOT_MODERN_UI
 #endif
 
 #if defined(LULZBOT_Hibiscus_Mini2LCD)
@@ -192,6 +194,7 @@
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "80fed4d6-4d15-4512-a02e-61b1dc4fb072"
+    #define LULZBOT_MODERN_UI
 #endif
 
 #if defined(LULZBOT_Quiver_TAZ7)
@@ -209,6 +212,7 @@
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "a952577d-8722-483a-999d-acdc9e772b7b"
+    #define LULZBOT_MODERN_UI
 #endif
 
 /****************************** DEBUGGING OPTIONS *******************************/
@@ -1902,6 +1906,27 @@
 #define LULZBOT_STRINGIFY(msg) msg
 #define LULZBOT_ENHANCED_TEMP_ERROR_MSG(msg, e) \
     ((e == -1) ? PSTR(LULZBOT_STRINGIFY(msg) " BED") : ((e == 0) ? PSTR(LULZBOT_STRINGIFY(msg) " E0") : PSTR(LULZBOT_STRINGIFY(msg) " E1")) )
+
+#if defined(LULZBOT_MODERN_UI)
+    #define LULZBOT_ABOUT_TO_DRAW_SCREEN(a,b) \
+        lcd_in_status(a == b); \
+        if(a == b) { \
+            a(); \
+            lcd_clicked = false; \
+            NOLESS(max_display_update_time, millis() - ms); \
+            return; \
+        }
+    #define LULZBOT_LCD_CLEAR_DECL void lcd_clear_text_buffer();
+    #define LULZBOT_LCD_CLEAR lcd_clear_text_buffer();
+    #if defined(LULZBOT_IS_MINI)
+        #define WELCOME_MSG _UxGT("Mini 2 ready.")
+    #else
+        #define WELCOME_MSG _UxGT("TAZ 7 ready.")
+    #endif
+#else
+    #define LULZBOT_ABOUT_TO_DRAW_SCREEN(a)
+    #define LULZBOT_LCD_CLEAR
+#endif
 
 /***************************** CUSTOM SPLASH SCREEN *****************************/
 
