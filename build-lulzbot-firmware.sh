@@ -22,7 +22,7 @@ MINI_TOOLHEADS="Gladiola_SingleExtruder Albatross_Flexystruder Finch_Aerostruder
 TAZ_MODELS="Juniper_TAZ5 Oliveoil_TAZ6"
 TAZ_TOOLHEADS="Tilapia_SingleExtruder Kanyu_Flexystruder Opah_Moarstruder Javelin_DualExtruderV2 Longfin_FlexyDually Yellowfin_DualExtruderV3 Angelfish_Aerostruder"
 
-MINI2_MODELS="Hibiscus_Mini2 Hibiscus_Mini2LCD Hibiscus_EinsyMini2 Hibiscus_EinsyMini2LCD"
+MINI2_MODELS="Hibiscus_Mini2"
 MINI2_TOOLHEADS="Finch_AerostruderV2"
 
 TAZ7_MODELS="Quiver_TAZ7"

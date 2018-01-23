@@ -13,7 +13,6 @@
       Gladiola_Mini            // Lulzbot Mini (Gladiola)
       Gladiola_MiniLCD         // Lulzbot Mini (Gladiola w/ LCD)
       Hibiscus_Mini2           // Lulzbot Mini 2 (Hibiscus)
-      Hibiscus_Mini2LCD        // Lulzbot Mini 2 (Hibiscus w/ LCD)
       Juniper_TAZ5             // Lulzbot TAZ 5 (Juniper, Juniperberry, Juniperbush)
       Oliveoil_TAZ6            // Lulzbot TAZ 6 (Oliveoil)
       Quiver_TAZ7              // Lulzbot TAZ 7 (Quiver)
@@ -21,7 +20,7 @@
    Mini Toolhead Choices:
       Gladiola_SingleExtruder  // Standard Single Extruder (Gladiola)
       Albatross_Flexystruder   // Flexystruder (Albatross)
-      Finch_Aero               // Titan AERO (Finch)
+      Finch_Aerostruder        // Titan Aerostruder (Finch)
 
    TAZ Toolhead Choices:
       Tilapia_SingleExtruder   // Standard Single Extruder (Tilapia)
@@ -30,7 +29,7 @@
       Javelin_DualExtruderV2   // Dual Extruder v2 (Javelin)
       Longfin_FlexyDually      // FlexyDually (Longfin)
       Yellowfin_DualExtruderV3 // Dual Extruder v3 (Yellowfin)
-      Angelfish_Aero           // Titan AERO (Angelfish)
+      Angelfish_Aerostruder    // Titan AERO (Angelfish)
 
 */
 
