@@ -376,10 +376,10 @@
 /*********************** AUTOLEVELING / BED PROBE *******************************/
 
 #if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_BELT)
-    #define LULZBOT_LEFT_PROBE_BED_POSITION        -3
-    #define LULZBOT_RIGHT_PROBE_BED_POSITION      162
-    #define LULZBOT_BACK_PROBE_BED_POSITION       164
-    #define LULZBOT_FRONT_PROBE_BED_POSITION       -7
+    #define LULZBOT_LEFT_PROBE_BED_POSITION        -6
+    #define LULZBOT_RIGHT_PROBE_BED_POSITION      159
+    #define LULZBOT_BACK_PROBE_BED_POSITION       162
+    #define LULZBOT_FRONT_PROBE_BED_POSITION       -9
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     // In order to work with the Gladiola printers, we need to
@@ -996,7 +996,7 @@
  * standard.
  */
 
-#if defined(LULZBOT_IS_MINI)
+#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_STANDARD_X_MAX_POS         162
     #define LULZBOT_STANDARD_X_MIN_POS          -3
     #define LULZBOT_STANDARD_Y_MAX_POS         190
@@ -1004,6 +1004,15 @@
 
     #define LULZBOT_X_BED_SIZE                 155
     #define LULZBOT_Y_BED_SIZE                 155
+
+#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
+    #define LULZBOT_STANDARD_X_MAX_POS         159
+    #define LULZBOT_STANDARD_X_MIN_POS          -6
+    #define LULZBOT_STANDARD_Y_MAX_POS         188
+    #define LULZBOT_STANDARD_Y_MIN_POS          -9
+
+    #define LULZBOT_X_BED_SIZE                 157
+    #define LULZBOT_Y_BED_SIZE                 157
 
 #elif defined(LULZBOT_Juniper_TAZ5)
     #define LULZBOT_STANDARD_X_MAX_POS         298
@@ -1526,18 +1535,21 @@
 /*********************************** WIPER PAD **********************************/
 
 // Nozzle wiping points (varies by toolhead, as the nozzle position varies)
+#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_BELT)
+    // Mini has a horizontal wiping pad on the back of the bed
+    #define LULZBOT_STANDARD_WIPE_X1                       42
+    #define LULZBOT_STANDARD_WIPE_X2                       112
+    #define LULZBOT_STANDARD_WIPE_Y1                       170
+    #define LULZBOT_STANDARD_WIPE_Y2                       170
+    #define LULZBOT_STANDARD_WIPE_Z                        1
 
-#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
+#elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_SCREW)
     // Mini has a horizontal wiping pad on the back of the bed
     #define LULZBOT_STANDARD_WIPE_X1                       45
     #define LULZBOT_STANDARD_WIPE_X2                       115
     #define LULZBOT_STANDARD_WIPE_Y1                       172
     #define LULZBOT_STANDARD_WIPE_Y2                       172
-    #if defined(LULZBOT_USE_Z_BELT)
-        #define LULZBOT_STANDARD_WIPE_Z                    1
-    #else
-        #define LULZBOT_STANDARD_WIPE_Z                   -0.5
-    #endif
+    #define LULZBOT_STANDARD_WIPE_Z                       -0.5
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_TAZ_BED)
     // TAZ has a vertical wiping pad on the left side of the bed
