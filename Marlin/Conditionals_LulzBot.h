@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".72" // Change this with each update
+#define LULZBOT_FW_VERSION ".74" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -114,6 +114,7 @@
     #define LULZBOT_USE_Z_BELT
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_USE_32_MICROSTEPS_ON_Z
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
     #define LULZBOT_MODERN_UI
 #endif
@@ -382,8 +383,8 @@
 
 #if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_LEFT_PROBE_BED_POSITION        -6
-    #define LULZBOT_RIGHT_PROBE_BED_POSITION      159
-    #define LULZBOT_BACK_PROBE_BED_POSITION       162
+    #define LULZBOT_RIGHT_PROBE_BED_POSITION      162
+    #define LULZBOT_BACK_PROBE_BED_POSITION       164
     #define LULZBOT_FRONT_PROBE_BED_POSITION       -9
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
@@ -1011,7 +1012,7 @@
     #define LULZBOT_Y_BED_SIZE                 155
 
 #elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
-    #define LULZBOT_STANDARD_X_MAX_POS         159
+    #define LULZBOT_STANDARD_X_MAX_POS         162
     #define LULZBOT_STANDARD_X_MIN_POS          -6
     #define LULZBOT_STANDARD_Y_MAX_POS         188
     #define LULZBOT_STANDARD_Y_MIN_POS          -9
