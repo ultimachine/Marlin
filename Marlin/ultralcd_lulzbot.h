@@ -652,7 +652,6 @@ const  uint8_t crc =
     }
     draw_progress_bar(percent_done);
 
-
     // Update the fan and bed animations
     if(fan_speed > 0) {
       draw_fan_icon(blink);

@@ -339,7 +339,7 @@ static void lcd_implementation_init() {
     u8g.setRot270();  // Rotate screen by 270°
   #endif
 
-  #if ENABLED(SHOW_BOOTSCREEN)
+  #if ENABLED(SHOW_BOOTSCREEN) && not defined(LULZBOT_CUSTOM_BOOTSCREEN_DURING_INIT_WORKAROUND)
     #if ENABLED(SHOW_CUSTOM_BOOTSCREEN)
       lcd_custom_bootscreen();
     #else

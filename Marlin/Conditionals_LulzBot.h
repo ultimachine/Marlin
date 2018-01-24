@@ -211,6 +211,11 @@
 //      Back port of upstream https://github.com/MarlinFirmware/Marlin/commit/6ed284061580ffc6eef40df391afb30d2f8b45f5
 #define LULZBOT_OCTOPRINT_RX_BUFFER_OVERFLOW_WORKAROUND delay(2);
 
+/* In Marlin, the custom boot screen is incorrectly being drawn during
+ * lcd_implementation_init, this causes the boot screen to flash
+ * before entering menus, and also screws up the new modern UI */
+#define LULZBOT_CUSTOM_BOOTSCREEN_DURING_INIT_WORKAROUND
+
 /************************* EXPERIMENTAL FEATURES ******************************/
 
 #if defined(LULZBOT_USE_EXPERIMENTAL_FEATURES)

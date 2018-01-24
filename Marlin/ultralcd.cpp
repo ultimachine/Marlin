@@ -4363,6 +4363,14 @@ void lcd_init() {
     #endif
   );
 
+  #if ENABLED(SHOW_BOOTSCREEN) && defined(LULZBOT_CUSTOM_BOOTSCREEN_DURING_INIT_WORKAROUND)
+    #if ENABLED(SHOW_CUSTOM_BOOTSCREEN)
+      lcd_custom_bootscreen();
+    #else
+      lcd_bootscreen();
+    #endif
+  #endif
+
   #if ENABLED(NEWPANEL)
     #if BUTTON_EXISTS(EN1)
       SET_INPUT_PULLUP(BTN_EN1);
