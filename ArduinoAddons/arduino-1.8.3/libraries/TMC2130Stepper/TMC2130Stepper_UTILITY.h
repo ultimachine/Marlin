@@ -1,6 +1,7 @@
 #ifndef TMC2130Stepper_UTILITY_h
 #define TMC2130Stepper_UTILITY_h
 
+#ifdef TMC2130DEBUG
 void print_HEX(uint32_t data) {
   for(uint8_t B=24; B>=4; B-=8){
     Serial.print((data>>(B+4))&0xF, HEX);
@@ -29,5 +30,6 @@ void print_BIN(uint32_t data) {
     Serial.print((data>>b)&0b1);
   }
 }
+#endif
 
 #endif

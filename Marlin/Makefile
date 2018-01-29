@@ -314,7 +314,6 @@ VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib/utility
 endif
 ifeq ($(TMC2630), 1)
 VPATH += $(ARDUINO_INSTALL_DIR)/libraries/TMC2130Stepper
-VPATH += $(ARDUINO_INSTALL_DIR)/libraries/TMC2130Stepper/source
 endif
 
 ifeq ($(HARDWARE_VARIANT), arduino)
