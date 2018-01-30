@@ -1821,6 +1821,8 @@
     #if LULZBOT_EXTRUDERS > 1
       #define LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT
     #endif
+    #define LULZBOT_LCD_SET_PROGRESS_MANUALLY
+    #define LULZBOT_SCROLL_LONG_FILENAMES
 #endif
 
 /* Marlin requires static PSTRs to display on the LCD display, because of this */
