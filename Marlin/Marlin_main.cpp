@@ -2339,15 +2339,16 @@ static void clean_up_after_endstop_or_probe_move() {
 
     const float old_feedrate_mm_s = feedrate_mm_s;
     feedrate_mm_s = XY_PROBE_FEEDRATE_MM_S;
-    
+
     #if defined(LULZBOT_Z_CLEARANCE_DEPLOY_PROBE_WORKAROUND)
     do_probe_raise(_Z_CLEARANCE_DEPLOY_PROBE);
-    #endif
 
+    // Move the probe to the given XY
+    do_blocking_move_to_xy(nx, ny);
+    #else
     // Move the probe to the starting XYZ
     do_blocking_move_to(nx, ny, nz);
     #endif
-
 
     float measured_z = NAN;
     if (!DEPLOY_PROBE()) {
@@ -2972,7 +2973,7 @@ static void homeaxis(const AxisEnum axis) {
       if (axis == Y_AXIS) tmc_sensorless_homing(stepperY);
     #endif
     #if ENABLED(Z_IS_TMC2130) && defined(LULZBOT_SENSORLESS_HOMING_Z)
-      if (axis == Z_AXIS) tmc2130_sensorless_homing(stepperZ);
+      if (axis == Z_AXIS) tmc_sensorless_homing(stepperZ);
       if (axis == Z_AXIS) LULZBOT_ADJUST_Z_HOMING_CURRENT(true);
     #endif
   #endif
@@ -3086,7 +3087,7 @@ static void homeaxis(const AxisEnum axis) {
       if (axis == Y_AXIS) tmc_sensorless_homing(stepperY, false);
     #endif
     #if ENABLED(Z_IS_TMC2130) && defined(LULZBOT_SENSORLESS_HOMING_Z)
-      if (axis == Z_AXIS) tmc2130_sensorless_homing(stepperZ, false);
+      if (axis == Z_AXIS) tmc_sensorless_homing(stepperZ, false);
       if (axis == Z_AXIS) LULZBOT_ADJUST_Z_HOMING_CURRENT(false);
     #endif
   #endif
@@ -4063,7 +4064,6 @@ inline void gcode_G28(const bool always_home_all) {
 
     #endif
 
-    #if defined(LULZBOT_Z_HOMING_HEIGHT_WORKAROUND)
     if (home_all || homeX || homeY) {
       // Raise Z before homing any other axes and z is not already high enough (never lower z)
       destination[Z_AXIS] = Z_HOMING_HEIGHT;
@@ -6233,7 +6233,7 @@ inline void gcode_G92() {
   #endif
 
   bool didE = false;
-  #if IS_SCARA || !HAS_POSITION_SHIFT
+  #if IS_SCARA || !HAS_POSITION_SHIFT || defined(LULZBOT_G92_BACKWARDS_COMPATIBILITY)
     bool didXYZ = false;
   #else
     constexpr bool didXYZ = false;
@@ -6245,7 +6245,7 @@ inline void gcode_G92() {
                   v = i == E_AXIS ? l : LOGICAL_TO_NATIVE(l, i),
                   d = v - current_position[i];
       if (!NEAR_ZERO(d)) {
-        #if IS_SCARA || !HAS_POSITION_SHIFT
+        #if IS_SCARA || !HAS_POSITION_SHIFT || defined(LULZBOT_G92_BACKWARDS_COMPATIBILITY)
           if (i == E_AXIS) didE = true; else didXYZ = true;
           current_position[i] = v;        // Without workspaces revert to Marlin 1.0 behavior
         #elif HAS_POSITION_SHIFT
@@ -6683,8 +6683,6 @@ inline void gcode_M17() {
     #endif
 
     set_destination_from_current();
-
-    #endif
 
     if (load_length != 0) {
       #if ENABLED(ULTIPANEL)
@@ -7657,7 +7655,6 @@ inline void gcode_M104() {
   #endif
 }
 
-    LULZBOT_OCTOPRINT_RX_BUFFER_OVERFLOW_WORKAROUND
 /**
  * M105: Read hot end and bed temperature
  */
@@ -10870,8 +10867,8 @@ inline void gcode_M502() {
         else tmc_get_sgt(stepperY2, extended_axis_codes[TMC_Y2]);
       #endif
       #if ENABLED(E0_IS_TMC2130)
-        if (parser.seen(axis_codes[E_AXIS])) tmc2130_set_sgt(stepperE0, 'E', parser.value_int());
-        else tmc2130_get_sgt(stepperE0, 'E');
+        if (parser.seen(axis_codes[E_AXIS])) tmc_set_sgt(stepperE0, extended_axis_codes[TMC_E0], parser.value_int());
+        else tmc_get_sgt(stepperE0, extended_axis_codes[TMC_E0]);
       #endif
     }
   #endif // SENSORLESS_HOMING
@@ -11791,6 +11788,7 @@ void process_parsed_command() {
         case 26: // G26: LulzBot clear probe fail
           LULZBOT_G26_RESET_ACTION;
           break;
+      #endif
 
       #if ENABLED(NOZZLE_PARK_FEATURE)
         case 27: // G27: Nozzle Park

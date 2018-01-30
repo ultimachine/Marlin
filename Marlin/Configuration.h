@@ -727,7 +727,7 @@
 // The number of probes to perform at each point.
 //   Set to 2 for a fast/slow probe, using the second probe result.
 //   Set to 3 or more for slow probes, averaging the results.
-//#define MULTIPLE_PROBING 2
+#define MULTIPLE_PROBING LULZBOT_MULTIPLE_PROBING
 
 /**
  * Z probes require clearance when deploying, stowing, and moving between
@@ -1074,7 +1074,7 @@
 
 #if ENABLED(Z_SAFE_HOMING)
   #define Z_SAFE_HOMING_X_POINT LULZBOT_Z_SAFE_HOMING_X_POINT    // X point for Z homing when homing all axes (G28).
-  #define Z_SAFE_HOMING_Y_POINT LULZBOT_Z_SAFE_HOMING_X_POINT    // Y point for Z homing when homing all axes (G28).
+  #define Z_SAFE_HOMING_Y_POINT LULZBOT_Z_SAFE_HOMING_Y_POINT    // Y point for Z homing when homing all axes (G28).
 #endif
 
 // Homing speeds (mm/m)

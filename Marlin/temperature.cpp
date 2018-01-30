@@ -2225,6 +2225,7 @@ void Temperature::isr() {
       SERIAL_PROTOCOLPAIR(" (", r / OVERSAMPLENR);
       SERIAL_PROTOCOLCHAR(')');
     #endif
+    LULZBOT_OCTOPRINT_RX_BUFFER_OVERFLOW_WORKAROUND
   }
 
   extern uint8_t target_extruder;

@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".75" // Change this with each update
+#define LULZBOT_FW_VERSION ".1" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -177,9 +177,6 @@
   Running = true; \
   lcd_reset_alert_level();
 
-// Fix for auto0.g, which is broken
-#define LULZBOT_AUTOSTART_BUGFIX
-
 // Q&A wants to be able to use M226 on endstops switches
 #define LULZBOT_NO_PIN_PROTECTION_ON_M226
 
@@ -190,16 +187,9 @@
     #define LULZBOT_G28_DISABLES_LEVELING_WORKAROUND
 #endif
 
-// Marlin 1.1.5 does not respect Z_HOMING_HEIGHT on the Mini. This has
-// been reported upstream as bug #8669
-#define LULZBOT_Z_HOMING_HEIGHT_WORKAROUND
-
 // Marlin 1.1.5 does not respect ENDSTOPS_ALWAYS_ON_DEFAULT at startup,
 // as described in T1393
 #define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT_WORKAROUND
-
-// Backport of upstream Marlin fix T7811 related to M600 resume_print
-#define LULZBOT_M600_BACKPORT_T7811
 
 // In Marlin 1.1.5, a paused print cannot be resumed from the LCD if
 // PAUSE_PARK_RETRACT_LENGTH is non-zero. This has been submitted as
@@ -211,11 +201,6 @@
 // report.
 //      Back port of upstream https://github.com/MarlinFirmware/Marlin/commit/6ed284061580ffc6eef40df391afb30d2f8b45f5
 #define LULZBOT_OCTOPRINT_RX_BUFFER_OVERFLOW_WORKAROUND delay(2);
-
-/* In Marlin, the custom boot screen is incorrectly being drawn during
- * lcd_implementation_init, this causes the boot screen to flash
- * before entering menus, and also screws up the new modern UI */
-#define LULZBOT_CUSTOM_BOOTSCREEN_DURING_INIT_WORKAROUND
 
 /************************* EXPERIMENTAL FEATURES ******************************/
 
@@ -442,6 +427,19 @@
   #endif
 #endif
 
+/* Make sure Marlin allows probe points outside of the bed area */
+#if defined(LULZBOT_USE_AUTOLEVELING)
+  #if LULZBOT_Z_SAFE_HOMING_X_POINT < LULZBOT_LEFT_PROBE_BED_POSITION
+    #define MIN_PROBE_X LULZBOT_Z_SAFE_HOMING_X_POINT
+  #else
+    #define MIN_PROBE_X LULZBOT_LEFT_PROBE_BED_POSITION
+  #endif
+  #define MAX_PROBE_X LULZBOT_RIGHT_PROBE_BED_POSITION
+
+  #define MIN_PROBE_Y LULZBOT_FRONT_PROBE_BED_POSITION
+  #define MAX_PROBE_Y LULZBOT_BACK_PROBE_BED_POSITION
+#endif
+
 /* Auto-leveling was introduced on the Mini and TAZ 6.
  * Define probe parameters related to bed leveling,
  * e.g. the washers on the bed. These are confusingly
@@ -450,10 +448,9 @@
  */
 #if defined(LULZBOT_USE_AUTOLEVELING)
     #define LULZBOT_FIX_MOUNTED_PROBE
-    #define LULZBOT_PROBE_POINTS_OUTSIDE_OF_BED
 #endif // LULZBOT_USE_AUTOLEVELING
 
-#define LULZBOT_PROBE_DOUBLE_TOUCH
+#define LULZBOT_MULTIPLE_PROBING              2
 #define LULZBOT_X_PROBE_OFFSET_FROM_EXTRUDER  0
 #define LULZBOT_Y_PROBE_OFFSET_FROM_EXTRUDER  0
 #define LULZBOT_Z_PROBE_OFFSET_RANGE_MIN      -2
@@ -1440,7 +1437,7 @@
         /* Always use COOLSTEP on E0 */ \
         LULZBOT_ENABLE_COOLSTEP_WITH_STALLGUARD(stepperE0); \
 
-    #define LULZBOT_TMC2130_ADV { \
+    #define LULZBOT_TMC_ADV { \
             LULZBOT_MOTOR_INIT_XY \
             LULZBOT_MOTOR_INIT_Z \
             LULZBOT_MOTOR_INIT_E \
@@ -1819,7 +1816,6 @@
     #define LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD
     #define LULZBOT_HIDE_PID_CONFIG_IN_LCD
     #define LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD
-    #define LULZBOT_SCROLL_LONG_FILE_NAMES
     #define LULZBOT_REORDERED_MENUS
     #define LULZBOT_ESTEP_REDUCED_LCD_PRECISION
     #if LULZBOT_EXTRUDERS > 1

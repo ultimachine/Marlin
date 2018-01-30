@@ -358,9 +358,7 @@
 #define Z_HOME_BUMP_MM LULZBOT_Z_HOME_BUMP_MM
 #define HOMING_BUMP_DIVISOR { 2, 2, 4 }  // Re-Bump Speed Divisor (Divides the Homing Feedrate)
 #if defined(LULZBOT_QUICKHOME)
-#define QUICK_HOME                     // If homing includes X and Y, do a diagonal move initially
-#endif
-#define QUICK_HOME LULZBOT_QUICKHOME  //if this is defined, if both x and y are to be homed, a diagonal move will be performed initially.
+#define QUICK_HOME LULZBOT_QUICKHOME   // If homing includes X and Y, do a diagonal move initially
 #endif
 
 // When G28 is called, this option will make Y home before X
@@ -1170,7 +1168,7 @@
    *   stepperY.interpolate(0); \
    * }
    */
-  #define  TMC_ADV() LULZBOT_TMC2130_ADV
+  #define  TMC_ADV() LULZBOT_TMC_ADV
 
 #endif // TMC2130 || TMC2208
 

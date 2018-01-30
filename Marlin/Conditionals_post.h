@@ -1080,11 +1080,6 @@
     #define MANUAL_PROBE_HEIGHT Z_HOMING_HEIGHT
   #endif
 
-      #define MIN_PROBE_X (X_MIN_POS)
-      #define MIN_PROBE_Y (Y_MIN_POS)
-      #define MAX_PROBE_X (X_MAX_POS)
-      #define MAX_PROBE_Y (Y_MAX_POS)
-    #elif ENABLED(BED_CENTER_AT_0_0)
   // Stepper pulse duration, in cycles
   #define STEP_PULSE_CYCLES ((MINIMUM_STEPPER_PULSE) * CYCLES_PER_MICROSECOND)
 
