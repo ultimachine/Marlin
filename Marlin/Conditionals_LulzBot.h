@@ -1873,27 +1873,6 @@
         u8g.drawStr(67,62,SHORT_BUILD_VERSION LULZBOT_FW_VERSION); \
     } while( u8g.nextPage() );
 
-/************************* Z-OFFSET LCD ADJUSTMENT ******************************/
-
-// Gralco's customized Z Offset LCD overlay (also requires dogm_bitmaps_Lulzbot.h)
-
-#define LULZBOT_ZOFFSET_OVERLAY(zprobe_zoffset) \
-    static int dir = 0; \
-    static float old_zprobe_zoffset = 0; \
-    if(zprobe_zoffset != old_zprobe_zoffset) { \
-        dir = (zprobe_zoffset > old_zprobe_zoffset) ? 1 : -1; \
-        old_zprobe_zoffset = zprobe_zoffset; \
-    } \
-    const int left   = 5; \
-    const int right  = 90; \
-    const int nozzle = 60; \
-    u8g.drawBitmapP(nozzle + 6, 4 - dir,2,12,nozzle_bmp); \
-    u8g.drawBitmapP(nozzle + 0,20,3,1,offset_bedline_bmp); \
-    u8g.drawBitmapP(left  + 0, 47, 3, 16, ccw_bmp); \
-    u8g.drawBitmapP(right + 0, 47, 3, 16, cw_bmp); \
-    u8g.drawBitmapP(right + 20, 48 - dir, 2, 13, up_arrow_bmp); \
-    u8g.drawBitmapP(left  + 20, 49 - dir, 2, 13, down_arrow_bmp);
-
 /*************************** Z-OFFSET AUTO-SAVE  ********************************/
 
 /* Historically, the Lulzbot firmware would save the Z-Offset into the EEPROM
