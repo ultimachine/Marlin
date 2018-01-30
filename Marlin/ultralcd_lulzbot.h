@@ -511,7 +511,7 @@ static void draw_fan_speed(uint8_t value) {
 }
 
 static void draw_print_time(uint32_t elapsed) {
-  const uint8_t hrs = elapsed/360;
+  const uint8_t hrs = elapsed/3600;
   const uint8_t min = (elapsed/60)%60;
   char  str[7];
   sprintf_P(str,hrs > 99 ? PSTR("%03d:%02d") : PSTR(" %02d:%02d"),hrs,min);
