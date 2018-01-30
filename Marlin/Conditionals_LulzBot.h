@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".1" // Change this with each update
+#define LULZBOT_FW_VERSION ".2" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1823,6 +1823,8 @@
     #endif
     #define LULZBOT_LCD_SET_PROGRESS_MANUALLY
     #define LULZBOT_SCROLL_LONG_FILENAMES
+    #define LULZBOT_BABYSTEP_ZPROBE_GFX_OVERLAY
+    #define LULZBOT_THIN_OVERLAY_ARROWS
 #endif
 
 /* Marlin requires static PSTRs to display on the LCD display, because of this */
