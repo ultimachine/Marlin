@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".3" // Change this with each update
+#define LULZBOT_FW_VERSION ".4" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -359,7 +359,9 @@
     #define LULZBOT_AFTER_Z_HOME_ACTION
 #endif
 
-#if !defined(LULZBOT_USE_MAX_ENDSTOPS)
+// Enable NO_MOTION_BEFORE_HOMING on newer printers that have no MAX endstops,
+// but leave TAZ5 as is so we don't introduce a change for those users.
+#if !defined(LULZBOT_USE_MAX_ENDSTOPS) && !defined(LULZBOT_Juniper_TAZ5)
     #define LULZBOT_NO_MOTION_BEFORE_HOMING
 #endif
 
