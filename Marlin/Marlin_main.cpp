@@ -13751,6 +13751,11 @@ void prepare_move_to_destination() {
 
       // allows digital or PWM fan output to be used (see M42 handling)
       WRITE(CONTROLLER_FAN_PIN, speed);
+      #if defined(LULZBOT_CONTROLLERFAN_SPEED_WHEN_ONLY_Z_ACTIVE)
+      if(X_ENABLE_READ != X_ENABLE_ON && Y_ENABLE_READ != Y_ENABLE_ON)
+        analogWrite(CONTROLLER_FAN_PIN, speed ? LULZBOT_CONTROLLERFAN_SPEED_WHEN_ONLY_Z_ACTIVE : 0);
+      else
+      #endif
       analogWrite(CONTROLLER_FAN_PIN, speed);
     }
   }
@@ -14674,6 +14679,8 @@ void setup() {
     delay(1000);
     WRITE(LCD_PINS_RS, HIGH);
   #endif
+
+  LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP
 }
 
 /**

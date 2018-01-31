@@ -794,7 +794,9 @@
 
 // @section homing
 
-//#define NO_MOTION_BEFORE_HOMING  // Inhibit movement until all axes have been homed
+#if defined(LULZBOT_NO_MOTION_BEFORE_HOMING)
+#define NO_MOTION_BEFORE_HOMING LULZBOT_NO_MOTION_BEFORE_HOMING  // Inhibit movement until all axes have been homed
+#endif
 
 #define Z_HOMING_HEIGHT LULZBOT_Z_HOMING_HEIGHT  // (in mm) Minimal z height before homing (G28) for Z clearance above the bed, clamps, ...
                              // Be sure you have this distance over your Z_MAX_POS in case.
@@ -829,7 +831,9 @@
  */
 
 // Min software endstops curtail movement below minimum coordinate bounds
-//#define MIN_SOFTWARE_ENDSTOPS LULZBOT_MIN_SOFTWARE_ENDSTOPS_DISABLED
+#if defined(LULZBOT_MIN_SOFTWARE_ENDSTOPS)
+  #define MIN_SOFTWARE_ENDSTOPS LULZBOT_MIN_SOFTWARE_ENDSTOPS
+#endif
 #if ENABLED(MIN_SOFTWARE_ENDSTOPS)
   #define MIN_SOFTWARE_ENDSTOP_X
   #define MIN_SOFTWARE_ENDSTOP_Y

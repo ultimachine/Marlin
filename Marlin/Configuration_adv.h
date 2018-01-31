@@ -688,10 +688,12 @@
  * K=0 means advance disabled.
  * See Marlin documentation for calibration instructions.
  */
-//#define LIN_ADVANCE
+#if defined(LULZBOT_LIN_ADVANCE)
+#define LIN_ADVANCE LULZBOT_LIN_ADVANCE
+#endif
 
 #if ENABLED(LIN_ADVANCE)
-  #define LIN_ADVANCE_K 75
+  #define LIN_ADVANCE_K LULZBOT_LIN_ADVANCE_K
 
   /**
    * Some Slicers produce Gcode with randomly jumping extrusion widths occasionally.

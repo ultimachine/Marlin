@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".2" // Change this with each update
+#define LULZBOT_FW_VERSION ".3" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -117,6 +117,7 @@
     #define LULZBOT_USE_32_MICROSTEPS_ON_Z
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
     #define LULZBOT_MODERN_UI
+    #define LULZBOT_USE_EXPERIMENTAL_FEATURES
 #endif
 
 #if defined(LULZBOT_Quiver_TAZ7)
@@ -135,6 +136,7 @@
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "a952577d-8722-483a-999d-acdc9e772b7b"
     #define LULZBOT_MODERN_UI
+    #define LULZBOT_USE_EXPERIMENTAL_FEATURES
 #endif
 
 /****************************** DEBUGGING OPTIONS *******************************/
@@ -205,7 +207,12 @@
 /************************* EXPERIMENTAL FEATURES ******************************/
 
 #if defined(LULZBOT_USE_EXPERIMENTAL_FEATURES)
-    #define LULZBOT_USE_STATUS_LED
+    //#define LULZBOT_USE_STATUS_LED
+
+    // Enable linear advance, but leave K at zero so
+    // it is not used unless the user requests it.
+    #define LULZBOT_LIN_ADVANCE
+    #define LULZBOT_LIN_ADVANCE_K 0
 #endif
 
 /******************** MOTHERBOARD AND PIN CONFIGURATION ***********************/
@@ -352,6 +359,10 @@
     #define LULZBOT_AFTER_Z_HOME_ACTION
 #endif
 
+#if !defined(LULZBOT_USE_MAX_ENDSTOPS)
+    #define LULZBOT_NO_MOTION_BEFORE_HOMING
+#endif
+
 /************************ STEPPER INACTIVITY TIMEOUT ****************************/
 
 #if !defined(LULZBOT_USE_MAX_ENDSTOPS)
@@ -360,8 +371,10 @@
 
 #if defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_DISABLE_INACTIVE_Z false
+    #define LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP enable_Z();
 #else
     #define LULZBOT_DISABLE_INACTIVE_Z true
+    #define LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP
 #endif
 
 /*********************** AUTOLEVELING / BED PROBE *******************************/
@@ -976,7 +989,8 @@
 #define LULZBOT_USE_CONTROLLER_FAN
 #if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_EINSYRAMBO)
     // The TMC drivers need a bit more cooling.
-    #define LULZBOT_CONTROLLERFAN_SPEED         255
+    #define LULZBOT_CONTROLLERFAN_SPEED                    255
+    #define LULZBOT_CONTROLLERFAN_SPEED_WHEN_ONLY_Z_ACTIVE 120
 #elif defined(LULZBOT_IS_MINI)
     // The Mini fan runs rather loud at full speed.
     #define LULZBOT_CONTROLLERFAN_SPEED         120
@@ -1095,8 +1109,11 @@
 #define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
 #define LULZBOT_ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
 
-// Workaround for bug in Marlin 1.1.5 where motion is stopped a X or Y = 0
-#define LULZBOT_MIN_SOFTWARE_ENDSTOPS_DISABLED
+// Workaround for bug in Marlin 1.1.5 where motion is stopped a X or Y = 0,
+// On the Hibiscus, enable software endstops
+#if defined(LULZBOT_USE_Z_BELT)
+    #define LULZBOT_MIN_SOFTWARE_ENDSTOPS
+#endif
 
 // The RAMBO does not support interrupts on all pins
 // so leave the ENDSTOP_INTERRUPTS_FEATURE disabled
