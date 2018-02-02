@@ -253,6 +253,8 @@
 //
 // Other 32-bit Boards
 //
+#elif MB(FEYNMANLIGHT)
+   #include "pins_FEYNMANLIGHT.h"
 #elif MB(ARCHIM2)
    #include "pins_ARCHIM2.h"
 #elif MB(TEENSY35_36)
