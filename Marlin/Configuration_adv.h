@@ -1013,14 +1013,14 @@
 #if ENABLED(HAVE_TMC2130)
 
   // CHOOSE YOUR MOTORS HERE, THIS IS MANDATORY
-  #define X_IS_TMC2130
+  //#define X_IS_TMC2130
   //#define X2_IS_TMC2130
-  #define Y_IS_TMC2130
+  //#define Y_IS_TMC2130
   //#define Y2_IS_TMC2130
   #define Z_IS_TMC2130
   //#define Z2_IS_TMC2130
-  #define E0_IS_TMC2130
-  #define E1_IS_TMC2130
+  //#define E0_IS_TMC2130
+  //#define E1_IS_TMC2130
   //#define E2_IS_TMC2130
   //#define E3_IS_TMC2130
   //#define E4_IS_TMC2130
