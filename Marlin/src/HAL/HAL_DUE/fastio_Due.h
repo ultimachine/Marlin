@@ -42,23 +42,30 @@
   #define MASK(PIN)  (1 << PIN)
 #endif
 
+#if SAMG //FEYNMANLIGHT
+#define PIO_Configure pio_configure
+#define PIO_Get pio_get
+#endif
+
 /**
   magic I/O routines
   now you can simply SET_OUTPUT(STEP); WRITE(STEP, 1); WRITE(STEP, 0);
 */
 
 /// Read a pin
+#ifdef __SAM3X8E__
 #define _READ(IO) ((bool)(DIO ## IO ## _WPORT -> PIO_PDSR & (MASK(DIO ## IO ## _PIN))))
+#endif
 
 /// Write to a pin
 #define _WRITE_VAR(IO, v) do {  if (v) {g_APinDescription[IO].pPort->PIO_SODR = g_APinDescription[IO].ulPin; } \
                                     else {g_APinDescription[IO].pPort->PIO_CODR = g_APinDescription[IO].ulPin; } \
                                  } while (0)
-
+#ifdef __SAM3X8E__
 #define _WRITE(IO, v) do {  if (v) {DIO ## IO ## _WPORT -> PIO_SODR = MASK(DIO ## IO ##_PIN); } \
                                 else {DIO ##  IO ## _WPORT -> PIO_CODR = MASK(DIO ## IO ## _PIN); }; \
                              } while (0)
-
+#endif
 /// toggle a pin
 #define _TOGGLE(IO)  _WRITE(IO, !READ(IO))
 
@@ -83,11 +90,16 @@
 //  why double up on these macros? see http://gcc.gnu.org/onlinedocs/cpp/Stringification.html
 
 /// Read a pin wrapper
+#ifdef __SAM3X8E__ //fastio pin map is for __SAM3X8E__
 #define READ(IO)  _READ(IO)
 
 /// Write to a pin wrapper
 #define WRITE_VAR(IO, v)  _WRITE_VAR(IO, v)
 #define WRITE(IO, v)  _WRITE(IO, v)
+#else //other processors
+  #define WRITE(IO, v) _WRITE_VAR(IO, v)
+  #define READ(IO) digitalRead(IO)
+#endif
 
 /// toggle a pin wrapper
 #define TOGGLE(IO)  _TOGGLE(IO)
@@ -97,7 +109,7 @@
 /// set pin as input with pullup wrapper
 #define SET_INPUT_PULLUP(IO) do{ _SET_INPUT(IO); _PULLUP(IO, HIGH); }while(0)
 /// set pin as output wrapper
-#define SET_OUTPUT(IO)  do{ _SET_OUTPUT(IO); _WRITE(IO, LOW); }while(0)
+#define SET_OUTPUT(IO)  do{ _SET_OUTPUT(IO); WRITE(IO, LOW); }while(0)
 
 /// check if pin is an input wrapper
 #define GET_INPUT(IO)  _GET_INPUT(IO)
@@ -115,7 +127,7 @@
 
   added as necessary or if I feel like it- not a comprehensive list!
 */
-
+#ifdef __SAM3X8E__ //fastio pin map is for __SAM3X8E__
 // UART
 #define RXD        DIO0
 #define TXD        DIO1
@@ -484,5 +496,7 @@ pins
 #define DIO100_WPORT PIOC
 
 #endif // Extended DIO
+
+#endif //__SAM3X8E__
 
 #endif // _FASTIO_DUE_H
