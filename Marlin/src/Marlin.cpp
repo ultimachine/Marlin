@@ -648,8 +648,24 @@ void stop() {
  *    • Z probe sled
  *    • status LEDs
  */
-void setup() {
+void feynmanlight_init_chipselects() {
+  #if MB(FEYNMANLIGHT)
+	#define S0_NCS_PIN  45 //PB13
+	#define S1_NCS_PIN  47 //PB15
+	#define S2_NCS_PIN  30 //PA30
 
+	//Initialize TMC2130 chip select pins
+	pinMode(S0_NCS_PIN,OUTPUT);
+	digitalWrite(S0_NCS_PIN,HIGH);
+	pinMode(S1_NCS_PIN,OUTPUT);
+	digitalWrite(S1_NCS_PIN,HIGH);
+	pinMode(S2_NCS_PIN,OUTPUT);
+	digitalWrite(S2_NCS_PIN,HIGH);
+  #endif
+}
+
+void setup() {
+  feynmanlight_init_chipselects();
   #if ENABLED(MAX7219_DEBUG)
     Max7219_init();
   #endif
