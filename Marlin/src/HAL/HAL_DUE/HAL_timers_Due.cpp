@@ -44,7 +44,24 @@
 // Local defines
 // --------------------------------------------------------------------------
 
+#ifdef __SAM3X8E__
 #define NUM_HARDWARE_TIMERS 9
+#endif
+
+#ifdef __SAMG55J19__
+#define NUM_HARDWARE_TIMERS 6
+
+#include "tc.h"
+
+#define TC_Start tc_start
+#define TC_Stop tc_stop
+#define TC_Configure tc_init
+#define TC_SetRA tc_write_ra
+#define TC_SetRC tc_write_rc
+#define TC_ReadCV tc_read_cv
+#define TC_GetStatus tc_get_status
+#define TC_SetRB tc_write_rb
+#endif
 
 #define PRESCALER 2
 // --------------------------------------------------------------------------
@@ -67,9 +84,11 @@ const tTimerConfig TimerConfig [NUM_HARDWARE_TIMERS] = {
   { TC1, 0, TC3_IRQn, 2},  // 3 - stepper
   { TC1, 1, TC4_IRQn, 15}, // 4 - temperature
   { TC1, 2, TC5_IRQn, 0},  // 5 - [servo timer3]
+#ifdef TC2
   { TC2, 0, TC6_IRQn, 0},  // 6
   { TC2, 1, TC7_IRQn, 0},  // 7
   { TC2, 2, TC8_IRQn, 0},  // 8
+#endif
 };
 
 // --------------------------------------------------------------------------
