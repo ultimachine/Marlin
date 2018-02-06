@@ -62,3 +62,7 @@
   #include <SPI.h>
   #include <L6470.h>
 #endif
+
+#if ENABLED(HAVE_PCA9685)
+  #include <Wire.h>
+#endif

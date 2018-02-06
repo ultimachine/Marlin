@@ -278,7 +278,7 @@
 // A single Z stepper driver is usually used to drive 2 stepper motors.
 // Uncomment this option to use a separate stepper driver for each Z axis motor.
 // The next unused E driver will be assigned to the second Z stepper.
-//#define Z_DUAL_STEPPER_DRIVERS
+#define Z_DUAL_STEPPER_DRIVERS
 
 #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
 
@@ -1039,7 +1039,7 @@
   #define Y_CURRENT          900
   #define Y_MICROSTEPS        16
 
-  #define Z_CURRENT          900
+  #define Z_CURRENT          600
   #define Z_MICROSTEPS        16
 
   //#define X2_CURRENT      1000
@@ -1487,6 +1487,26 @@
   #define MAX7219_DEBUG_STEPPER_QUEUE 0  // Show the current stepper queue depth on this and the next LED matrix row
                                          // If you experience stuttering, reboots, etc. this option can reveal how
                                          // tweaks made to the configuration are affecting the printer in real-time.
+#endif
+
+/**
+ * Currax LED Driver interface using PCA9685 (I2C PWM Driver)
+ */
+#define HAVE_PCA9685
+#if ENABLED(HAVE_PCA9685)
+  #define PCA9685_I2C_ADDR 0x60 //7bit i2c address
+#endif
+
+/**
+ * Currax HX711 Load sensor interface
+ */
+#define HAVE_HX711
+#if ENABLED(HAVE_HX711)
+  #define HX711_DOUT_PIN     36 //PB4 FeynmanLight
+  #define HX711_SWCLK_PIN    39 //PB7 FeynmanLight
+
+  #define HX711_CALIBRATION_FACTOR  -213.5 // Initial set_scale calibration value.
+  #define HX711_CHECKINTERVAL_MILLIS 5000  // HX711 check interval in milliseconds.
 #endif
 
 #endif // CONFIGURATION_ADV_H

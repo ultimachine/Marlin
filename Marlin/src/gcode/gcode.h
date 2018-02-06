@@ -190,6 +190,16 @@
  * M420 - Enable/Disable Leveling (with current values) S1=enable S0=disable (Requires MESH_BED_LEVELING or ABL)
  * M421 - Set a single Z coordinate in the Mesh Leveling grid. X<units> Y<units> Z<units> (Requires MESH_BED_LEVELING or AUTO_BED_LEVELING_UBL)
  * M428 - Set the home_offset based on the current_position. Nearest edge applies. (Disabled by NO_WORKSPACE_OFFSETS or DELTA)
+ * M450 - LED Driver Initialize with zero duty cycle on all the used channels. "M450"
+ * M451 - LED Driver Set PWM Frequency "M451 S<freq>"
+ * M452 - LED Driver Set duty cycle. If channel not specified then it will update all channels. "M452 P<channel> S<dutycycle>"
+ * M470 - HX711 Manually init "M470"
+ * M471 - HX711 Perform a read operation "M471"
+ * M472 - HX711 Read average "M472 S<times>"
+ * M473 - HX711 Perform a tare operation "M473"
+ * M474 - HX711 Set scale "M474 S<value>"
+ * M475 - HX711 Get scale "M475"
+ * M476 - HX711 Get units "M476 S<times>"
  * M500 - Store parameters in EEPROM. (Requires EEPROM_SETTINGS)
  * M501 - Restore parameters from EEPROM. (Requires EEPROM_SETTINGS)
  * M502 - Revert to the default "factory settings". ** Does not write them to EEPROM! **
@@ -583,6 +593,22 @@ private:
 
   #if HAS_SERVOS
     static void M280();
+  #endif
+
+  #if ENABLED(HAVE_PCA9685)
+	static void M450();
+	static void M451();
+	static void M452();
+  #endif
+
+  #if ENABLED(HAVE_HX711)
+	static void M470();
+	static void M471();
+	static void M472();
+	static void M473();
+	static void M474();
+	static void M475();
+	static void M476();
   #endif
 
   #if HAS_BUZZER

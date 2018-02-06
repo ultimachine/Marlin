@@ -552,6 +552,17 @@ void GcodeSuite::process_next_command() {
         case 261: M261(); break;  // M261: Request data from an i2c slave
       #endif
 
+	  #if ENABLED(HAVE_TMC2130)
+		case 290: //MANUAL INIT TMC2130
+		  SerialUSB.println("tmc2130_init() called.");
+		  tmc2130_init();
+		  break;
+		case 291:
+		  SerialUSB.println("sei() called.");
+		  sei();
+		  break;
+	  #endif
+
       #if ENABLED(PREVENT_COLD_EXTRUSION)
         case 302: M302(); break;  // M302: Allow cold extrudes (set the minimum extrude temperature)
       #endif
@@ -610,6 +621,22 @@ void GcodeSuite::process_next_command() {
       #if HAS_M206_COMMAND
         case 428: M428(); break;  // M428: Apply current_position to home_offset
       #endif
+
+	  #if ENABLED(HAVE_PCA9685)
+        case 450: M450(); break;
+        case 451: M451(); break;
+        case 452: M452(); break;
+	  #endif
+
+	  #if ENABLED(HAVE_HX711)
+        case 470: M470(); break;
+        case 471: M471(); break;
+        case 472: M472(); break;
+        case 473: M473(); break;
+        case 474: M474(); break;
+        case 475: M475(); break;
+        case 476: M476(); break;
+	  #endif
 
       case 500: M500(); break;    // M500: Store settings in EEPROM
       case 501: M501(); break;    // M501: Read settings from EEPROM
