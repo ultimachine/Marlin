@@ -1500,6 +1500,7 @@
 #define HAVE_PCA9685
 #if ENABLED(HAVE_PCA9685)
   #define PCA9685_I2C_ADDR 0x60 //7bit i2c address
+  #define PCA9685_ENABLE_PIN  0 //PA0 UV_nOE (Active Low)
 #endif
 
 /**
