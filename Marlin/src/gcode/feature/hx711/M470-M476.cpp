@@ -10,8 +10,8 @@
 
 HX711 scale;
 
-void init_scale() { //To be called somewhere in Main.cpp: setup() -TODO
-	SERIAL_ECHOLNPGM("HX711 init");
+void hx711_init() { //To be called somewhere in Main.cpp: setup() -TODO
+	SERIAL_ECHOLNPGM("hx711 init.");
 
   #ifdef __SAMG55J19__
     matrix_set_system_io( (1<<7) ); // FeynmanLight - (SYSIO7/PB7/SWCLK) Allow GPIO access to PB7 in CCFG_SYSIO register
@@ -29,7 +29,7 @@ void init_scale() { //To be called somewhere in Main.cpp: setup() -TODO
   #endif
 }
 
-void manage_scale() { //Periodically print out readings -TODO add to main loop
+void hx711_manage() { //Periodically print out readings -TODO add to main loop
 	static uint32_t next_readtime = 0;
 	if( millis() >=  next_readtime) {
 		long read_val = scale.read();
@@ -40,7 +40,7 @@ void manage_scale() { //Periodically print out readings -TODO add to main loop
 }
 
 void GcodeSuite::M470() { //M470 Init HX711
-	init_scale();
+	hx711_init();
 }
 
 void GcodeSuite::M471() { //M471 Read

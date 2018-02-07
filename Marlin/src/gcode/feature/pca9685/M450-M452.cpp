@@ -11,14 +11,21 @@
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(PCA9685_I2C_ADDR); //7bit address
 
-void GcodeSuite::M450() { //M450 Initialize LED Driver with zero duty cycle on all the used channels.
-	SERIAL_ECHOLNPGM("LED diver init");
+void pca9685_init() {
+	//LED driver disabled initially
+	pinMode(PCA9685_ENABLE_PIN,OUTPUT);
+	digitalWrite(PCA9685_ENABLE_PIN,HIGH);
+
+	SERIAL_ECHOLNPGM("LED driver init");
 	pwm.begin();
 	pwm.setPWMFreq(1526);  // This is the maximum PWM frequency
 	  for(int i=1;i<=11;i++) //Cycle through channels 1-11
 		pwm.setPin(i, 0, 0);
 }
 
+void GcodeSuite::M450() { //M450 Initialize LED Driver with zero duty cycle on all the used channels.
+	pca9685_init();
+}
 void GcodeSuite::M451() { //M451 S<frequency> Set LED Driver PWM Frequency
   if(parser.seen('S')) {
 	int freq = parser.value_int();

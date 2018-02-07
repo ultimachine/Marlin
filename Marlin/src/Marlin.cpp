@@ -664,9 +664,24 @@ void feynmanlight_init_chipselects() {
   #endif
 }
 
+#if ENABLED(HAVE_PCA9685)
+void pca9685_init(); //In src/gcode/feature/pca9685
+#endif
+
+#if ENABLED(HAVE_HX711)
+void hx711_init(); //In src/gcode/feature/hx711
+#endif
+
 void setup() {
     feynmanlight_init_chipselects();
 
+  #if ENABLED(HAVE_PCA9685)
+    pca9685_init();
+  #endif
+
+  #if ENABLED(HAVE_HX711)
+    hx711_init();
+  #endif
 
   #if ENABLED(MAX7219_DEBUG)
     Max7219_init();
