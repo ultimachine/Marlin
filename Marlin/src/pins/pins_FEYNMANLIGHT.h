@@ -43,7 +43,7 @@
 #define Z_STEP_PIN         23 //PA23 S0_STEP
 #define Z_DIR_PIN          46 //PB14 S0_DIR
 #define Z_ENABLE_PIN        5 //PA5 STEP_EN
-#define Z_MIN_PIN          -1
+#define Z_MIN_PIN          27 //PA27 ENDSTOP1 (Z Endstop)
 #define Z_MAX_PIN          -1
 #define Z_TMC2130_CS       45 //PB13 S0_nCS
 #define Z_CS_PIN           45 //PB13 S0_nCS
