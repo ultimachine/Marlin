@@ -13,7 +13,9 @@ HX711 scale;
 void init_scale() { //To be called somewhere in Main.cpp: setup() -TODO
 	SERIAL_ECHOLNPGM("HX711 init");
 
+  #ifdef __SAMG55J19__
     matrix_set_system_io( (1<<7) ); // FeynmanLight - (SYSIO7/PB7/SWCLK) Allow GPIO access to PB7 in CCFG_SYSIO register
+  #endif
 
 	scale.begin(HX711_DOUT_PIN, HX711_SWCLK_PIN);
 
