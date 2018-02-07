@@ -665,7 +665,9 @@ void feynmanlight_init_chipselects() {
 }
 
 void setup() {
-  feynmanlight_init_chipselects();
+    feynmanlight_init_chipselects();
+
+
   #if ENABLED(MAX7219_DEBUG)
     Max7219_init();
   #endif
