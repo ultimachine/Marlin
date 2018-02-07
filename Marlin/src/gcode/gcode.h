@@ -193,6 +193,8 @@
  * M450 - LED Driver Initialize with zero duty cycle on all the used channels. "M450"
  * M451 - LED Driver Set PWM Frequency "M451 S<freq>"
  * M452 - LED Driver Set duty cycle. If channel not specified then it will update all channels. "M452 P<channel> S<dutycycle>"
+ * M453 - LED Driver On (Controls LED Enable Pin) "M453"
+ * M454 - LED Driver Off (Controls LED Enable Pin) "M454"
  * M470 - HX711 Manually init "M470"
  * M471 - HX711 Perform a read operation "M471"
  * M472 - HX711 Read average "M472 S<times>"
@@ -599,6 +601,8 @@ private:
 	static void M450();
 	static void M451();
 	static void M452();
+	static void M453();
+	static void M454();
   #endif
 
   #if ENABLED(HAVE_HX711)

@@ -626,6 +626,8 @@ void GcodeSuite::process_next_command() {
         case 450: M450(); break;
         case 451: M451(); break;
         case 452: M452(); break;
+        case 453: M453(); break;
+        case 454: M454(); break;
 	  #endif
 
 	  #if ENABLED(HAVE_HX711)

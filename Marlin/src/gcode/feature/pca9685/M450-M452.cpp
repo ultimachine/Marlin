@@ -42,4 +42,16 @@ void GcodeSuite::M452() { //M452 P<channel> S<dutycycle>  // Set LED Driver duty
 	}
 }
 
+void GcodeSuite::M453() { //M453 LED Driver On (Controls LED Enable Pin)
+	SERIAL_ECHOLNPGM("LED driver enabled.");
+	pinMode(PCA9685_ENABLE_PIN,OUTPUT);
+	digitalWrite(PCA9685_ENABLE_PIN,LOW);
+}
+
+void GcodeSuite::M454() { //M454 LED Driver Off (Controls LED Enable Pin)
+	SERIAL_ECHOLNPGM("LED driver disabled.");
+	pinMode(PCA9685_ENABLE_PIN,OUTPUT);
+	digitalWrite(PCA9685_ENABLE_PIN,HIGH);
+}
+
 #endif //HAVE_PCA9685
