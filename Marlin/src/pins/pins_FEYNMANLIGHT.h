@@ -29,28 +29,28 @@
 #define X_ENABLE_PIN        -1
 #define X_MIN_PIN           -1
 #define X_MAX_PIN           -1
-#define X_TMC2130_CS        45 //PB13 S0_nCS
-#define X_CS_PIN            45 //PB13 S0_nCS
+#define X_TMC2130_CS        30 //PA30 S2_nCS
+#define X_CS_PIN            30 //PA30 S2_nCS
 
 #define Y_STEP_PIN          43 //PB11 S2_STEP
 #define Y_DIR_PIN           42 //PB10 S2_DIR
-#define Y_ENABLE_PIN        -1 //13
+#define Y_ENABLE_PIN        -1
 #define Y_MIN_PIN           -1
 #define Y_MAX_PIN           -1
-#define Y_TMC2130_CS        47
-#define Y_CS_PIN            47
+#define Y_TMC2130_CS        30 //PA30 S2_nCS
+#define Y_CS_PIN            30 //PA30 S2_nCS
 
 #define Z_STEP_PIN         23 //PA23 S0_STEP
 #define Z_DIR_PIN          46 //PB14 S0_DIR
 #define Z_ENABLE_PIN        5 //PA5 STEP_EN
 #define Z_MIN_PIN          -1
 #define Z_MAX_PIN          -1
-#define Z_TMC2130_CS       30 //PA30 S2_nCS
-#define Z_CS_PIN           30 //PA30 S2_nCS
+#define Z_TMC2130_CS       45 //PB13 S0_nCS
+#define Z_CS_PIN           45 //PB13 S0_nCS
 
 #define E0_STEP_PIN        43 //PB11 S2_STEP
 #define E0_DIR_PIN         42 //PB10 S2_DIR
-#define E0_ENABLE_PIN       5
+#define E0_ENABLE_PIN       1 //PA1 CAB_LED //TODO allow and test a -1 value. Need to define this pin for now to prevent compiler a error.
 #define E0_TMC2130_CS      30 //PA30 S2_nCS
 #define E0_CS_PIN          30 //PA30 S2_nCS
 
@@ -72,6 +72,7 @@
 #define Z2_STEP_PIN        29 //PA29 S1_STEP
 #define Z2_DIR_PIN         24 //PA24 S1_DIR
 #define Z2_ENABLE_PIN       5 //PA5 STEP_EN
+#define Z2_CS_PIN          47 //PB15 S1_nCS
 
 #define SDPOWER            -1
 
