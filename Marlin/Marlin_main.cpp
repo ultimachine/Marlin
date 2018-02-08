@@ -348,6 +348,21 @@
   float coordinate_system[MAX_COORDINATE_SYSTEMS][XYZ];
 #endif
 
+#if defined(LULZBOT_USE_TOUCH_UI)
+#define IS_FT810
+#define LCD_PORTRAIT
+#define LCD_UPSIDE_DOWN
+//#define UI_FRAMEWORK_DEBUG
+#include "AO_UI_Marlin_LCD_API.h"
+#include "AO_UI_Framework.h"
+#include "AO_FT810_Constants.h"
+#include "AO_FT810_Functions.h"
+#include "AO_FT810_Pins.h"
+#include "AO_FT810_SPI.h"
+#include "AO_FT810_UI_Bitmaps.h"
+#include "AO_FT810_UI_Screens.h"
+#endif
+
 bool Running = true;
 
 uint8_t marlin_debug_flags = DEBUG_NONE;

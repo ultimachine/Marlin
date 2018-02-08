@@ -185,8 +185,7 @@
     extern uint8_t progress_bar_percent;
   #endif
 
-#else // no LCD
-
+#elif !defined(LULZBOT_USE_TOUCH_UI) // no LCD
   inline void lcd_update() {}
   inline void lcd_init() {}
   inline bool lcd_hasstatus() { return false; }
@@ -198,7 +197,6 @@
   inline void lcd_reset_alert_level() {}
   inline bool lcd_detected() { return true; }
   inline void lcd_refresh() {}
-
 #endif // ULTRA_LCD
 
 #define LCD_MESSAGEPGM(x)      lcd_setstatusPGM(PSTR(x))

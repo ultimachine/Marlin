@@ -13,9 +13,11 @@
       Gladiola_Mini            // Lulzbot Mini (Gladiola)
       Gladiola_MiniLCD         // Lulzbot Mini (Gladiola w/ LCD)
       Hibiscus_Mini2           // Lulzbot Mini 2 (Hibiscus)
+      Hibiscus_Mini2_CLCD      // Lulzbot Mini 2 (Hibiscus w/ CLCD)
       Juniper_TAZ5             // Lulzbot TAZ 5 (Juniper, Juniperberry, Juniperbush)
       Oliveoil_TAZ6            // Lulzbot TAZ 6 (Oliveoil)
       Quiver_TAZ7              // Lulzbot TAZ 7 (Quiver)
+      Quiver_TAZ7_CLCD         // Lulzbot TAZ 7 (Quiver w/ CLCD)
 
    Mini Toolhead Choices:
       Gladiola_SingleExtruder  // Standard Single Extruder (Gladiola)

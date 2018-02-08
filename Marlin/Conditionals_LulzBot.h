@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".4" // Change this with each update
+#define LULZBOT_FW_VERSION ".5" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -21,7 +21,9 @@
     !defined(LULZBOT_Juniper_TAZ5) && \
     !defined(LULZBOT_Oliveoil_TAZ6) && \
     !defined(LULZBOT_Hibiscus_Mini2) && \
-    !defined(LULZBOT_Quiver_TAZ7) \
+    !defined(LULZBOT_Hibiscus_Mini2_CLCD) && \
+    !defined(LULZBOT_Quiver_TAZ7) && \
+    !defined(LULZBOT_Quiver_TAZ7_CLCD) \
 ) || ( \
     !defined(TOOLHEAD_Gladiola_SingleExtruder) && \
     !defined(TOOLHEAD_Albatross_Flexystruder) && \
@@ -120,6 +122,26 @@
     #define LULZBOT_USE_EXPERIMENTAL_FEATURES
 #endif
 
+#if defined(LULZBOT_Hibiscus_Mini2_CLCD)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini 2"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EINSY_RETRO
+    #define LULZBOT_USE_TOUCH_UI
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_USE_TMC_STEALTHCHOP_Z
+    #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_USE_32_MICROSTEPS_ON_Z
+    #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
+    #define LULZBOT_USE_EXPERIMENTAL_FEATURES
+#endif
+
 #if defined(LULZBOT_Quiver_TAZ7)
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot TAZ 7"
     #define LULZBOT_LCD_MACHINE_NAME "TAZ 7"
@@ -136,6 +158,24 @@
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "a952577d-8722-483a-999d-acdc9e772b7b"
     #define LULZBOT_MODERN_UI
+    #define LULZBOT_USE_EXPERIMENTAL_FEATURES
+#endif
+
+#if defined(LULZBOT_Quiver_TAZ7_CLCD)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot TAZ 7"
+    #define LULZBOT_LCD_MACHINE_NAME "TAZ 7"
+    #define LULZBOT_IS_TAZ
+    #define LULZBOT_TAZ_BED
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_TOUCH_UI
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_USE_MIN_ENDSTOPS
+    #define LULZBOT_USE_MAX_ENDSTOPS
+    #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_UUID "a952577d-8722-483a-999d-acdc9e772b7b"
     #define LULZBOT_USE_EXPERIMENTAL_FEATURES
 #endif
 
@@ -1873,6 +1913,11 @@
     #define LULZBOT_ABOUT_TO_DRAW_SCREEN(a)
     #define LULZBOT_LCD_CLEAR
     #define LULZBOT_LCD_CLEAR_DECL
+#endif
+
+#if defined(LULZBOT_USE_TOUCH_UI)
+extern void lcd_update();
+extern void lcd_buttons_update();
 #endif
 
 /***************************** CUSTOM SPLASH SCREEN *****************************/
