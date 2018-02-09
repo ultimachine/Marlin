@@ -49,17 +49,17 @@ const uint8_t Marlin_LCD_API::fanCount      = 1;
 
 const float Marlin_LCD_API::getActualTemp_celsius(const uint8_t extruder) {
   if(extruder) {
-    thermalManager.degHotend(extruder-1);
+    return thermalManager.degHotend(extruder-1);
   } else {
-    thermalManager.degBed();
+    return thermalManager.degBed();
   }
 }
 
 const float Marlin_LCD_API::getTargetTemp_celsius(const uint8_t extruder) {
   if(extruder) {
-    thermalManager.degTargetHotend(extruder-1);
+    return thermalManager.degTargetHotend(extruder-1);
   } else {
-    thermalManager.degTargetBed();
+    return thermalManager.degTargetBed();
   }
 }
 
@@ -84,7 +84,7 @@ const float Marlin_LCD_API::getAxisSteps_per_mm(const Marlin_LCD_API::axis_t axi
 const uint8_t Marlin_LCD_API::getProgress_percent() {
   #if ENABLED(SDSUPPORT)
     return card.percentDone();
-   #endif
+  #endif
 }
 
 const uint32_t Marlin_LCD_API::getProgress_seconds_elapsed() {

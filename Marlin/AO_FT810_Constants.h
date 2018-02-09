@@ -66,6 +66,8 @@ namespace FT800 {
   const uint32_t RAM_PAL        = 0x102000;   // Palette RAM
   const uint32_t RAM_REG        = 0x102400;   // Registers
   const uint32_t RAM_CMD        = 0x108000;   // Command Buffer
+
+  const uint32_t RAM_G_SIZE     = 256l*1024l;   // 256k
 }
 
 namespace FT810 {
@@ -77,6 +79,8 @@ namespace FT810 {
   const uint32_t RAM_DL         = 0x300000;   // Display List RAM
   const uint32_t RAM_REG        = 0x302000;   // Registers
   const uint32_t RAM_CMD        = 0x308000;   // Command Buffer
+
+  const uint32_t RAM_G_SIZE     = 1024l*1024l;  // 1024k
 }
 
 namespace FT800 {
@@ -108,7 +112,7 @@ namespace FT800 {
   const uint32_t REG_ROTATE            = 0x102454;  //    3    0x00             r/w     Screen 90,180, 270 degree rotate
   const uint32_t REG_OUTBITS           = 0x102458;  //    9    0x1B6            r/w     Output Resolution, 3x3x3 Bits
   const uint32_t REG_DITHER            = 0x10245C;  //    1    0x01             r/w     Output Dither Enable
-  const uint32_t REG_SWIZZLE           = 0x102460;  //    4    0x00             r/w     Output RGB Swizzle, Pin Change for PCB Routing 
+  const uint32_t REG_SWIZZLE           = 0x102460;  //    4    0x00             r/w     Output RGB Swizzle, Pin Change for PCB Routing
   const uint32_t REG_CSPREAD           = 0x102464;  //    1    0x01             r/w     Output Clock Spreading Enable
   const uint32_t REG_PCLK_POL          = 0x102468;  //    1    0x00             r/w     PCLK Polarity: 0 = Rising Edge, 1 = Falling Edge
   const uint32_t REG_PCLK              = 0x10246C;  //    8    0x00             r/w     PCLK Frequency Divider, 0 = Disable Clock
@@ -117,11 +121,11 @@ namespace FT800 {
   const uint32_t REG_TAG               = 0x102478;  //    8    0x00               r     Tag Query Result
   const uint32_t REG_VOL_PB            = 0x10247C;  //    8    0xFF             r/w     Audio Playback Volume
   const uint32_t REG_VOL_SOUND         = 0x102480;  //    8    0xFF             r/w     Audio Synthesizer Volume
-  const uint32_t REG_SOUND             = 0x102484;  //   16    0x0000           r/w     Audio Sound Effect Select 
-  const uint32_t REG_PLAY              = 0x102488;  //    1    0x00             r/w     Audio Start Effect Playback 
+  const uint32_t REG_SOUND             = 0x102484;  //   16    0x0000           r/w     Audio Sound Effect Select
+  const uint32_t REG_PLAY              = 0x102488;  //    1    0x00             r/w     Audio Start Effect Playback
   const uint32_t REG_GPIO_DIR          = 0x10248C;  //    8    0x80             r/w     GPIO Pin Direction: 0 = Input , 1 = Output
   const uint32_t REG_GPIO              = 0x102490;  //    8    0x00             r/w     GPIO Pin Values for 0, 1, 7 Drive Strength 2, 3, 4, 5, 6
-  const uint32_t REG_INT_FLAGS         = 0x102498;  //    8    0x00               r     Interrupt Flags, Clear by Reading 
+  const uint32_t REG_INT_FLAGS         = 0x102498;  //    8    0x00               r     Interrupt Flags, Clear by Reading
   const uint32_t REG_INT_EN            = 0x10249C;  //    1    0x00             r/w     Global Interrupt Enable
   const uint32_t REG_INT_MASK          = 0x1024A0;  //    8    0xFF             r/w     Interrupt Enable Mask
   const uint32_t REG_PLAYBACK_START    = 0x1024A4;  //   20    0x00000          r/w     Audio Playback RAM Start Address
@@ -130,14 +134,14 @@ namespace FT800 {
   const uint32_t REG_PLAYBACK_FREQ     = 0x1024B0;  //   16    0x1F40           r/w     Audio Playback Frequency (Hz)
   const uint32_t REG_PLAYBACK_FORMAT   = 0x1024B4;  //    2    0x00             r/w     Audio Playback Format
   const uint32_t REG_PLAYBACK_LOOP     = 0x1024B8;  //    1    0x00             r/w     Audio Playback Loop Enable
-  const uint32_t REG_PLAYBACK_PLAY     = 0x1024BC;  //    1    0x00               r     Audio Start Playback 
+  const uint32_t REG_PLAYBACK_PLAY     = 0x1024BC;  //    1    0x00               r     Audio Start Playback
   const uint32_t REG_PWM_HZ            = 0x1024C0;  //   14    0x00FA           r/w     Backlight PWM Frequency (Hz)
-  const uint32_t REG_PWM_DUTY          = 0x1024C4;  //    8    0x80             r/w     Backlight PWM Duty Cycle: 0 = 0%, 128 = 100% 
+  const uint32_t REG_PWM_DUTY          = 0x1024C4;  //    8    0x80             r/w     Backlight PWM Duty Cycle: 0 = 0%, 128 = 100%
   const uint32_t REG_MACRO_0           = 0x1024C8;  //   32    0x00000000       r/w     Display List Macro Command 0
   const uint32_t REG_MACRO_1           = 0x1024CC;  //   32    0x00000000       r/w     Display List Macro Command 1
   const uint32_t REG_CMD_READ          = 0x1024E4;  //   12    0x000            r/w     Command Buffer Read Pointer
   const uint32_t REG_CMD_WRITE         = 0x1024E8;  //   12    0x000            r/w     Command Buffer Write Pointer
-  const uint32_t REG_CMD_DL            = 0x1024EC;  //   13    0x0000           r/w     Command Display List Offset 
+  const uint32_t REG_CMD_DL            = 0x1024EC;  //   13    0x0000           r/w     Command Display List Offset
   const uint32_t REG_TOUCH_MODE        = 0x1024F0;  //    2    0x03             r/w     Touch-Screen Sampling Mode
   const uint32_t REG_TOUCH_ADC_MODE    = 0x1024F4;  //    1    0x01             r/w     Select Single Ended or Differential Sampling
   const uint32_t REG_TOUCH_CHARGE      = 0x1024F8;  //   16    0x1770           r/w     Touch Screen Charge Time, n x 6 Clocks
@@ -191,7 +195,7 @@ namespace FT810 {
   const uint32_t REG_ROTATE            = 0x302058;  //    3    0x00             r/w     Screen 90,180, 270 degree rotate
   const uint32_t REG_OUTBITS           = 0x30205C;  //    9    0x1B6            r/w     Output Resolution, 3x3x3 Bits
   const uint32_t REG_DITHER            = 0x302060;  //    1    0x01             r/w     Output Dither Enable
-  const uint32_t REG_SWIZZLE           = 0x302064;  //    4    0x00             r/w     Output RGB Swizzle, Pin Change for PCB Routing 
+  const uint32_t REG_SWIZZLE           = 0x302064;  //    4    0x00             r/w     Output RGB Swizzle, Pin Change for PCB Routing
   const uint32_t REG_CSPREAD           = 0x302068;  //    1    0x01             r/w     Output Clock Spreading Enable
   const uint32_t REG_PCLK_POL          = 0x30206C;  //    1    0x00             r/w     PCLK Polarity: 0 = Rising Edge, 1 = Falling Edge
   const uint32_t REG_PCLK              = 0x302070;  //    8    0x00             r/w     PCLK Frequency Divider, 0 = Disable Clock
@@ -200,15 +204,15 @@ namespace FT810 {
   const uint32_t REG_TAG               = 0x30207C;  //    8    0x00               r     Tag Query Result
   const uint32_t REG_VOL_PB            = 0x302080;  //    8    0xFF             r/w     Audio Playback Volume
   const uint32_t REG_VOL_SOUND         = 0x302084;  //    8    0xFF             r/w     Audio Synthesizer Volume
-  const uint32_t REG_SOUND             = 0x302088;  //   16    0x0000           r/w     Audio Sound Effect Select 
-  const uint32_t REG_PLAY              = 0x30208C;  //    1    0x00             r/w     Audio Start Effect Playback 
+  const uint32_t REG_SOUND             = 0x302088;  //   16    0x0000           r/w     Audio Sound Effect Select
+  const uint32_t REG_PLAY              = 0x30208C;  //    1    0x00             r/w     Audio Start Effect Playback
   const uint32_t REG_GPIO_DIR          = 0x302090;  //    8    0x80             r/w     GPIO Pin Direction: 0 = Input , 1 = Output
   const uint32_t REG_GPIO              = 0x302094;  //    8    0x00             r/w     GPIO Pin Values for 0, 1, 7 Drive Strength 2, 3, 4, 5, 6
   const uint32_t REG_GPIOX_DIR         = 0x302098;  //   16    0x8000           r/w     Extended GPIO Pin Direction
   const uint32_t REG_GPIOX             = 0x30209C;  //   16    0x0080           r/w     Extended GPIO Pin Values
   //             Reserved Addr           0x3020A0
   //             Reserved Addr           0x3020A4
-  const uint32_t REG_INT_FLAGS         = 0x3020A8;  //    8    0x00               r     Interrupt Flags, Clear by Reading 
+  const uint32_t REG_INT_FLAGS         = 0x3020A8;  //    8    0x00               r     Interrupt Flags, Clear by Reading
   const uint32_t REG_INT_EN            = 0x3020AC;  //    1    0x00             r/w     Global Interrupt Enable
   const uint32_t REG_INT_MASK          = 0x3020B0;  //    8    0xFF             r/w     Interrupt Enable Mask
   const uint32_t REG_PLAYBACK_START    = 0x3020B4;  //   20    0x00000          r/w     Audio Playback RAM Start Address
@@ -217,9 +221,9 @@ namespace FT810 {
   const uint32_t REG_PLAYBACK_FREQ     = 0x3020C0;  //   16    0x1F40           r/w     Audio Playback Frequency (Hz)
   const uint32_t REG_PLAYBACK_FORMAT   = 0x3020C4;  //    2    0x00             r/w     Audio Playback Format
   const uint32_t REG_PLAYBACK_LOOP     = 0x3020C8;  //    1    0x00             r/w     Audio Playback Loop Enable
-  const uint32_t REG_PLAYBACK_PLAY     = 0x3020CC;  //    1    0x00               r     Audio Start Playback 
+  const uint32_t REG_PLAYBACK_PLAY     = 0x3020CC;  //    1    0x00               r     Audio Start Playback
   const uint32_t REG_PWM_HZ            = 0x3020D0;  //   14    0x00FA           r/w     Backlight PWM Frequency (Hz)
-  const uint32_t REG_PWM_DUTY          = 0x3020D4;  //    8    0x80             r/w     Backlight PWM Duty Cycle: 0 = 0%, 128 = 100% 
+  const uint32_t REG_PWM_DUTY          = 0x3020D4;  //    8    0x80             r/w     Backlight PWM Duty Cycle: 0 = 0%, 128 = 100%
   const uint32_t REG_MACRO_0           = 0x3020D8;  //   32    0x00000000       r/w     Display List Macro Command 0
   const uint32_t REG_MACRO_1           = 0x3020DC;  //   32    0x00000000       r/w     Display List Macro Command 1
   //             Reserved Addr           0x3020E0
@@ -230,7 +234,7 @@ namespace FT810 {
   //             Reserved Addr           0x3020F4
   const uint32_t REG_CMD_READ          = 0x3020F8;  //   12    0x000            r/w     Command Buffer Read Pointer
   const uint32_t REG_CMD_WRITE         = 0x3020FC;  //   12    0x000            r/w     Command Buffer Write Pointer
-  const uint32_t REG_CMD_DL            = 0x302100;  //   13    0x0000           r/w     Command Display List Offset 
+  const uint32_t REG_CMD_DL            = 0x302100;  //   13    0x0000           r/w     Command Display List Offset
   const uint32_t REG_TOUCH_MODE        = 0x302104;  //    2    0x03             r/w     Touch-Screen Sampling Mode
   const uint32_t REG_TOUCH_ADC_MODE    = 0x302108;  //    1    0x01             r/w     Select Single Ended or Differential Sampling
   const uint32_t REG_TOUCH_CHARGE      = 0x30210C;  //   16    0x1770           r/w     Touch Screen Charge Time, n x 6 Clocks
@@ -296,18 +300,18 @@ namespace FTDI {
 
 // GLOBAL LCD REGISTER SET VALUES FOR WQVGA 480x272 DISPLAY
 
-/* 
+/*
  * Settings for the Aleph Objects Color LCD User Interface 4.3" (Prototype)  480x272, SPI, FT810 (HDA430T-6S-WV)
  *                  Haoyu Electronics, 4.3" Graphical LCD Touchscreen,       480x272, SPI, FT800 (FT800CB-HY43B)
  *                  Haoyu Electronics,   5" Graphical LCD Touchscreen,       480x272, SPI, FT800 (FT800CB-HY50B)
  *                  4D Systems,        4.3" Embedded SPI Display             480x272, SPI, FT800 (4DLCD-FT843)
- *  
+ *
  *    http://www.hotmcu.com/43-graphical-lcd-touchscreen-480x272-spi-ft800-p-111.html?cPath=6_16
  *    http://www.hotmcu.com/5-graphical-lcd-touchscreen-480x272-spi-ft800-p-124.html?cPath=6_16
  *    http://www.4dsystems.com.au/product/4DLCD_FT843/
- * 
+ *
  * Datasheet:
- * 
+ *
  *    http://www.hantronix.com/files/data/1278363262430-3.pdf
  *    http://www.haoyuelectronics.com/Attachment/HY43-LCD/LCD%20DataSheet.pdf
  *    http://www.haoyuelectronics.com/Attachment/HY5-LCD-HD/KD50G21-40NT-A1.pdf
@@ -340,13 +344,13 @@ namespace FTDI_LCD_480x272 {
 
 // GLOBAL LCD REGISTER SET VALUES FOR 800x480 DISPLAY
 
-/* 
+/*
  * Settings for the Haoyu Electronics, 5" Graphical LCD Touchscreen, 800x480, SPI, FT810
- *  
+ *
  *    http://www.hotmcu.com/5-graphical-lcd-touchscreen-800x480-spi-ft810-p-286.html
- * 
+ *
  * Datasheet:
- * 
+ *
  *    http://www.haoyuelectronics.com/Attachment/HY5-LCD-HD/KD50G21-40NT-A1.pdf
  *
  */

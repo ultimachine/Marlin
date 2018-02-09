@@ -117,11 +117,11 @@ class ScreenRef {
 /********************** SCREEN STACK  ******************************/
 
 // To conserve dynamic memory, the screen stack is hard-coded to
-// have three values, allowing a menu of up to three levels.
+// have four values, allowing a menu of up to four levels.
 
 class ScreenStack : public ScreenRef {
   private:
-    uint8_t stack[3];
+    uint8_t stack[4];
 
   public:
     void start() {
@@ -130,6 +130,7 @@ class ScreenStack : public ScreenRef {
     }
 
     void push() {
+      stack[3] = stack[2];
       stack[2] = stack[1];
       stack[1] = stack[0];
       stack[0] = getType();
@@ -139,7 +140,8 @@ class ScreenStack : public ScreenRef {
       setType(stack[0]);
       stack[0] = stack[1];
       stack[1] = stack[2];
-      stack[2] = 0;
+      stack[2] = stack[3];
+      stack[3] = 0;
     }
 
     void goTo(onEntry_func_t s) {

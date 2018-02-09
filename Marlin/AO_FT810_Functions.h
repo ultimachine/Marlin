@@ -98,18 +98,21 @@
   *    8100    Bed Heat Bitmap                     *
   *    8200    Fan Bitmap                          *
   *    8300    Thumb Drive Symbol Bitmap           *
-  *   3E000    Static DL Space (FT800)             *
-  *   FE000    Static DL Space (FT810)             *
+  *   35000    Static DL Space (FT800)             *
+  *   F5000    Static DL Space (FT810)             *
   **************************************************/
 
 #ifndef _AO_FT810_FUNC_H
 #define _AO_FT810_FUNC_H
 
 #if defined(IS_FT800)
-  #define DL_CACHE_START 0x03E000
+  #define DL_CACHE_START 0x035000
 #else
-  #define DL_CACHE_START 0x0FE000
+  #define DL_CACHE_START 0x0F5000
 #endif
+
+// Uncomment the following to disable the DL caching mechanism
+//#define DL_CACHE_DISABLED
 
 #if defined(LCD_800x480)
 using namespace FTDI_LCD_800x480;
@@ -163,21 +166,23 @@ class CLCD {
         static uint32_t getRegCmdRead();
 
         #if defined(IS_FT800)
-          uint32_t command_write_ptr;
+          static uint32_t command_write_ptr;
           template <class T> void _write_unaligned(T data, uint16_t len);
         #else
           uint32_t getRegCmdBSpace();
         #endif
-      public:
+        void Cmd_Start(void);
 
+      public:
         template <class T> void write(T data, uint16_t len);
 
       public:
-        static void Reset (void);
-        static bool Is_Idle();
-        static void Wait_Until_Idle();
+        CommandFifo() {Cmd_Start();}
 
-        void Cmd_Start(void);
+        static void Cmd_Reset (void);
+        static bool Cmd_Is_Idle();
+        static void Cmd_Wait_Until_Idle();
+
         void Cmd_Execute(void);
 
         void Cmd (uint32_t cmd32);
@@ -365,7 +370,7 @@ void CLCD::Init (void) {
       Serial.println(Device_ID, HEX);
     #endif
   } else {
-    #if defined (SERIAL_PROTOCOLLNPAIR)
+    #if defined (SERIAL_PROTOCOLLNPGM)
       SERIAL_PROTOCOLLNPGM("Device is correct ");
     #else
       Serial.println(F("Device is correct "));
@@ -427,7 +432,7 @@ void CLCD::Init (void) {
   Enable();                                   // Turns on Clock by setting PCLK Register to 5
   delay(50);
 
-  CommandFifo::Reset();
+  CommandFifo::Cmd_Reset();
   delay(50);
 
   // Set Initial Values for Touch Transform Registers
@@ -441,6 +446,10 @@ void CLCD::Init (void) {
 }
 
 /******************* FT800/810 Graphic Commands *********************************/
+
+#if defined(IS_FT800)
+uint32_t CLCD::CommandFifo::command_write_ptr = 0xFFFFFFFFul;
+#endif
 
 inline uint32_t CLCD::pack_rgb(uint8_t r, uint8_t g, uint8_t b) {
   return (uint32_t(r) << 16) | (uint32_t(g) << 8) | uint32_t(b);
@@ -700,35 +709,75 @@ void CLCD::CommandFifo::Cmd_Append (uint32_t ptr, uint32_t size)
  *     }
  */
 
-uint16_t CLCD::DLCache::dl_free = DL_CACHE_START;
+uint16_t CLCD::DLCache::dl_free = 0;
 
 bool CLCD::DLCache::hasData() {
-  return dl_addr != 0;
+  return dl_size != 0;
 }
 
 void CLCD::DLCache::store() {
-  while(!CommandFifo::Is_Idle());
+  #if !defined(DL_CACHE_DISABLED)
+  CLCD::CommandFifo cmd;
 
-  dl_size = Mem_Read32(REG_CMD_DL) & 0x07FF;
+  // Execute any commands already in the FIFO
+  cmd.Cmd_Execute();
+  cmd.Cmd_Wait_Until_Idle();
+
+  // Figure out how long the display list is
+  dl_size = Mem_Read32(REG_CMD_DL) & 0x1FFF;
   dl_addr = dl_free;
 
-  if((dl_addr + dl_size) > (1024*1024)) {
+  if((dl_addr + dl_size) > RAM_G_SIZE) {
     // Not enough memory to cache the display list.
     dl_addr = 0;
+    dl_size = 0;
+    #if defined(UI_FRAMEWORK_DEBUG)
+      #if defined (SERIAL_PROTOCOLLNPAIR)
+        SERIAL_PROTOCOLLNPAIR("Not enough space in GRAM to cache display list, free space: ", RAM_G_SIZE - dl_free);
+      #else
+        Serial.print(F("Not enough space in GRAM to cache display list, free space:"));
+        Serial.println(RAM_G_SIZE - dl_free);
+      #endif
+    #endif
   } else {
-    CLCD::CommandFifo cmd;
-    cmd.Cmd_Start();
-    cmd.Cmd_Mem_Cpy(RAM_G + dl_addr, RAM_DL, dl_size);
+    #if defined(UI_FRAMEWORK_DEBUG)
+      #if defined (SERIAL_PROTOCOLLNPAIR)
+        SERIAL_PROTOCOLPAIR("Saving DL to RAMG cache, bytes: ", dl_size);
+        SERIAL_PROTOCOLPAIR(" (Free space: ", RAM_G_SIZE - dl_free);
+        SERIAL_PROTOCOLLNPGM(")");
+      #else
+        Serial.print(F("Saving DL to RAMG cache, bytes: "));
+        Serial.println(dl_size);
+        Serial.print(F(" (Free space: "));
+        Serial.println(RAM_G_SIZE - dl_free);
+        Serial.print(F(")"));
+      #endif
+    #endif
+    cmd.Cmd_Mem_Cpy(DL_CACHE_START + dl_addr, RAM_DL, dl_size);
     cmd.Cmd_Execute();
     dl_free += dl_size;
   }
+  #endif
 }
 
 void CLCD::DLCache::append() {
   CLCD::CommandFifo cmd;
-  cmd.Cmd_Start();
-  cmd.Cmd_Append(RAM_G + dl_addr, dl_size);
-  cmd.Cmd_Execute();
+  cmd.Cmd_Append(DL_CACHE_START + dl_addr, dl_size);
+  #if defined(UI_FRAMEWORK_DEBUG)
+    cmd.Cmd_Execute();
+    cmd.Cmd_Wait_Until_Idle();
+    #if defined (SERIAL_PROTOCOLLNPAIR)
+      SERIAL_PROTOCOLPAIR("Appending to DL from RAMG cache, bytes: ", dl_size);
+      SERIAL_PROTOCOLPAIR(" (REG_CMD_DL: ", Mem_Read32(REG_CMD_DL));
+      SERIAL_PROTOCOLLNPGM(")");
+    #else
+      Serial.print(F("Appending to DL from RAMG cache, bytes: "));
+      Serial.print(dl_size);
+      Serial.print(" (REG_CMD_DL: ");
+      Serial.print(Mem_Read32(REG_CMD_DL));
+      Serial.println(")");
+    #endif
+  #endif
 }
 
 #endif // _AO_FT810_FUNC_H

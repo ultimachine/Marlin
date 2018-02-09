@@ -256,34 +256,61 @@ uint32_t CLCD::CommandFifo::getRegCmdRead() {
   return Mem_Read32(REG_CMD_READ) & 0x0FFF;
 }
 
-bool CLCD::CommandFifo::Is_Idle() {
+bool CLCD::CommandFifo::Cmd_Is_Idle() {
   return getRegCmdRead() == getRegCmdWrite();
 }
 
-void CLCD::CommandFifo::Wait_Until_Idle() {
+void CLCD::CommandFifo::Cmd_Wait_Until_Idle() {
+  #if defined(UI_FRAMEWORK_DEBUG)
+    const uint32_t startTime = millis();
+  #endif
   do {
-  } while(!Is_Idle());
+    #if defined(UI_FRAMEWORK_DEBUG)
+      if(millis() - startTime > 3) {
+        #if defined (SERIAL_PROTOCOLLNPGM)
+          SERIAL_PROTOCOLLNPGM("Timeout on CommandFifo::Wait_Until_Idle()");
+        #else
+          Serial.println(F("Timeout on CommandFifo::Wait_Until_Idle()"));
+        #endif
+        break;
+      }
+    #endif
+  } while(!Cmd_Is_Idle());
 }
 
 #if defined(IS_FT800)
-void CLCD::CommandFifo::Start() {
-  command_write_ptr = getRegCmdWrite();
+void CLCD::CommandFifo::Cmd_Start() {
+  if(command_write_ptr == 0xFFFFFFFFul) {
+    command_write_ptr = getRegCmdWrite();
+  }
 }
 
-void CLCD::CommandFifo::Execute() {
-  Mem_Write32(REG_CMD_WRITE, command_write_ptr);
+void CLCD::CommandFifo::Cmd_Execute() {
+  if(command_write_ptr != 0xFFFFFFFFul) {
+    Mem_Write32(REG_CMD_WRITE, command_write_ptr);
+  }
 }
 
-void CLCD::CommandFifo::Reset() {
+void CLCD::CommandFifo::Cmd_Reset() {
   Mem_Write32(REG_CMD_WRITE, 0x00000000);
   Mem_Write32(REG_CMD_READ,  0x00000000);
-  command_write_ptr = 0;
+  command_write_ptr = 0xFFFFFFFFul;
 };
 
 template <class T> void CLCD::CommandFifo::_write_unaligned(T data, uint16_t len) {
   const char *ptr = (const char*)data;
   uint32_t bytes_tail, bytes_head;
   uint32_t command_read_ptr;
+
+  #if defined(UI_FRAMEWORK_DEBUG)
+  if(command_write_ptr == 0xFFFFFFFFul) {
+    #if defined (SERIAL_PROTOCOLLNPGM)
+      SERIAL_PROTOCOLLNPGM("Attempt to write to FIFO before CommandFifo::Cmd_Start().");
+    #else
+      Serial.println(F("Attempt to write to FIFO before CommandFifo::Cmd_Start()."));
+    #endif
+  }
+  #endif
 
   /* Wait until there is enough space in the circular buffer for the transfer */
   do {
@@ -337,7 +364,7 @@ void CLCD::CommandFifo::Cmd_Start() {
 void CLCD::CommandFifo::Cmd_Execute() {
 }
 
-void CLCD::CommandFifo::Reset() {
+void CLCD::CommandFifo::Cmd_Reset() {
   Mem_Write32(REG_CMD_WRITE, 0x00000000);
   Mem_Write32(REG_CMD_READ,  0x00000000);
 };

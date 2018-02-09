@@ -19,14 +19,6 @@
  *   location: <http://www.gnu.org/licenses/>.                              *
  ****************************************************************************/
 
-
-// Colors RGB332
-
-#define COLOR0     0x00          // Black
-#define COLOR1     0x49          // Gray
-#define COLOR2     0x7C          // Yellow Green
-#define COLOR3     0xFF          // White
-
 // L1 Font Data for Widgets
 
 const PROGMEM CLCD::bitmap_info_t Extruder_Icon_Info = {

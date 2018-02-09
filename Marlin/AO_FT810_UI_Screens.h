@@ -46,10 +46,17 @@ static float marlin_z_offset   = 0.150;
 // Margin defines the margin (in pixels) on each side of a button in
 // the layout
 
+#if defined(LCD_800x480)
 #define MARGIN_L         5
 #define MARGIN_R         5
 #define MARGIN_T         5
 #define MARGIN_B         5
+#else
+#define MARGIN_L         3
+#define MARGIN_R         3
+#define MARGIN_T         3
+#define MARGIN_B         3
+#endif
 
 // EDGE_R adds some black space on the right edge of the display
 // This shifts some of the screens left to visually center them.
@@ -82,8 +89,8 @@ static float marlin_z_offset   = 0.150;
 #define BTX              cmd.Cmd_Draw_Button_Text
 #define BTI              cmd.Cmd_Draw_Button_Icon
 #define BTN_TAG(t)       cmd.Cmd_Set_Tag(t);
-#define RGB(rgb)         cmd.Cmd_Set_Foreground_Color(Theme::rgb);
-#define TOGGLE(val)      cmd.Cmd_Set_Foreground_Color(val ? Theme::toggle_on : Theme::toggle_off);
+#define RGB(rgb)         cmd.Cmd_Set_Foreground_Color(rgb);
+#define THEME(color)     cmd.Cmd_Set_Foreground_Color(Theme::color);
 
 #define FONT_SML         Theme::font_small
 #define FONT_MED         Theme::font_medium
@@ -110,6 +117,17 @@ class AboutScreen : public UIScreen {
 };
 
 class StatusScreen : public UIScreen {
+  private:
+    static void static_axis_position();
+    static void static_temperature();
+    static void static_progress();
+    static void static_interaction_buttons();
+
+    static void dynamic_axis_position();
+    static void dynamic_temperature();
+    static void dynamic_progress();
+    static void dynamic_status_message();
+
   public:
     static void onRefresh();
     static void onStartup();
@@ -143,11 +161,30 @@ class AdvancedSettingsScreen : public UIScreen {
 };
 
 class ValueAdjusters : public UIScreen {
+  private:
+    static uint8_t increment;
+    static void draw_increment_btn(const uint8_t tag, uint8_t decimals);
   protected:
-    static float increment;
-    static void static_heading(progmem_str heading);
-    static void static_value(int line, progmem_str value);
-    static void dynamic_value(int line, float value, progmem_str units);
+    struct heading_t {
+      const char    *label;
+      uint8_t        decimals;
+
+      void static_parts() const;
+      void dynamic_parts() const;
+    };
+
+    struct adjuster_t {
+      uint8_t        line;
+      const char    *label;
+      const char    *units;
+      uint32_t       color;
+      uint8_t        decimals;
+
+      void static_parts() const;
+      void dynamic_parts(float value) const;
+    };
+
+    static float getIncrement();
   public:
     static void onTouchStart(uint8_t tag);
 };
@@ -256,12 +293,13 @@ namespace Theme {
   const int16_t  font_small    = 27;
   const int16_t  font_medium   = 28;
   const int16_t  font_large    = 28;
-  #else
-  const int16_t  font_small    = 28;
-  const int16_t  font_medium   = 29;
-  const int16_t  font_large    = 30;
-  #endif
   const float    icon_scale    = 0.7;
+  #else
+  const int16_t  font_small    = 27;
+  const int16_t  font_medium   = 28;
+  const int16_t  font_large    = 30;
+  const float    icon_scale    = 0.6;
+  #endif
 #endif
 };
 
@@ -269,15 +307,13 @@ namespace Theme {
 
 void BootScreen::onRefresh() {
   CLCD::CommandFifo cmd;
-  cmd.Cmd_Start();
   cmd.Cmd(CMD_DLSTART);
   cmd.Cmd_Clear_Color(Theme::background);
   cmd.Cmd_Clear(1,1,1);
   cmd.Cmd(DL_DISPLAY);
   cmd.Cmd(CMD_SWAP);
   cmd.Cmd_Execute();
-
-  cmd.Wait_Until_Idle();
+  cmd.Cmd_Wait_Until_Idle();
 
   CLCD::Turn_On_Backlight();
 }
@@ -287,7 +323,6 @@ void BootScreen::onIdle() {
 }
 
 /******************************** ABOUT SCREEN ****************************/
-
 
 void AboutScreen::onEntry() {
   draw(false);
@@ -301,7 +336,6 @@ void AboutScreen::onRefresh() {
 
 void AboutScreen::draw(bool showOkay) {
   CLCD::CommandFifo cmd;
-  cmd.Cmd_Start();
   cmd.Cmd(CMD_DLSTART);
   cmd.Cmd_Clear_Color(Theme::about_bg);
   cmd.Cmd_Clear(1,1,1);
@@ -309,11 +343,12 @@ void AboutScreen::draw(bool showOkay) {
   #define GRID_COLS 4
   #define GRID_ROWS 6
 
-  BTX( BTN_POS(1,2), BTN_SIZE(4,1), F("Color LCD Interface"),                     FONT_LRG);
-  BTN_TAG(2) BTX( BTN_POS(1,3), BTN_SIZE(4,1), F("(c) 2018 Aleph Objects, Inc."), FONT_LRG);
+  BTX( BTN_POS(1,2), BTN_SIZE(4,1), F("Color LCD Interface"),          FONT_LRG);
+  BTN_TAG(2)
+  BTX( BTN_POS(1,3), BTN_SIZE(4,1), F("(c) 2018 Aleph Objects, Inc."), FONT_LRG);
 
   if(showOkay) {
-    BTN_TAG(1) RGB(about_btn) BTN( BTN_POS(2,5), BTN_SIZE(2,1), F("Okay"), MENU_BTN_STYLE);
+    BTN_TAG(1) THEME(about_btn) BTN( BTN_POS(2,5), BTN_SIZE(2,1), F("Okay"), MENU_BTN_STYLE);
   }
 
   cmd.Cmd(DL_DISPLAY);
@@ -350,229 +385,287 @@ void AboutScreen::playChime() {
 }
 
 /*********************************** STATUS SCREEN ******************************/
+#if defined(LCD_PORTRAIT)
+  #define GRID_ROWS 9
+  #define GRID_COLS 3
+#else
+  #define GRID_ROWS 8
+  #define GRID_COLS 3
+#endif
 
-void StatusScreen::onStartup() {
-  // Load USB Thumb Drive Bitmap
-  CLCD::Flash_Write_RGB332_Bitmap(TD_Icon_Info.RAMG_addr, TD_Icon, sizeof(TD_Icon));
-
-  // Load Extruder Bitmap
-  CLCD::Flash_Write_RGB332_Bitmap(Extruder_Icon_Info.RAMG_addr, Extruder_Icon, sizeof(Extruder_Icon));
-
-  // Load Bed Heat Bitmap
-  CLCD::Flash_Write_RGB332_Bitmap(Bed_Heat_Icon_Info.RAMG_addr, Bed_Heat_Icon, sizeof(Bed_Heat_Icon));
-
-  // Load Fan Percent Bitmap
-  CLCD::Flash_Write_RGB332_Bitmap(Fan_Icon_Info.RAMG_addr, Fan_Icon, sizeof(Fan_Icon));
-}
-
-void StatusScreen::onRefresh() {
-  static CLCD::DLCache dlcache;
-
-  if(dlcache.hasData()) {
-    dlcache.append();
-  } else {
-    CLCD::CommandFifo cmd;
-    cmd.Cmd_Start();
-    cmd.Cmd(CMD_DLSTART);
-    cmd.Cmd_Clear_Color(Theme::background);
-    cmd.Cmd_Clear(1,1,1);
-
-    #if defined(LCD_PORTRAIT)
-    #define GRID_ROWS 9
-    #else
-    #define GRID_ROWS 8
-    #endif
-
-    BTN_TAG(0)
-    #if defined(LCD_PORTRAIT)
-      #define GRID_COLS 8
-      RGB(temp)      BTN( BTN_POS(1,1), BTN_SIZE(4,2), F(""), FONT_SML, OPT_FLAT);
-      RGB(temp)      BTN( BTN_POS(1,1), BTN_SIZE(8,1), F(""), FONT_SML, OPT_FLAT);
-      RGB(fan_speed) BTN( BTN_POS(5,2), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
-      RGB(progress)  BTN( BTN_POS(1,3), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
-      RGB(progress)  BTN( BTN_POS(5,3), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
-    #else
-      #define GRID_COLS 12
-      RGB(temp)      BTN( BTN_POS(1,1), BTN_SIZE(4,2), F(""), FONT_SML, OPT_FLAT);
-      RGB(temp)      BTN( BTN_POS(1,1), BTN_SIZE(8,1), F(""), FONT_SML, OPT_FLAT);
-      RGB(fan_speed) BTN( BTN_POS(5,2), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
-      RGB(progress)  BTN( BTN_POS(9,1), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
-      RGB(progress)  BTN( BTN_POS(9,2), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
-    #endif
-
-    #if defined(LCD_PORTRAIT)
-      #define GRID_COLS 3
-      RGB(axis_label) BTN( BTN_POS(1,5), BTN_SIZE(2,1), F(""), FONT_LRG, OPT_FLAT);
-      RGB(axis_label) BTN( BTN_POS(1,6), BTN_SIZE(2,1), F(""), FONT_LRG, OPT_FLAT);
-      RGB(axis_label) BTN( BTN_POS(1,7), BTN_SIZE(2,1), F(""), FONT_LRG, OPT_FLAT);
-      BTX( BTN_POS(1,5), BTN_SIZE(1,1), F("X"), FONT_SML);
-      BTX( BTN_POS(1,6), BTN_SIZE(1,1), F("Y"), FONT_SML);
-      BTX( BTN_POS(1,7), BTN_SIZE(1,1), F("Z"), FONT_SML);
-      RGB(x_axis)     BTN( BTN_POS(2,5), BTN_SIZE(2,1), F(""), FONT_MED, OPT_FLAT);
-      RGB(y_axis)     BTN( BTN_POS(2,6), BTN_SIZE(2,1), F(""), FONT_MED, OPT_FLAT);
-      RGB(z_axis)     BTN( BTN_POS(2,7), BTN_SIZE(2,1), F(""), FONT_MED, OPT_FLAT);
-    #else
-      #define GRID_COLS 3
-      #define MARGIN_T 10
-      RGB(axis_label) BTN( BTN_POS(1,5), BTN_SIZE(1,2), F(""), FONT_LRG, OPT_FLAT);
-      RGB(axis_label) BTN( BTN_POS(2,5), BTN_SIZE(1,2), F(""), FONT_LRG, OPT_FLAT);
-      RGB(axis_label) BTN( BTN_POS(3,5), BTN_SIZE(1,2), F(""), FONT_LRG, OPT_FLAT);
-      BTX( BTN_POS(1,5), BTN_SIZE(1,1), F("X"), FONT_SML);
-      BTX( BTN_POS(2,5), BTN_SIZE(1,1), F("Y"), FONT_SML);
-      BTX( BTN_POS(3,5), BTN_SIZE(1,1), F("Z"), FONT_SML);
-      #define MARGIN_T 0
-      RGB(x_axis)     BTN( BTN_POS(1,6), BTN_SIZE(1,1), F(""), FONT_MED, OPT_FLAT);
-      RGB(y_axis)     BTN( BTN_POS(2,6), BTN_SIZE(1,1), F(""), FONT_MED, OPT_FLAT);
-      RGB(z_axis)     BTN( BTN_POS(3,6), BTN_SIZE(1,1), F(""), FONT_MED, OPT_FLAT);
-      #define MARGIN_T 5
-    #endif
-
-    #define GRID_COLS 4
-    #if defined(LCD_PORTRAIT)
-      BTN_TAG(1) RGB(stop_btn) BTN( BTN_POS(1,8), BTN_SIZE(4,1), F("STOP"),  MENU_BTN_STYLE);
-      BTN_TAG(3) RGB(navi_btn) BTN( BTN_POS(1,9), BTN_SIZE(2,1), F(""),      MENU_BTN_STYLE);
-      BTN_TAG(4) RGB(navi_btn) BTN( BTN_POS(3,9), BTN_SIZE(2,1), F("MENU"),  MENU_BTN_STYLE);
-      #else
-      BTN_TAG(1) RGB(stop_btn) BTN( BTN_POS(1,7), BTN_SIZE(2,2), F("STOP"),  MENU_BTN_STYLE);
-      BTN_TAG(3) RGB(navi_btn) BTN( BTN_POS(3,7), BTN_SIZE(1,2), F(""),      MENU_BTN_STYLE);
-      BTN_TAG(4) RGB(navi_btn) BTN( BTN_POS(4,7), BTN_SIZE(1,2), F("MENU"),  MENU_BTN_STYLE);
-    #endif
-
-    // Draw Thumb Drive Bitmap on USB Button
-
-    cmd.Cmd_Bitmap_Source(TD_Icon_Info);
-    cmd.Cmd_Bitmap_Layout(TD_Icon_Info);
-    cmd.Cmd_Bitmap_Size  (TD_Icon_Info);
-
-    BTN_TAG(3)
-    #if defined(LCD_PORTRAIT)
-      BTI(BTN_POS(1,9), BTN_SIZE(2,1), TD_Icon_Info, Theme::icon_scale);
-    #else
-      BTI(BTN_POS(3,7), BTN_SIZE(1,2), TD_Icon_Info, Theme::icon_scale);
-    #endif
-
-    #if defined(LCD_PORTRAIT)
-      #define GRID_COLS 8
-    #else
-      #define GRID_COLS 12
-    #endif
-
-    // Draw Extruder Bitmap on Extruder Temperature Button
-
-    cmd.Cmd_Bitmap_Source(Extruder_Icon_Info);
-    cmd.Cmd_Bitmap_Layout(Extruder_Icon_Info);
-    cmd.Cmd_Bitmap_Size  (Extruder_Icon_Info);
-
-    BTN_TAG(0)
-    BTI(BTN_POS(1,1), BTN_SIZE(1,1),  Extruder_Icon_Info, Theme::icon_scale);
-    BTI(BTN_POS(5,1), BTN_SIZE(1,1),  Extruder_Icon_Info, Theme::icon_scale);
-
-    #if EXTRUDERS == 1
-    BTX( BTN_POS(6,1), BTN_SIZE(2,1), F("-"), FONT_MED);
-    #endif
-
-    // Draw Bed Heat Bitmap on Bed Heat Button
-    cmd.Cmd_Bitmap_Source(Bed_Heat_Icon_Info);
-    cmd.Cmd_Bitmap_Layout(Bed_Heat_Icon_Info);
-    cmd.Cmd_Bitmap_Size  (Bed_Heat_Icon_Info);
-
-    BTN_TAG(0)
-    BTI(BTN_POS(1,2), BTN_SIZE(1,1), Bed_Heat_Icon_Info, Theme::icon_scale);
-
-    // Draw Fan Percent Bitmap on Bed Heat Button
-
-    cmd.Cmd_Bitmap_Source(Fan_Icon_Info);
-    cmd.Cmd_Bitmap_Layout(Fan_Icon_Info);
-    cmd.Cmd_Bitmap_Size  (Fan_Icon_Info);
-
-    BTN_TAG(0)
-    BTI(BTN_POS(5,2), BTN_SIZE(1,1), Fan_Icon_Info, Theme::icon_scale);
-
-    cmd.Cmd_Execute();
-    dlcache.store();
-  }
-
+void StatusScreen::static_axis_position() {
   CLCD::CommandFifo cmd;
-  cmd.Cmd_Start();
-  /* Dynamic content, non-cached data follows */
 
   #if defined(LCD_PORTRAIT)
-  #define GRID_ROWS 9
+    THEME(axis_label) BTN( BTN_POS(1,5), BTN_SIZE(2,1), F(""),  FONT_LRG, OPT_FLAT);
+    THEME(axis_label) BTN( BTN_POS(1,6), BTN_SIZE(2,1), F(""),  FONT_LRG, OPT_FLAT);
+    THEME(axis_label) BTN( BTN_POS(1,7), BTN_SIZE(2,1), F(""),  FONT_LRG, OPT_FLAT);
+                      BTX( BTN_POS(1,5), BTN_SIZE(1,1), F("X"), FONT_SML);
+                      BTX( BTN_POS(1,6), BTN_SIZE(1,1), F("Y"), FONT_SML);
+                      BTX( BTN_POS(1,7), BTN_SIZE(1,1), F("Z"), FONT_SML);
+    THEME(x_axis)     BTN( BTN_POS(2,5), BTN_SIZE(2,1), F(""),  FONT_MED, OPT_FLAT);
+    THEME(y_axis)     BTN( BTN_POS(2,6), BTN_SIZE(2,1), F(""),  FONT_MED, OPT_FLAT);
+    THEME(z_axis)     BTN( BTN_POS(2,7), BTN_SIZE(2,1), F(""),  FONT_MED, OPT_FLAT);
   #else
-  #define GRID_ROWS 8
+    THEME(axis_label) BTN( BTN_POS(1,5), BTN_SIZE(1,2), F(""),  FONT_LRG, OPT_FLAT);
+    THEME(axis_label) BTN( BTN_POS(2,5), BTN_SIZE(1,2), F(""),  FONT_LRG, OPT_FLAT);
+    THEME(axis_label) BTN( BTN_POS(3,5), BTN_SIZE(1,2), F(""),  FONT_LRG, OPT_FLAT);
+                      BTX( BTN_POS(1,5), BTN_SIZE(1,1), F("X"), FONT_SML);
+                      BTX( BTN_POS(2,5), BTN_SIZE(1,1), F("Y"), FONT_SML);
+                      BTX( BTN_POS(3,5), BTN_SIZE(1,1), F("Z"), FONT_SML);
+    THEME(x_axis)     BTN( BTN_POS(1,6), BTN_SIZE(1,1), F(""),  FONT_MED, OPT_FLAT);
+    THEME(y_axis)     BTN( BTN_POS(2,6), BTN_SIZE(1,1), F(""),  FONT_MED, OPT_FLAT);
+    THEME(z_axis)     BTN( BTN_POS(3,6), BTN_SIZE(1,1), F(""),  FONT_MED, OPT_FLAT);
+  #endif
+}
+
+void StatusScreen::dynamic_axis_position() {
+  CLCD::CommandFifo cmd;
+
+  char x_str[15];
+  char y_str[15];
+  char z_str[15];
+
+  dtostrf(Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::X), 5, 1, x_str);
+  dtostrf(Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::Y), 5, 1, y_str);
+  dtostrf(Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::Z), 5, 1, z_str);
+
+  strcat_P(x_str, PSTR(" mm"));
+  strcat_P(y_str, PSTR(" mm"));
+  strcat_P(z_str, PSTR(" mm"));
+
+  #if defined(LCD_PORTRAIT)
+    BTX( BTN_POS(2,5), BTN_SIZE(2,1), x_str, FONT_MED);
+    BTX( BTN_POS(2,6), BTN_SIZE(2,1), y_str, FONT_MED);
+    BTX( BTN_POS(2,7), BTN_SIZE(2,1), z_str, FONT_MED);
+  #else
+    BTX( BTN_POS(1,6), BTN_SIZE(1,1), x_str, FONT_MED);
+    BTX( BTN_POS(2,6), BTN_SIZE(1,1), y_str, FONT_MED);
+    BTX( BTN_POS(3,6), BTN_SIZE(1,1), z_str, FONT_MED);
   #endif
 
+  //#define MARGIN_T 5
+}
+
+#if defined(LCD_PORTRAIT)
+  #define GRID_COLS 8
+#else
+  #define GRID_COLS 12
+#endif
+
+void StatusScreen::static_temperature() {
+  CLCD::CommandFifo cmd;
+
   BTN_TAG(0)
+  #if defined(LCD_PORTRAIT)
+    THEME(temp)      BTN( BTN_POS(1,1), BTN_SIZE(4,2), F(""), FONT_SML, OPT_FLAT);
+    THEME(temp)      BTN( BTN_POS(1,1), BTN_SIZE(8,1), F(""), FONT_SML, OPT_FLAT);
+    THEME(fan_speed) BTN( BTN_POS(5,2), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
+    THEME(progress)  BTN( BTN_POS(1,3), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
+    THEME(progress)  BTN( BTN_POS(5,3), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
+  #else
+    THEME(temp)      BTN( BTN_POS(1,1), BTN_SIZE(4,2), F(""), FONT_SML, OPT_FLAT);
+    THEME(temp)      BTN( BTN_POS(1,1), BTN_SIZE(8,1), F(""), FONT_SML, OPT_FLAT);
+    THEME(fan_speed) BTN( BTN_POS(5,2), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
+    THEME(progress)  BTN( BTN_POS(9,1), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
+    THEME(progress)  BTN( BTN_POS(9,2), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
+  #endif
+
+  // Draw Extruder Bitmap on Extruder Temperature Button
+
+  cmd.Cmd_Bitmap_Source(Extruder_Icon_Info);
+  cmd.Cmd_Bitmap_Layout(Extruder_Icon_Info);
+  cmd.Cmd_Bitmap_Size  (Extruder_Icon_Info);
+
+  BTN_TAG(0)
+  BTI(BTN_POS(1,1), BTN_SIZE(1,1),  Extruder_Icon_Info, Theme::icon_scale);
+  BTI(BTN_POS(5,1), BTN_SIZE(1,1),  Extruder_Icon_Info, Theme::icon_scale);
+
+  // Draw Bed Heat Bitmap on Bed Heat Button
+  cmd.Cmd_Bitmap_Source(Bed_Heat_Icon_Info);
+  cmd.Cmd_Bitmap_Layout(Bed_Heat_Icon_Info);
+  cmd.Cmd_Bitmap_Size  (Bed_Heat_Icon_Info);
+
+  BTN_TAG(0)
+  BTI(BTN_POS(1,2), BTN_SIZE(1,1), Bed_Heat_Icon_Info, Theme::icon_scale);
+
+  // Draw Fan Percent Bitmap on Bed Heat Button
+
+  cmd.Cmd_Bitmap_Source(Fan_Icon_Info);
+  cmd.Cmd_Bitmap_Layout(Fan_Icon_Info);
+  cmd.Cmd_Bitmap_Size  (Fan_Icon_Info);
+
+  BTN_TAG(0)
+  BTI(BTN_POS(5,2), BTN_SIZE(1,1), Fan_Icon_Info, Theme::icon_scale);
+}
+
+#define ROUND(val) uint16_t((val)+0.5)
+
+void StatusScreen::dynamic_temperature() {
+  CLCD::CommandFifo cmd;
+
+  char e0_str[15];
+  char e1_str[15];
+  char bed_str[15];
+  char fan_str[15];
+
+  sprintf_P(
+    fan_str,
+    PSTR("%-3d %%"),
+    Marlin_LCD_API::getFan_percent(0)
+  );
+
+  sprintf_P(
+    bed_str,
+    PSTR("%-3d / %-3d  " ),
+    ROUND(Marlin_LCD_API::getActualTemp_celsius(0)),
+    ROUND(Marlin_LCD_API::getTargetTemp_celsius(0))
+  );
+
+  sprintf_P(
+    e0_str,
+    PSTR("%-3d / %-3d C"),
+    ROUND(Marlin_LCD_API::getActualTemp_celsius(1)),
+    ROUND(Marlin_LCD_API::getTargetTemp_celsius(1))
+  );
+
+  #if EXTRUDERS == 2
+    sprintf_P(
+      e1_str,
+      PSTR("%-3d / %-3d C"),
+      ROUND(Marlin_LCD_API::getActualTemp_celsius(2)),
+      ROUND(Marlin_LCD_API::getTargetTemp_celsius(2))
+    );
+  #else
+    strcpy_P(
+      e1_str,
+      PSTR("-")
+    );
+  #endif
+
+  BTX( BTN_POS(2,1), BTN_SIZE(3,1), e0_str,  FONT_MED);
+  BTX( BTN_POS(6,1), BTN_SIZE(3,1), e1_str,  FONT_MED);
+  BTX( BTN_POS(2,2), BTN_SIZE(3,1), bed_str, FONT_MED);
+  BTX( BTN_POS(6,2), BTN_SIZE(3,1), fan_str, FONT_MED);
+}
+
+void StatusScreen::static_progress() {
+  CLCD::CommandFifo cmd;
+
+  #if defined(LCD_PORTRAIT)
+    THEME(progress)  BTN( BTN_POS(1,3), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
+    THEME(progress)  BTN( BTN_POS(5,3), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
+  #else
+    THEME(progress)  BTN( BTN_POS(9,1), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
+    THEME(progress)  BTN( BTN_POS(9,2), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
+  #endif
+}
+
+void StatusScreen::dynamic_progress() {
+  CLCD::CommandFifo cmd;
 
   const uint32_t elapsed = Marlin_LCD_API::getProgress_seconds_elapsed();
   const uint8_t hrs = elapsed/3600;
   const uint8_t min = (elapsed/60)%60;
-  char b[255];
+
+  char time_str[10];
+  char progress_str[10];
+
+  sprintf_P(time_str,     PSTR(" %02d : %02d"), hrs, min);
+  sprintf_P(progress_str, PSTR("%-3d %%"),      Marlin_LCD_API::getProgress_percent() );
+
   #if defined(LCD_PORTRAIT)
-    #define GRID_COLS 8
-    sprintf_P(b, PSTR(" %02d : %02d"), hrs, min);
-    BTX( BTN_POS(1,3), BTN_SIZE(4,1), b, FONT_MED);
-
-    sprintf_P(b, PSTR("%-3d %%"), Marlin_LCD_API::getProgress_percent() );
-    BTX( BTN_POS(5,3), BTN_SIZE(4,1), b, FONT_MED);
+    BTN_TAG(0)
+    BTX( BTN_POS(1,3), BTN_SIZE(4,1), time_str,     FONT_MED);
+    BTX( BTN_POS(5,3), BTN_SIZE(4,1), progress_str, FONT_MED);
   #else
-    #define GRID_COLS 12
-    sprintf_P(b, PSTR(" %02d : %02d"), hrs, min);
-    BTX( BTN_POS(9,1), BTN_SIZE(4,1), b, FONT_MED);
-
-    sprintf_P(b, PSTR("%-3d %%"), Marlin_LCD_API::getProgress_percent() );
-    BTX( BTN_POS(9,2), BTN_SIZE(4,1), b, FONT_MED);
+    BTN_TAG(0)
+    BTX( BTN_POS(9,1), BTN_SIZE(4,1), time_str,     FONT_MED);
+    BTX( BTN_POS(9,2), BTN_SIZE(4,1), progress_str, FONT_MED);
   #endif
+}
 
-  sprintf_P(b, PSTR("%-3d / %-3d C"),  Marlin_LCD_API::getActualTemp_celsius(1),  Marlin_LCD_API::getActualTemp_celsius(1) );
-  BTX( BTN_POS(2,1), BTN_SIZE(3,1), b, FONT_MED);
+#define GRID_COLS 4
 
-  #if EXTRUDERS == 2
-  sprintf_P(b, PSTR("%-3d / %-3d C"),  Marlin_LCD_API::getActualTemp_celsius(2),  Marlin_LCD_API::getTargetTemp_celsius(2) );
-  BTX( BTN_POS(6,1), BTN_SIZE(3,1), b, FONT_MED);
-  #endif
+void StatusScreen::static_interaction_buttons() {
+  CLCD::CommandFifo cmd;
 
-  sprintf_P(b, PSTR("%-3d / %-3d  " ), Marlin_LCD_API::getActualTemp_celsius(0),  Marlin_LCD_API::getActualTemp_celsius(0) );
-  BTX( BTN_POS(2,2), BTN_SIZE(3,1), b, FONT_MED);
-
-  sprintf_P(b, PSTR("%-3d %%"), Marlin_LCD_API::getFan_percent(0)  );
-  BTX( BTN_POS(6,2), BTN_SIZE(3,1), b, FONT_MED);
-
-  #define GRID_COLS 1
   #if defined(LCD_PORTRAIT)
-      RGB(status_msg) BTN( BTN_POS(1,4), BTN_SIZE(1,1), lcd_status_message, FONT_LRG, OPT_FLAT);
-  #else
-      RGB(status_msg) BTN( BTN_POS(1,3), BTN_SIZE(1,2), lcd_status_message, FONT_LRG, OPT_FLAT);
+    BTN_TAG(1) THEME(stop_btn) BTN( BTN_POS(1,8), BTN_SIZE(4,1), F("STOP"),  MENU_BTN_STYLE);
+    BTN_TAG(3) THEME(navi_btn) BTN( BTN_POS(1,9), BTN_SIZE(2,1), F(""),      MENU_BTN_STYLE);
+    BTN_TAG(4) THEME(navi_btn) BTN( BTN_POS(3,9), BTN_SIZE(2,1), F("MENU"),  MENU_BTN_STYLE);
+    #else
+    BTN_TAG(1) THEME(stop_btn) BTN( BTN_POS(1,7), BTN_SIZE(2,2), F("STOP"),  MENU_BTN_STYLE);
+    BTN_TAG(3) THEME(navi_btn) BTN( BTN_POS(3,7), BTN_SIZE(1,2), F(""),      MENU_BTN_STYLE);
+    BTN_TAG(4) THEME(navi_btn) BTN( BTN_POS(4,7), BTN_SIZE(1,2), F("MENU"),  MENU_BTN_STYLE);
   #endif
 
-  #define GRID_COLS 3
+  // Draw Thumb Drive Bitmap on USB Button
 
-  dtostrf(Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::X), 5, 1, b);
-  strcat_P(b, PSTR(" mm"));
+  cmd.Cmd_Bitmap_Source(TD_Icon_Info);
+  cmd.Cmd_Bitmap_Layout(TD_Icon_Info);
+  cmd.Cmd_Bitmap_Size  (TD_Icon_Info);
+
+  BTN_TAG(3)
   #if defined(LCD_PORTRAIT)
-    BTX( BTN_POS(2,5), BTN_SIZE(2,1), b, FONT_MED);
+    BTI(BTN_POS(1,9), BTN_SIZE(2,1), TD_Icon_Info, Theme::icon_scale);
   #else
-    BTX( BTN_POS(1,6), BTN_SIZE(1,1), b, FONT_MED);
+    BTI(BTN_POS(3,7), BTN_SIZE(1,2), TD_Icon_Info, Theme::icon_scale);
   #endif
+}
 
+#define GRID_COLS 1
 
-  dtostrf(Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::Y), 5, 1, b);
-  strcat_P(b, PSTR(" mm"));
+void StatusScreen::dynamic_status_message() {
+  CLCD::CommandFifo cmd;
+
   #if defined(LCD_PORTRAIT)
-    BTX( BTN_POS(2,6), BTN_SIZE(2,1), b, FONT_MED);
+    THEME(status_msg) BTN( BTN_POS(1,4), BTN_SIZE(1,1), lcd_status_message, FONT_LRG, OPT_FLAT);
   #else
-    BTX( BTN_POS(2,6), BTN_SIZE(1,1), b, FONT_MED);
+    THEME(status_msg) BTN( BTN_POS(1,3), BTN_SIZE(1,2), lcd_status_message, FONT_LRG, OPT_FLAT);
   #endif
+}
 
-  dtostrf(Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::Z), 5, 1, b);
-  strcat_P(b, PSTR(" mm"));
-  #if defined(LCD_PORTRAIT)
-    BTX( BTN_POS(2,7), BTN_SIZE(2,1), b, FONT_MED);
-  #else
-    BTX( BTN_POS(3,6), BTN_SIZE(1,1), b, FONT_MED);
-  #endif
+#if defined(LCD_PORTRAIT)
+  #define GRID_COLS 8
+#else
+  #define GRID_COLS 12
+#endif
 
-  #define MARGIN_T 5
+void StatusScreen::onStartup() {
+  // Load the bitmaps for the status screen
+
+  CLCD::Flash_Write_RGB332_Bitmap(TD_Icon_Info.RAMG_addr,       TD_Icon,       sizeof(TD_Icon));
+  CLCD::Flash_Write_RGB332_Bitmap(Extruder_Icon_Info.RAMG_addr, Extruder_Icon, sizeof(Extruder_Icon));
+  CLCD::Flash_Write_RGB332_Bitmap(Bed_Heat_Icon_Info.RAMG_addr, Bed_Heat_Icon, sizeof(Bed_Heat_Icon));
+  CLCD::Flash_Write_RGB332_Bitmap(Fan_Icon_Info.RAMG_addr,      Fan_Icon,      sizeof(Fan_Icon));
+}
+
+void StatusScreen::onRefresh() {
+  static CLCD::DLCache dlcache;
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
+
+  if(dlcache.hasData()) {
+    dlcache.append();
+  } else {
+    cmd.Cmd_Clear_Color(Theme::background);
+    cmd.Cmd_Clear(1,1,1);
+
+    static_temperature();
+    static_progress();
+    static_axis_position();
+    static_interaction_buttons();
+
+    dlcache.store();
+  }
+
+  /* Dynamic content, non-cached data follows */
+
+  dynamic_temperature();
+  dynamic_progress();
+  dynamic_status_message();
+  dynamic_axis_position();
 
   cmd.Cmd(DL_DISPLAY);
   cmd.Cmd(CMD_SWAP);
@@ -595,57 +688,60 @@ void StatusScreen::onTouchStart(uint8_t tag) {
 
 /************************************ MENU SCREEN *******************************/
 
+#if defined(LCD_PORTRAIT)
+  #define GRID_ROWS 7
+  #define GRID_COLS 2
+#else
+  #define GRID_ROWS 4
+  #define GRID_COLS 2
+#endif
+
 void MenuScreen::onRefresh() {
   static CLCD::DLCache dlcache;
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
 
   if(dlcache.hasData()) {
     dlcache.append();
   } else {
-    CLCD::CommandFifo cmd;
-    cmd.Cmd_Start();
-    cmd.Cmd(CMD_DLSTART);
-
     cmd.Cmd_Clear_Color(Theme::background);
     cmd.Cmd_Clear(1,1,1);
 
     #if defined(LCD_PORTRAIT)
-      #define GRID_ROWS 7
-      #define GRID_COLS 2
-      BTN_TAG(2) RGB(menu_btn) BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("Auto Home"),          MENU_BTN_STYLE);
-      BTN_TAG(3) RGB(menu_btn) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Move Axis"),          MENU_BTN_STYLE);
+      BTN_TAG(2) THEME(menu_btn) BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("Auto Home"),          MENU_BTN_STYLE);
+      BTN_TAG(3) THEME(menu_btn) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Move Axis"),          MENU_BTN_STYLE);
+      BTN_TAG(4) THEME(menu_btn) BTN( BTN_POS(1,2), BTN_SIZE(2,1), F("Disable Steppers"),   MENU_BTN_STYLE);
 
-      #define GRID_COLS 1
-      BTN_TAG(4) RGB(menu_btn) BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("Disable Steppers"),   MENU_BTN_STYLE);
-
-      BTN_TAG(5) RGB(menu_btn) BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("Temperature"),        MENU_BTN_STYLE);
-      BTN_TAG(6) RGB(menu_btn) BTN( BTN_POS(1,4), BTN_SIZE(1,1), F("Advanced Settings"),  MENU_BTN_STYLE);
-      BTN_TAG(8) RGB(menu_btn) BTN( BTN_POS(1,5), BTN_SIZE(1,1), F("Recalibrate Screen"), MENU_BTN_STYLE);
-      BTN_TAG(7) RGB(menu_btn) BTN( BTN_POS(1,6), BTN_SIZE(1,1), F("About Firmware"),     MENU_BTN_STYLE);
-
-      #define MARGIN_T 15
-      BTN_TAG(1) RGB(navi_btn) BTN( BTN_POS(1,7), BTN_SIZE(1,1), F("Back"),               MENU_BTN_STYLE);
-      #define MARGIN_T 5
+      BTN_TAG(5) THEME(menu_btn) BTN( BTN_POS(1,3), BTN_SIZE(2,1), F("Temperature"),        MENU_BTN_STYLE);
+      BTN_TAG(6) THEME(menu_btn) BTN( BTN_POS(1,4), BTN_SIZE(2,1), F("Advanced Settings"),  MENU_BTN_STYLE);
+      BTN_TAG(8) THEME(menu_btn) BTN( BTN_POS(1,5), BTN_SIZE(2,1), F("Recalibrate Screen"), MENU_BTN_STYLE);
+      BTN_TAG(7) THEME(menu_btn) BTN( BTN_POS(1,6), BTN_SIZE(2,1), F("About Firmware"),     MENU_BTN_STYLE);
     #else
-      #define GRID_ROWS 4
-      #define GRID_COLS 2
-      BTN_TAG(2) RGB(menu_btn) BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("Auto Home"),          MENU_BTN_STYLE);
-      BTN_TAG(3) RGB(menu_btn) BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("Move Axis"),          MENU_BTN_STYLE);
-      BTN_TAG(4) RGB(menu_btn) BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("Disable Steppers"),   MENU_BTN_STYLE);
+      BTN_TAG(2) THEME(menu_btn) BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("Auto Home"),          MENU_BTN_STYLE);
+      BTN_TAG(3) THEME(menu_btn) BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("Move Axis"),          MENU_BTN_STYLE);
+      BTN_TAG(4) THEME(menu_btn) BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("Disable Steppers"),   MENU_BTN_STYLE);
 
-      BTN_TAG(5) RGB(menu_btn) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Temperature"),        MENU_BTN_STYLE);
-      BTN_TAG(6) RGB(menu_btn) BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Configuration"),      MENU_BTN_STYLE);
-      BTN_TAG(7) RGB(menu_btn) BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("About Firmware"),     MENU_BTN_STYLE);
-
-      #define MARGIN_T 15
-      #define GRID_COLS 1
-      BTN_TAG(1) RGB(navi_btn) BTN( BTN_POS(1,4), BTN_SIZE(1,1), F("Back"),               MENU_BTN_STYLE);
-      #define MARGIN_T 5
+      BTN_TAG(5) THEME(menu_btn) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Temperature"),        MENU_BTN_STYLE);
+      BTN_TAG(6) THEME(menu_btn) BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Configuration"),      MENU_BTN_STYLE);
+      BTN_TAG(7) THEME(menu_btn) BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("About Firmware"),     MENU_BTN_STYLE);
     #endif
-    cmd.Cmd(DL_DISPLAY);
-    cmd.Cmd(CMD_SWAP);
-    cmd.Cmd_Execute();
+
+    #define MARGIN_T 15
+
+    #if defined(LCD_PORTRAIT)
+      BTN_TAG(1) THEME(navi_btn) BTN( BTN_POS(1,7), BTN_SIZE(2,1), F("Back"),               MENU_BTN_STYLE);
+    #else
+      BTN_TAG(1) THEME(navi_btn) BTN( BTN_POS(1,4), BTN_SIZE(2,1), F("Back"),               MENU_BTN_STYLE);
+    #endif
+
+    #define MARGIN_T 5
+
     dlcache.store();
   }
+
+  cmd.Cmd(DL_DISPLAY);
+  cmd.Cmd(CMD_SWAP);
+  cmd.Cmd_Execute();
 }
 
 void MenuScreen::onTouchStart(uint8_t tag) {
@@ -661,57 +757,54 @@ void MenuScreen::onTouchStart(uint8_t tag) {
 
 /******************************* CONFIGURATION SCREEN ****************************/
 
+#if defined(LCD_PORTRAIT)
+  #define GRID_ROWS 6
+  #define GRID_COLS 2
+#else
+  #define GRID_ROWS 4
+  #define GRID_COLS 2
+#endif
+
 void AdvancedSettingsScreen::onRefresh() {
   static CLCD::DLCache dlcache;
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
 
   if(dlcache.hasData()) {
     dlcache.append();
   } else {
-    CLCD::CommandFifo cmd;
-    cmd.Cmd_Start();
-    cmd.Cmd(CMD_DLSTART);
-
     cmd.Cmd_Clear_Color(Theme::background);
     cmd.Cmd_Clear(1,1,1);
 
     #if defined(LCD_PORTRAIT)
-      #define GRID_ROWS 6
+      BTN_TAG(3) THEME(menu_btn) BTN( BTN_POS(1,1), BTN_SIZE(1,2), F("Z Offset "),        MENU_BTN_STYLE);
+      BTN_TAG(4) THEME(menu_btn) BTN( BTN_POS(1,3), BTN_SIZE(1,2), F("Steps/mm"),         MENU_BTN_STYLE);
+
+      BTN_TAG(6) THEME(disabled) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Velocity "),        MENU_BTN_STYLE);
+      BTN_TAG(7) THEME(disabled) BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Acceleration"),     MENU_BTN_STYLE);
+      BTN_TAG(8) THEME(disabled) BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("Jerk"),             MENU_BTN_STYLE);
+      BTN_TAG(5) THEME(menu_btn) BTN( BTN_POS(1,5), BTN_SIZE(2,1), F("Restore Failsafe"), MENU_BTN_STYLE);
+      BTN_TAG(1) THEME(navi_btn) BTN( BTN_POS(1,6), BTN_SIZE(1,1), F("Save"),             MENU_BTN_STYLE);
+      BTN_TAG(2) THEME(navi_btn) BTN( BTN_POS(2,6), BTN_SIZE(1,1), F("Back"),             MENU_BTN_STYLE);
     #else
-      #define GRID_ROWS 4
+      BTN_TAG(3) THEME(menu_btn) BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("Z Offset "),        MENU_BTN_STYLE);
+      BTN_TAG(4) THEME(menu_btn) BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("Steps/mm"),         MENU_BTN_STYLE);
+
+      BTN_TAG(6) THEME(disabled) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Velocity "),        MENU_BTN_STYLE);
+      BTN_TAG(7) THEME(disabled) BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Acceleration"),     MENU_BTN_STYLE);
+      BTN_TAG(8) THEME(disabled) BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("Jerk"),             MENU_BTN_STYLE);
+      BTN_TAG(5) THEME(menu_btn) BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("Restore Failsafe"), MENU_BTN_STYLE);
+
+      BTN_TAG(1) THEME(navi_btn) BTN( BTN_POS(1,4), BTN_SIZE(1,1), F("Save"),             MENU_BTN_STYLE);
+      BTN_TAG(2) THEME(navi_btn) BTN( BTN_POS(2,4), BTN_SIZE(1,1), F("Back"),             MENU_BTN_STYLE);
     #endif
 
-    #define GRID_COLS 2
-
-    #define MARGIN_T 15
-    #if defined(LCD_PORTRAIT)
-      BTN_TAG(3) RGB(menu_btn) BTN( BTN_POS(1,1), BTN_SIZE(1,2), F("Z Offset "),        MENU_BTN_STYLE);
-      BTN_TAG(4) RGB(menu_btn) BTN( BTN_POS(1,3), BTN_SIZE(1,2), F("Steps/mm"),         MENU_BTN_STYLE);
-
-      BTN_TAG(6) RGB(disabled) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Velocity "),        MENU_BTN_STYLE);
-      BTN_TAG(7) RGB(disabled) BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Acceleration"),     MENU_BTN_STYLE);
-      BTN_TAG(8) RGB(disabled) BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("Jerk"),             MENU_BTN_STYLE);
-      BTN_TAG(5) RGB(menu_btn) BTN( BTN_POS(1,5), BTN_SIZE(2,1), F("Restore Failsafe"), MENU_BTN_STYLE);
-      BTN_TAG(1) RGB(navi_btn) BTN( BTN_POS(1,6), BTN_SIZE(1,1), F("Save"),             MENU_BTN_STYLE);
-      BTN_TAG(2) RGB(navi_btn) BTN( BTN_POS(2,6), BTN_SIZE(1,1), F("Back"),             MENU_BTN_STYLE);
-    #else
-      BTN_TAG(3) RGB(menu_btn) BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("Z Offset "),        MENU_BTN_STYLE);
-      BTN_TAG(4) RGB(menu_btn) BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("Steps/mm"),         MENU_BTN_STYLE);
-
-      BTN_TAG(6) RGB(disabled) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Velocity "),        MENU_BTN_STYLE);
-      BTN_TAG(7) RGB(disabled) BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Acceleration"),     MENU_BTN_STYLE);
-      BTN_TAG(8) RGB(disabled) BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("Jerk"),             MENU_BTN_STYLE);
-      BTN_TAG(5) RGB(menu_btn) BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("Restore Failsafe"), MENU_BTN_STYLE);
-      #define GRID_COLS 4
-      BTN_TAG(1) RGB(navi_btn) BTN( BTN_POS(1,4), BTN_SIZE(2,1), F("Save"),             MENU_BTN_STYLE);
-      BTN_TAG(2) RGB(navi_btn) BTN( BTN_POS(3,4), BTN_SIZE(2,1), F("Back"),             MENU_BTN_STYLE);
-    #endif
-
-    cmd.Cmd(DL_DISPLAY);
-    cmd.Cmd(CMD_SWAP);
-
-    cmd.Cmd_Execute();
     dlcache.store();
   }
+
+  cmd.Cmd(DL_DISPLAY);
+  cmd.Cmd(CMD_SWAP);
+  cmd.Cmd_Execute();
 }
 
 void AdvancedSettingsScreen::onTouchStart(uint8_t tag) {
@@ -725,20 +818,25 @@ void AdvancedSettingsScreen::onTouchStart(uint8_t tag) {
 
 /******************************** CALIBRATION SCREEN ****************************/
 
+#define GRID_COLS 4
+#define GRID_ROWS 16
+
 void CalibrationScreen::onRefresh() {
   CLCD::CommandFifo cmd;
-  cmd.Cmd_Start();
   cmd.Cmd(CMD_DLSTART);
   cmd.Cmd_Clear_Color(Theme::background);
   cmd.Cmd_Clear(1,1,1);
 
-  #define GRID_COLS 4
-  #define GRID_ROWS 16
+
   #if defined(LCD_PORTRAIT)
   BTX( BTN_POS(1,8), BTN_SIZE(4,1), F("Touch the dots"), FONT_LRG);
   BTX( BTN_POS(1,9), BTN_SIZE(4,1), F("to calibrate"), FONT_LRG);
   #else
-  BTX( BTN_POS(1,1), BTN_SIZE(4,16), F("Touch the dots to calibrate"), FONT_LRG);
+    #if defined(LCD_800x480)
+      BTX( BTN_POS(1,1), BTN_SIZE(4,16), F("Touch the dots to calibrate"), FONT_LRG);
+    #else
+      BTX( BTN_POS(1,1), BTN_SIZE(4,16), F("Touch the dots to calibrate"), FONT_MED);
+    #endif
   #endif
 
   cmd.Cmd(CMD_CALIBRATE);
@@ -748,12 +846,16 @@ void CalibrationScreen::onRefresh() {
 }
 
 void CalibrationScreen::onIdle() {
-  if(CLCD::CommandFifo::Is_Idle()) {
+  if(CLCD::CommandFifo::Cmd_Is_Idle()) {
     GOTO_SCREEN(StatusScreen);
   }
 }
 
 /***************************** CALIBRATION REGISTERS SCREEN ****************************/
+
+#define MARGIN_T 5
+#define GRID_ROWS 7
+#define GRID_COLS 2
 
 void CalibrationRegistersScreen::onRefresh() {
   const uint32_t T_Transform_A = CLCD::Mem_Read32(REG_TOUCH_TRANSFORM_A);
@@ -765,28 +867,24 @@ void CalibrationRegistersScreen::onRefresh() {
   char b[20];
 
   CLCD::CommandFifo cmd;
-  cmd.Cmd_Start();
   cmd.Cmd(CMD_DLSTART);
   cmd.Cmd_Clear_Color(Theme::background);
   cmd.Cmd_Clear(1,1,1);
 
-  #define MARGIN_T 5
-  #define GRID_ROWS 7
-  #define GRID_COLS 2
   BTN_TAG(0)
-  RGB(transformA) BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("TOUCH TRANSFORM_A"), 28, OPT_3D);
-  RGB(transformB) BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("TOUCH TRANSFORM_B"), 28, OPT_3D);
-  RGB(transformC) BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("TOUCH TRANSFORM_C"), 28, OPT_3D);
-  RGB(transformD) BTN( BTN_POS(1,4), BTN_SIZE(1,1), F("TOUCH TRANSFORM_D"), 28, OPT_3D);
-  RGB(transformE) BTN( BTN_POS(1,5), BTN_SIZE(1,1), F("TOUCH TRANSFORM_E"), 28, OPT_3D);
-  RGB(transformF) BTN( BTN_POS(1,6), BTN_SIZE(1,1), F("TOUCH TRANSFORM_F"), 28, OPT_3D);
+  THEME(transformA) BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("TOUCH TRANSFORM_A"), 28, OPT_3D);
+  THEME(transformB) BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("TOUCH TRANSFORM_B"), 28, OPT_3D);
+  THEME(transformC) BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("TOUCH TRANSFORM_C"), 28, OPT_3D);
+  THEME(transformD) BTN( BTN_POS(1,4), BTN_SIZE(1,1), F("TOUCH TRANSFORM_D"), 28, OPT_3D);
+  THEME(transformE) BTN( BTN_POS(1,5), BTN_SIZE(1,1), F("TOUCH TRANSFORM_E"), 28, OPT_3D);
+  THEME(transformF) BTN( BTN_POS(1,6), BTN_SIZE(1,1), F("TOUCH TRANSFORM_F"), 28, OPT_3D);
 
-  RGB(transformVal) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
-  RGB(transformVal) BTN( BTN_POS(2,2), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
-  RGB(transformVal) BTN( BTN_POS(2,3), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
-  RGB(transformVal) BTN( BTN_POS(2,4), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
-  RGB(transformVal) BTN( BTN_POS(2,5), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
-  RGB(transformVal) BTN( BTN_POS(2,6), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
+  THEME(transformVal) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
+  THEME(transformVal) BTN( BTN_POS(2,2), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
+  THEME(transformVal) BTN( BTN_POS(2,3), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
+  THEME(transformVal) BTN( BTN_POS(2,4), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
+  THEME(transformVal) BTN( BTN_POS(2,5), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
+  THEME(transformVal) BTN( BTN_POS(2,6), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
 
   sprintf(b, "0x%08lX", T_Transform_A); BTX( BTN_POS(2,1), BTN_SIZE(1,1), b, 28);
   sprintf(b, "0x%08lX", T_Transform_B); BTX( BTN_POS(2,2), BTN_SIZE(1,1), b, 28);
@@ -797,7 +895,7 @@ void CalibrationRegistersScreen::onRefresh() {
 
   #define GRID_COLS 3
 
-  BTN_TAG(1) RGB(navi_btn) BTN( BTN_POS(3,7), BTN_SIZE(1,1), F("Back"), MENU_BTN_STYLE);
+  BTN_TAG(1) THEME(navi_btn) BTN( BTN_POS(3,7), BTN_SIZE(1,1), F("Back"), MENU_BTN_STYLE);
 
   cmd.Cmd(DL_DISPLAY);
   cmd.Cmd(CMD_SWAP);
@@ -812,147 +910,162 @@ void CalibrationRegistersScreen::onTouchStart(uint8_t tag) {
 
 /*************************** GENERIC VALUE ADJUSTMENT SCREEN ******************************/
 
-void ValueAdjusters::static_heading(progmem_str heading) {
+#if defined(LCD_PORTRAIT)
+  #define GRID_COLS  6
+  #define GRID_ROWS 10
+#else
+  #define GRID_COLS  9
+  #define GRID_ROWS  6
+#endif
+
+void ValueAdjusters::draw_increment_btn(const uint8_t tag, uint8_t decimals) {
+  CLCD::CommandFifo  cmd;
+  const char        *label = PSTR("?");
+  uint8_t            pos;
+
+  switch(tag) {
+    case 20: label = PSTR("0.001"); pos = decimals - 3; break;
+    case 21: label = PSTR( "0.01"); pos = decimals - 2; break;
+    case 22: label = PSTR(  "0.1"); pos = decimals - 1; break;
+    case 23: label = PSTR(  "1"  ); pos = decimals + 0; break;
+    case 24: label = PSTR( "10"  ); pos = decimals + 1; break;
+    case 25: label = PSTR("100"  ); pos = decimals + 2; break;
+  }
+
+  BTN_TAG(tag)
+  switch(pos) {
+    #if defined(LCD_PORTRAIT)
+      case 0: BTN( BTN_POS(2,8), BTN_SIZE(1,1), progmem_str(label), FONT_MED, OPT_3D); break;
+      case 1: BTN( BTN_POS(3,8), BTN_SIZE(1,1), progmem_str(label), FONT_MED, OPT_3D); break;
+      case 2: BTN( BTN_POS(4,8), BTN_SIZE(1,1), progmem_str(label), FONT_MED, OPT_3D); break;
+    #else
+      case 0: BTN( BTN_POS(8,2), BTN_SIZE(2,1), progmem_str(label), FONT_MED, OPT_3D); break;
+      case 1: BTN( BTN_POS(8,3), BTN_SIZE(2,1), progmem_str(label), FONT_MED, OPT_3D); break;
+      case 2: BTN( BTN_POS(8,4), BTN_SIZE(2,1), progmem_str(label), FONT_MED, OPT_3D); break;
+      #endif
+  }
+}
+
+void ValueAdjusters::heading_t::static_parts() const {
   CLCD::CommandFifo cmd;
-  cmd.Cmd_Start();
   cmd.Cmd_Clear_Color(Theme::adjust_bg);
   cmd.Cmd_Clear(1,1,1);
 
-  #if defined(LCD_PORTRAIT)
-    #define GRID_COLS 6
-    #define GRID_ROWS 9
-    #define EDGE_R    20
-  #else
-    #define GRID_COLS 9
-    #define GRID_ROWS 6
-    #define EDGE_R    40
-  #endif
+  // Draw all the buttons in the off state.
+  THEME(toggle_off);
+  draw_increment_btn(23 - decimals, decimals);
+  draw_increment_btn(24 - decimals, decimals);
+  draw_increment_btn(25 - decimals, decimals);
+  draw_increment_btn(26 - decimals, decimals);
 
   #if defined(LCD_PORTRAIT)
-    BTN_TAG( 0) RGB(adjust_bg) BTN( BTN_POS(1,1), BTN_SIZE(6,1), heading, FONT_MED, OPT_FLAT);
-    BTN_TAG( 0) RGB(adjust_bg) BTN( BTN_POS(1,7), BTN_SIZE(2,1), F("Increment:"), FONT_SML, OPT_FLAT);
-
-    BTN_TAG(20) TOGGLE(increment == 0.1 ) BTN( BTN_POS(3,7), BTN_SIZE(1,1), F("0.1"), FONT_MED, OPT_3D);
-    BTN_TAG(21) TOGGLE(increment == 1.  ) BTN( BTN_POS(4,7), BTN_SIZE(1,1), F("1"),   FONT_MED, OPT_3D);
-    BTN_TAG(22) TOGGLE(increment == 10. ) BTN( BTN_POS(5,7), BTN_SIZE(1,1), F("10"),  FONT_MED, OPT_3D);
-    BTN_TAG(23) TOGGLE(increment == 100.) BTN( BTN_POS(6,7), BTN_SIZE(1,1), F("100"), FONT_MED, OPT_3D);
-
-    #define EDGE_R    0
-    #define GRID_COLS 4
-    BTN_TAG(1) RGB(navi_btn) BTN( BTN_POS(1,9), BTN_SIZE(4,1), F("Back"), MENU_BTN_STYLE);
+    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(1,1),  BTN_SIZE(6,1), heading,             FONT_MED, OPT_FLAT);
+    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(1,7),  BTN_SIZE(6,1), F("Increment:"),     FONT_SML, OPT_FLAT);
+    BTN_TAG(1) THEME(navi_btn)  BTN( BTN_POS(1,10), BTN_SIZE(6,1), F("Back"),           MENU_BTN_STYLE);
   #else
-    BTN_TAG( 0) RGB(adjust_bg) BTN( BTN_POS(3,1), BTN_SIZE(4,1),   heading, FONT_MED, OPT_FLAT);
-
-    BTN_TAG( 0) RGB(adjust_bg) BTN( BTN_POS(8,1), BTN_SIZE(2,1), F("Increment"), FONT_MED, OPT_FLAT);
-
-    BTN_TAG(20) TOGGLE(increment == 0.1 ) BTN( BTN_POS(8,2), BTN_SIZE(1,1), F("0.1"), FONT_MED, OPT_3D);
-    BTN_TAG(21) TOGGLE(increment == 1.  ) BTN( BTN_POS(9,2), BTN_SIZE(1,1), F("1"),   FONT_MED, OPT_3D);
-    BTN_TAG(22) TOGGLE(increment == 10. ) BTN( BTN_POS(8,3), BTN_SIZE(2,1), F("10"),  FONT_MED, OPT_3D);
-    BTN_TAG(23) TOGGLE(increment == 100.) BTN( BTN_POS(8,4), BTN_SIZE(2,1), F("100"), FONT_MED, OPT_3D);
-
-    #define EDGE_R  0
-
-    #define MARGIN_T 15
-    #define GRID_COLS 4
-    BTN_TAG(1) RGB(navi_btn) BTN( BTN_POS(1,6), BTN_SIZE(4,1), F("Back"), MENU_BTN_STYLE);
-    #define MARGIN_T 5
+    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(3,1),  BTN_SIZE(4,1), (progmem_str) label, FONT_MED, OPT_FLAT);
+    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(8,1),  BTN_SIZE(2,1), F("Increment"),      FONT_MED, OPT_FLAT);
+    BTN_TAG(1) THEME(navi_btn)  BTN( BTN_POS(7,6),  BTN_SIZE(3,1), F("Back"),           MENU_BTN_STYLE);
   #endif
-
-  cmd.Cmd_Execute();
 }
 
-void ValueAdjusters::static_value(int line, progmem_str label) {
+void ValueAdjusters::heading_t::dynamic_parts() const {
   CLCD::CommandFifo cmd;
-  cmd.Cmd_Start();
 
-  #if defined(LCD_PORTRAIT)
-    #define GRID_COLS 6
-    #define GRID_ROWS 9
-    #define EDGE_R    20
-  #else
-    #define GRID_COLS 9
-    #define GRID_ROWS 6
-    #define EDGE_R    40
-  #endif
-
-  BTN_TAG( 0)                        BTN( BTN_POS(3,line+1), BTN_SIZE(2,1), F(""),  FONT_SML, OPT_FLAT);
-  BTN_TAG( 0)         RGB(adjust_bg) BTN( BTN_POS(1,line+1), BTN_SIZE(2,1), label,  FONT_SML, OPT_FLAT);
-  BTN_TAG(2*line    ) RGB(incr_btn)  BTN( BTN_POS(5,line+1), BTN_SIZE(1,1), F("-"), FONT_MED, OPT_3D);
-  BTN_TAG(2*line + 1) RGB(incr_btn)  BTN( BTN_POS(6,line+1), BTN_SIZE(1,1), F("+"), FONT_MED, OPT_3D);
-
-  #define EDGE_R  0
-
-  cmd.Cmd_Execute();
+  THEME(toggle_on);
+  draw_increment_btn(increment, decimals);
 }
 
-void ValueAdjusters::dynamic_value(int line, float value, progmem_str units) {
-  CLCD::CommandFifo cmd;
-  cmd.Cmd_Start();
-  #define MARGIN_T  5
-
-  #if defined(LCD_PORTRAIT)
-    #define GRID_COLS 6
-    #define GRID_ROWS 9
-    #define EDGE_R    20
+#if defined(LCD_PORTRAIT)
+  #if defined(LCD_800x480)
+    #define EDGE_R 20
   #else
-    #define GRID_COLS 9
-    #define GRID_ROWS 6
-    #define EDGE_R    40
+    #define EDGE_R 10
   #endif
+#else
+  #if defined(LCD_800x480)
+    #define EDGE_R  40
+  #else
+    #define EDGE_R  20
+  #endif
+#endif
 
-  BTN_TAG( 0)
+void ValueAdjusters::adjuster_t::static_parts() const {
+  CLCD::CommandFifo cmd;
+  progmem_str   str  = (progmem_str) label;
+  const uint8_t tag  = line * 2;
 
-  char b[255];
-  dtostrf(value, 5, 1, b);
+  BTN_TAG( 0     ) RGB(color)       BTN( BTN_POS(3,line+1), BTN_SIZE(2,1), F(""),  FONT_SML, OPT_FLAT);
+  BTN_TAG( 0     ) THEME(adjust_bg) BTN( BTN_POS(1,line+1), BTN_SIZE(2,1), str,    FONT_SML, OPT_FLAT);
+  BTN_TAG(tag    ) THEME(incr_btn)  BTN( BTN_POS(5,line+1), BTN_SIZE(1,1), F("-"), FONT_MED, OPT_3D);
+  BTN_TAG(tag + 1) THEME(incr_btn)  BTN( BTN_POS(6,line+1), BTN_SIZE(1,1), F("+"), FONT_MED, OPT_3D);
+
+  increment = 23 - decimals;
+}
+
+void ValueAdjusters::adjuster_t::dynamic_parts(float value) const {
+  CLCD::CommandFifo cmd;
+  char b[32];
+
+  dtostrf(value, 5, decimals, b);
   strcat_P(b, PSTR(" "));
   strcat_P(b, (const char*) units);
+
+  BTN_TAG(0)
   BTX( BTN_POS(3,line+1), BTN_SIZE(2,1), b, FONT_SML);
-
-  #define EDGE_R  0
-
-  cmd.Cmd_Execute();
 }
 
 void ValueAdjusters::onTouchStart(uint8_t tag) {
   switch(tag) {
-    case 1:        GOTO_PREVIOUS();                 return;
-    case 2 ... 9:  current_screen.onTouchHeld(tag); return;
-    case 20: increment = 0.1;                       break;
-    case 21: increment = 1;                         break;
-    case 22: increment = 10;                        break;
-    case 23: increment = 100;                       break;
+    case 1:         GOTO_PREVIOUS();                 return;
+    case 2  ... 9:  current_screen.onTouchHeld(tag); return;
+    case 20 ... 25: increment = tag;                 break;
   }
   current_screen.onRefresh();
 }
 
-float ValueAdjusters::increment = 1;
+float ValueAdjusters::getIncrement() {
+  switch(increment) {
+    case 20: return   0.001;
+    case 21: return   0.01;
+    case 22: return   0.1;
+    case 23: return   1.0;
+    case 24: return  10.0;
+    case 25: return 100.0;
+  }
+}
+
+uint8_t ValueAdjusters::increment = 20;
+
+#define EDGE_R 0
 
 /******************************** MOVE AXIS SCREEN ******************************/
 
 void MoveAxisScreen::onRefresh() {
   static CLCD::DLCache dlcache;
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
+
+  /*                    #  Label:              Units:      Color:         Precision: */
+  const heading_t  a = {   PSTR("Move Axis"),                             1          };
+  const adjuster_t b = {1, PSTR("X:"),         PSTR("mm"), Theme::x_axis, 1          };
+  const adjuster_t c = {2, PSTR("Y:"),         PSTR("mm"), Theme::y_axis, 1          };
+  const adjuster_t d = {3, PSTR("Z:"),         PSTR("mm"), Theme::z_axis, 1          };
 
   if(dlcache.hasData()) {
     dlcache.append();
   } else {
-    CLCD::CommandFifo cmd;
-    cmd.Cmd_Start();
-    cmd.Cmd(CMD_DLSTART);
-    cmd.Cmd_Execute();
-
-                ValueAdjusters::static_heading(F("Move Axis"));
-    RGB(x_axis) ValueAdjusters::static_value(1, F("X:"));
-    RGB(y_axis) ValueAdjusters::static_value(2, F("Y:"));
-    RGB(z_axis) ValueAdjusters::static_value(3, F("Z:"));
+    a.static_parts();
+    b.static_parts();
+    c.static_parts();
+    d.static_parts();
     dlcache.store();
   }
+  a.dynamic_parts();
+  b.dynamic_parts(marlin_x_axis);
+  c.dynamic_parts(marlin_y_axis);
+  d.dynamic_parts(marlin_z_axis);
 
-  ValueAdjusters::dynamic_value(1, marlin_x_axis, F("mm"));
-  ValueAdjusters::dynamic_value(2, marlin_y_axis, F("mm"));
-  ValueAdjusters::dynamic_value(3, marlin_z_axis, F("mm"));
-
-  CLCD::CommandFifo cmd;
-  cmd.Cmd_Start();
   cmd.Cmd(DL_DISPLAY);
   cmd.Cmd(CMD_SWAP);
   cmd.Cmd_Execute();
@@ -960,12 +1073,12 @@ void MoveAxisScreen::onRefresh() {
 
 void MoveAxisScreen::onTouchHeld(uint8_t tag) {
   switch(tag) {
-    case 2:  marlin_x_axis -=  increment;       break;
-    case 3:  marlin_x_axis +=  increment;       break;
-    case 4:  marlin_y_axis -=  increment;       break;
-    case 5:  marlin_y_axis +=  increment;       break;
-    case 6:  marlin_z_axis -=  increment;       break;
-    case 7:  marlin_z_axis +=  increment;       break;
+    case 2:  marlin_x_axis -= getIncrement(); break;
+    case 3:  marlin_x_axis += getIncrement(); break;
+    case 4:  marlin_y_axis -= getIncrement(); break;
+    case 5:  marlin_y_axis += getIncrement(); break;
+    case 6:  marlin_z_axis -= getIncrement(); break;
+    case 7:  marlin_z_axis += getIncrement(); break;
   }
   onRefresh();
 }
@@ -974,29 +1087,29 @@ void MoveAxisScreen::onTouchHeld(uint8_t tag) {
 
 void TemperatureScreen::onRefresh() {
   static CLCD::DLCache dlcache;
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
+
+  /*                    #  Label:              Units:     Color:            Precision: */
+  const heading_t  a = {   PSTR("Nozzle:"),                                 0          };
+  const adjuster_t b = {1, PSTR("Nozzle:"),    PSTR("C"), Theme::temp,      0          };
+  const adjuster_t c = {2, PSTR("Bed:"),       PSTR("C"), Theme::temp,      0          };
+  const adjuster_t d = {3, PSTR("Fan Speed:"), PSTR("%"), Theme::fan_speed, 0          };
 
   if(dlcache.hasData()) {
     dlcache.append();
   } else {
-    CLCD::CommandFifo cmd;
-    cmd.Cmd_Start();
-    cmd.Cmd(CMD_DLSTART);
-
-                ValueAdjusters::static_heading(F("Temperature"));
-    RGB(x_axis) ValueAdjusters::static_value(1, F("Nozzle:"));
-    RGB(y_axis) ValueAdjusters::static_value(2, F("Bed:"));
-    RGB(z_axis) ValueAdjusters::static_value(3, F("Fan Speed:"));
-
-    cmd.Cmd_Execute();
+    a.static_parts();
+    b.static_parts();
+    c.static_parts();
+    d.static_parts();
     dlcache.store();
   }
+  a.dynamic_parts();
+  b.dynamic_parts(marlin_e0_temp);
+  c.dynamic_parts(marlin_bed_temp);
+  d.dynamic_parts(marlin_fan_speed);
 
-  ValueAdjusters::dynamic_value(1, marlin_e0_temp,   F("C"));
-  ValueAdjusters::dynamic_value(2, marlin_bed_temp,  F("C"));
-  ValueAdjusters::dynamic_value(3, marlin_fan_speed, F("%"));
-
-  CLCD::CommandFifo cmd;
-  cmd.Cmd_Start();
   cmd.Cmd(DL_DISPLAY);
   cmd.Cmd(CMD_SWAP);
   cmd.Cmd_Execute();
@@ -1004,12 +1117,12 @@ void TemperatureScreen::onRefresh() {
 
 void TemperatureScreen::onTouchHeld(uint8_t tag) {
   switch(tag) {
-    case 2:  marlin_e0_temp     -=  increment;         break;
-    case 3:  marlin_e0_temp     +=  increment;         break;
-    case 4:  marlin_bed_temp    -=  increment;         break;
-    case 5:  marlin_bed_temp    +=  increment;         break;
-    case 6:  marlin_fan_speed   -=  increment;         break;
-    case 7:  marlin_fan_speed   +=  increment;         break;
+    case 2:  marlin_e0_temp   -= getIncrement(); break;
+    case 3:  marlin_e0_temp   += getIncrement(); break;
+    case 4:  marlin_bed_temp  -= getIncrement(); break;
+    case 5:  marlin_bed_temp  += getIncrement(); break;
+    case 6:  marlin_fan_speed -= getIncrement(); break;
+    case 7:  marlin_fan_speed += getIncrement(); break;
   }
   onRefresh();
 }
@@ -1018,31 +1131,32 @@ void TemperatureScreen::onTouchHeld(uint8_t tag) {
 
 void StepsScreen::onRefresh() {
   static CLCD::DLCache dlcache;
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
+
+  /*                    #  Label:      Units:             Color:            Precision: */
+  const heading_t  a = {               PSTR("Steps/mm"),                    0};
+  const adjuster_t b = {1, PSTR("X:"), PSTR(""),          Theme::x_axis,    0};
+  const adjuster_t c = {2, PSTR("Y:"), PSTR(""),          Theme::y_axis,    0};
+  const adjuster_t d = {3, PSTR("Z:"), PSTR(""),          Theme::z_axis,    0};
+  const adjuster_t e = {4, PSTR("E:"), PSTR(""),          Theme::z_axis,    0};
 
   if(dlcache.hasData()) {
     dlcache.append();
   } else {
-    CLCD::CommandFifo cmd;
-    cmd.Cmd_Start();
-    cmd.Cmd(CMD_DLSTART);
-
-                ValueAdjusters::static_heading(F("Steps/mm"));
-    RGB(x_axis) ValueAdjusters::static_value(1, F("X:"));
-    RGB(y_axis) ValueAdjusters::static_value(2, F("Y:"));
-    RGB(z_axis) ValueAdjusters::static_value(3, F("Z:"));
-    RGB(e_axis) ValueAdjusters::static_value(4, F("E:"));
-
-    cmd.Cmd_Execute();
+    a.static_parts();
+    b.static_parts();
+    c.static_parts();
+    d.static_parts();
+    e.static_parts();
     dlcache.store();
   }
+  a.dynamic_parts();
+  b.dynamic_parts(marlin_x_steps );
+  c.dynamic_parts(marlin_y_steps );
+  d.dynamic_parts(marlin_z_steps );
+  e.dynamic_parts(marlin_e0_steps);
 
-  ValueAdjusters::dynamic_value(1, marlin_x_steps,  F(""));
-  ValueAdjusters::dynamic_value(2, marlin_y_steps,  F(""));
-  ValueAdjusters::dynamic_value(3, marlin_z_steps,  F(""));
-  ValueAdjusters::dynamic_value(4, marlin_e0_steps, F(""));
-
-  CLCD::CommandFifo cmd;
-  cmd.Cmd_Start();
   cmd.Cmd(DL_DISPLAY);
   cmd.Cmd(CMD_SWAP);
   cmd.Cmd_Execute();
@@ -1050,14 +1164,14 @@ void StepsScreen::onRefresh() {
 
 void StepsScreen::onTouchHeld(uint8_t tag) {
   switch(tag) {
-    case 2:  marlin_x_steps   -=  increment;         break;
-    case 3:  marlin_x_steps   +=  increment;         break;
-    case 4:  marlin_y_steps   -=  increment;         break;
-    case 5:  marlin_y_steps   +=  increment;         break;
-    case 6:  marlin_z_steps   -=  increment;         break;
-    case 7:  marlin_z_steps   +=  increment;         break;
-    case 8:  marlin_e0_steps  -=  increment;         break;
-    case 9:  marlin_e0_steps  +=  increment;         break;
+    case 2:  marlin_x_steps   -= getIncrement(); break;
+    case 3:  marlin_x_steps   += getIncrement(); break;
+    case 4:  marlin_y_steps   -= getIncrement(); break;
+    case 5:  marlin_y_steps   += getIncrement(); break;
+    case 6:  marlin_z_steps   -= getIncrement(); break;
+    case 7:  marlin_z_steps   += getIncrement(); break;
+    case 8:  marlin_e0_steps  -= getIncrement(); break;
+    case 9:  marlin_e0_steps  += getIncrement(); break;
   }
   onRefresh();
 }
@@ -1066,25 +1180,23 @@ void StepsScreen::onTouchHeld(uint8_t tag) {
 
 void ZOffsetScreen::onRefresh() {
   static CLCD::DLCache dlcache;
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
+
+  /*                    #  Label:             Units:      Color:            Precision: */
+  const heading_t  a = {   PSTR("Z Offset"),                                3          };
+  const adjuster_t b = {2, PSTR("Z Offset:"), PSTR("mm"), Theme::z_axis,    3          };
 
   if(dlcache.hasData()) {
     dlcache.append();
   } else {
-    CLCD::CommandFifo cmd;
-    cmd.Cmd_Start();
-    cmd.Cmd(CMD_DLSTART);
-
-                ValueAdjusters::static_heading(F("Z Offset"));
-    RGB(z_axis) ValueAdjusters::static_value(2, F("Z Offset:"));
-
-    cmd.Cmd_Execute();
+    a.static_parts();
+    b.static_parts();
     dlcache.store();
   }
+  a.dynamic_parts();
+  b.dynamic_parts(marlin_z_offset);
 
-  ValueAdjusters::dynamic_value(2, marlin_z_offset,  F("mm"));
-
-  CLCD::CommandFifo cmd;
-  cmd.Cmd_Start();
   cmd.Cmd(DL_DISPLAY);
   cmd.Cmd(CMD_SWAP);
   cmd.Cmd_Execute();
@@ -1092,8 +1204,8 @@ void ZOffsetScreen::onRefresh() {
 
 void ZOffsetScreen::onTouchHeld(uint8_t tag) {
   switch(tag) {
-    case 4:  marlin_z_offset   -=  increment;         break;
-    case 5:  marlin_z_offset   +=  increment;         break;
+    case 4:  marlin_z_offset -= getIncrement(); break;
+    case 5:  marlin_z_offset += getIncrement(); break;
   }
   onRefresh();
 }
@@ -1122,7 +1234,7 @@ void lcd_update() {
   // If the LCD is processing commands, don't check
   // for tags since they may be changing and could
   // cause spurious events.
-  if(!CLCD::CommandFifo::Is_Idle()) {
+  if(!CLCD::CommandFifo::Cmd_Is_Idle()) {
     return;
   }
 
@@ -1139,6 +1251,14 @@ void lcd_update() {
     else if(pressed != NONE) {
       current_screen.onTouchEnd(pressed);
       pressed = NONE;
+      #if defined(UI_FRAMEWORK_DEBUG)
+        #if defined (SERIAL_PROTOCOLLNPAIR)
+          SERIAL_PROTOCOLLNPAIR("Touch end: ", tag);
+        #else
+          Serial.print("Touch end: ");
+          Serial.println(tag);
+        #endif
+      #endif
     }
   }
   else if(pressed == NONE) {
@@ -1148,8 +1268,12 @@ void lcd_update() {
     last_repeat = millis();
 
     #if defined(UI_FRAMEWORK_DEBUG)
-    Serial.print("Touch start: ");
-    Serial.println(tag);
+      #if defined (SERIAL_PROTOCOLLNPAIR)
+        SERIAL_PROTOCOLLNPAIR("Touch start: ", tag);
+      #else
+        Serial.print("Touch start: ");
+        Serial.println(tag);
+      #endif
     #endif
 
     if(lastScreen != current_screen.getScreen()) {

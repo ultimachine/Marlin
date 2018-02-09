@@ -349,10 +349,12 @@
 #endif
 
 #if defined(LULZBOT_USE_TOUCH_UI)
-#define IS_FT810
-#define LCD_PORTRAIT
-#define LCD_UPSIDE_DOWN
-//#define UI_FRAMEWORK_DEBUG
+#define IS_FT800
+//#define IS_FT810
+//#define LCD_PORTRAIT
+//#define LCD_UPSIDE_DOWN
+//#define LCD_800x480
+#define UI_FRAMEWORK_DEBUG
 #include "AO_UI_Marlin_LCD_API.h"
 #include "AO_UI_Framework.h"
 #include "AO_FT810_Constants.h"
