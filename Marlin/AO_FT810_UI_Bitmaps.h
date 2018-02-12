@@ -142,7 +142,7 @@ const PROGMEM CLCD::bitmap_info_t TD_Icon_Info = {
   .filter     = BILINEAR,
   .wrapx      = BORDER,
   .wrapy      = BORDER,
-  .RAMG_addr  = RAM_G + 8400,
+  .RAMG_addr  = RAM_G + 9000,
   .width      = 50,
   .height     = 20,
 };

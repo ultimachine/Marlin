@@ -924,20 +924,29 @@ void ValueAdjusters::draw_increment_btn(const uint8_t tag, uint8_t decimals) {
   uint8_t            pos;
 
   switch(tag) {
-    case 20: label = PSTR("0.001"); pos = decimals - 3; break;
-    case 21: label = PSTR( "0.01"); pos = decimals - 2; break;
+    case 20: label = PSTR(   ".001"); pos = decimals - 3; break;
+    case 21: label = PSTR(   ".01"); pos = decimals - 2; break;
     case 22: label = PSTR(  "0.1"); pos = decimals - 1; break;
     case 23: label = PSTR(  "1"  ); pos = decimals + 0; break;
     case 24: label = PSTR( "10"  ); pos = decimals + 1; break;
     case 25: label = PSTR("100"  ); pos = decimals + 2; break;
+    default:
+      #if defined(UI_FRAMEWORK_DEBUG)
+        #if defined(SERIAL_PROTOCOLLNPAIR)
+        SERIAL_PROTOCOLLNPAIR("Unknown tag for increment btn: ", tag);
+        #else
+        Serial.print(F("Unknown tag for increment btn:"));
+        Serial.println(tag);
+        #endif
+      #endif
   }
 
   BTN_TAG(tag)
   switch(pos) {
     #if defined(LCD_PORTRAIT)
-      case 0: BTN( BTN_POS(2,8), BTN_SIZE(1,1), progmem_str(label), FONT_MED, OPT_3D); break;
-      case 1: BTN( BTN_POS(3,8), BTN_SIZE(1,1), progmem_str(label), FONT_MED, OPT_3D); break;
-      case 2: BTN( BTN_POS(4,8), BTN_SIZE(1,1), progmem_str(label), FONT_MED, OPT_3D); break;
+      case 0: BTN( BTN_POS(3,8), BTN_SIZE(1,1), progmem_str(label), FONT_SML, OPT_3D); break;
+      case 1: BTN( BTN_POS(4,8), BTN_SIZE(1,1), progmem_str(label), FONT_SML, OPT_3D); break;
+      case 2: BTN( BTN_POS(5,8), BTN_SIZE(1,1), progmem_str(label), FONT_SML, OPT_3D); break;
     #else
       case 0: BTN( BTN_POS(8,2), BTN_SIZE(2,1), progmem_str(label), FONT_MED, OPT_3D); break;
       case 1: BTN( BTN_POS(8,3), BTN_SIZE(2,1), progmem_str(label), FONT_MED, OPT_3D); break;
@@ -956,16 +965,15 @@ void ValueAdjusters::heading_t::static_parts() const {
   draw_increment_btn(23 - decimals, decimals);
   draw_increment_btn(24 - decimals, decimals);
   draw_increment_btn(25 - decimals, decimals);
-  draw_increment_btn(26 - decimals, decimals);
 
   #if defined(LCD_PORTRAIT)
-    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(1,1),  BTN_SIZE(6,1), heading,             FONT_MED, OPT_FLAT);
-    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(1,7),  BTN_SIZE(6,1), F("Increment:"),     FONT_SML, OPT_FLAT);
+    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(1,1),  BTN_SIZE(6,1), (progmem_str) label, FONT_MED, OPT_FLAT);
+    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(1,7),  BTN_SIZE(6,1), F("Increment:"),     FONT_MED, OPT_FLAT);
     BTN_TAG(1) THEME(navi_btn)  BTN( BTN_POS(1,10), BTN_SIZE(6,1), F("Back"),           MENU_BTN_STYLE);
   #else
     BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(3,1),  BTN_SIZE(4,1), (progmem_str) label, FONT_MED, OPT_FLAT);
     BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(8,1),  BTN_SIZE(2,1), F("Increment"),      FONT_MED, OPT_FLAT);
-    BTN_TAG(1) THEME(navi_btn)  BTN( BTN_POS(7,6),  BTN_SIZE(3,1), F("Back"),           MENU_BTN_STYLE);
+    BTN_TAG(1) THEME(navi_btn)  BTN( BTN_POS(8,6),  BTN_SIZE(2,1), F("Back"),           MENU_BTN_STYLE);
   #endif
 }
 
@@ -1139,7 +1147,7 @@ void StepsScreen::onRefresh() {
   const adjuster_t b = {1, PSTR("X:"), PSTR(""),          Theme::x_axis,    0};
   const adjuster_t c = {2, PSTR("Y:"), PSTR(""),          Theme::y_axis,    0};
   const adjuster_t d = {3, PSTR("Z:"), PSTR(""),          Theme::z_axis,    0};
-  const adjuster_t e = {4, PSTR("E:"), PSTR(""),          Theme::z_axis,    0};
+  const adjuster_t e = {4, PSTR("E:"), PSTR(""),          Theme::e_axis,    0};
 
   if(dlcache.hasData()) {
     dlcache.append();

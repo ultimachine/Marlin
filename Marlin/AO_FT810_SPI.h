@@ -278,7 +278,7 @@ void CLCD::CommandFifo::Cmd_Wait_Until_Idle() {
   } while(!Cmd_Is_Idle());
 }
 
-#if defined(IS_FT800)
+#if defined(LCD_IS_FT800)
 void CLCD::CommandFifo::Cmd_Start() {
   if(command_write_ptr == 0xFFFFFFFFul) {
     command_write_ptr = getRegCmdWrite();

@@ -105,7 +105,7 @@
 #ifndef _AO_FT810_FUNC_H
 #define _AO_FT810_FUNC_H
 
-#if defined(IS_FT800)
+#if defined(LCD_IS_FT800)
   #define DL_CACHE_START 0x035000
 #else
   #define DL_CACHE_START 0x0F5000
@@ -116,7 +116,7 @@
 
 #if defined(LCD_800x480)
 using namespace FTDI_LCD_800x480;
-#else
+#elif defined(LCD_480x272)
 using namespace FTDI_LCD_480x272;
 #endif
 
@@ -165,7 +165,7 @@ class CLCD {
         static uint32_t getRegCmdWrite();
         static uint32_t getRegCmdRead();
 
-        #if defined(IS_FT800)
+        #if defined(LCD_IS_FT800)
           static uint32_t command_write_ptr;
           template <class T> void _write_unaligned(T data, uint16_t len);
         #else
@@ -343,7 +343,7 @@ void CLCD::Init (void) {
  *  If driving the 4D Systems 4DLCD-FT843 Board, the following Init sequence is needed for its FT800 Driver
  */
 
-#ifdef IS_FT800                                    // Use External Crystal and 48 MHz System Clock
+#ifdef LCD_IS_FT800                                    // Use External Crystal and 48 MHz System Clock
   Host_Cmd(CLKEXT, 0);
 
   delay(20);
@@ -421,7 +421,7 @@ void CLCD::Init (void) {
   /*
    *  Turn On the Display
    */
-  #if defined(IS_FT800)
+  #if defined(LCD_IS_FT800)
   Mem_Write8(REG_GPIO_DIR, 0x80);             // Turn ON Display Enable
   Mem_Write8(REG_GPIO,     0x80);
   #else
@@ -447,7 +447,7 @@ void CLCD::Init (void) {
 
 /******************* FT800/810 Graphic Commands *********************************/
 
-#if defined(IS_FT800)
+#if defined(LCD_IS_FT800)
 uint32_t CLCD::CommandFifo::command_write_ptr = 0xFFFFFFFFul;
 #endif
 

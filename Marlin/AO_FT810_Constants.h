@@ -628,14 +628,14 @@ namespace FTDI {
   const uint32_t CMD_LOGO                           = 0xFFFFFF31;
 }
 
-// If IS_FT800 is defined, then copy the FT800 namespace into the FTDI namespace
-// If IS_FT810 is defined, then copy the FT810 namespace into the FTDI namespace
+// If LCD_IS_FT800 is defined, then copy the FT800 namespace into the FTDI namespace
+// If LCD_IS_FT810 is defined, then copy the FT810 namespace into the FTDI namespace
 
-#if defined(IS_FT800)
+#if defined(LCD_IS_FT800)
 namespace FTDI {
   using namespace FT800;
 }
-#elif defined(IS_FT810)
+#elif defined(LCD_IS_FT810)
 namespace FTDI {
   using namespace FT810;
 }

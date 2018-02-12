@@ -130,6 +130,7 @@
     #define LULZBOT_USE_EINSYRAMBO
     #define LULZBOT_USE_EINSY_RETRO
     #define LULZBOT_USE_TOUCH_UI
+    #define LULZBOT_USE_HIGH_RES
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
@@ -168,6 +169,7 @@
     #define LULZBOT_TAZ_BED
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_TOUCH_UI
+    #define LULZBOT_USE_HIGH_RES
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
@@ -1916,8 +1918,18 @@
 #endif
 
 #if defined(LULZBOT_USE_TOUCH_UI)
-extern void lcd_update();
-extern void lcd_buttons_update();
+    extern void lcd_update();
+    extern void lcd_buttons_update();
+    //#define LCD_IS_FT800
+    #define LCD_IS_FT810
+    #if defined(LULZBOT_USE_HIGH_RES)
+        #define LCD_800x480
+    #else
+        #define LCD_480x272
+    #endif
+    #define LCD_PORTRAIT
+    #define LCD_UPSIDE_DOWN
+    #define UI_FRAMEWORK_DEBUG
 #endif
 
 /***************************** CUSTOM SPLASH SCREEN *****************************/
