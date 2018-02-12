@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".5" // Change this with each update
+#define LULZBOT_FW_VERSION ".6" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -984,9 +984,9 @@
 
 #if defined(LULZBOT_E3D_Titan_Aero)
     // LulzBot V6 block with E3D Titan Aero
-    #define LULZBOT_DEFAULT_Kp 15.02
-    #define LULZBOT_DEFAULT_Ki  0.86
-    #define LULZBOT_DEFAULT_Kd 65.21
+    #define LULZBOT_DEFAULT_Kp 21.00
+    #define LULZBOT_DEFAULT_Ki  1.78
+    #define LULZBOT_DEFAULT_Kd 61.93
 #endif /* LULZBOT_E3D_Titan_Aero */
 
 // Heated bed variants
