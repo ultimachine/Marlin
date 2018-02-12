@@ -67,7 +67,7 @@ void CLCD::spiDeselect (void) {                                           // CLC
 
 void CLCD::Reset (void) {
   WRITE(CLCD_MOD_RESET, 0);
-  delay(50);
+  delay(100);
   WRITE(CLCD_MOD_RESET, 1);
 }
 

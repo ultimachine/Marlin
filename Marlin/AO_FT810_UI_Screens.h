@@ -107,13 +107,11 @@ class BootScreen : public UIScreen {
 };
 
 class AboutScreen : public UIScreen {
-  private:
-    static void playChime();
-    static void draw(bool);
   public:
     static void onEntry();
     static void onRefresh();
     static void onTouchStart(uint8_t tag);
+    static void onIdle();
 };
 
 class StatusScreen : public UIScreen {
@@ -301,6 +299,10 @@ namespace Theme {
   const float    icon_scale    = 0.6;
   #endif
 #endif
+
+  const effect_t press_sound   = CHACK;
+  const effect_t repeat_sound  = CHACK;
+  const effect_t unpress_sound = POP;
 };
 
 /******************************** BOOT SCREEN ****************************/
@@ -316,6 +318,7 @@ void BootScreen::onRefresh() {
   cmd.Cmd_Wait_Until_Idle();
 
   CLCD::Turn_On_Backlight();
+  CLCD::SoundPlayer::setVolume(255);
 }
 
 void BootScreen::onIdle() {
@@ -324,32 +327,61 @@ void BootScreen::onIdle() {
 
 /******************************** ABOUT SCREEN ****************************/
 
+CLCD::SoundPlayer sound;
+
+const PROGMEM CLCD::SoundPlayer::sound_t chimes[] = {
+  {CHIMES, 55, 13},
+  {CHIMES, 64, 13},
+  {CHIMES, 60, 19}
+};
+
+const PROGMEM CLCD::SoundPlayer::sound_t samples[] = {
+  {HARP},
+  {XYLOPHONE},
+  {TUBA},
+  {GLOCKENSPIEL},
+  {ORGAN},
+  {TRUMPET},
+  {PIANO},
+  {CHIMES},
+  {MUSIC_BOX},
+  {BELL},
+  {CLICK},
+  {SWITCH},
+  {COWBELL},
+  {NOTCH},
+  {HIHAT},
+  {KICKDRUM},
+  {SWITCH},
+  {POP},
+  {CLACK},
+  {CHACK},
+  {SILENCE}
+};
+
 void AboutScreen::onEntry() {
-  draw(false);
-  playChime();
-  draw(true);
+  UIScreen::onEntry();
+
+  CLCD::Mem_Write8(REG_VOL_SOUND, 0xFF);
+  sound.play(chimes);
 }
 
 void AboutScreen::onRefresh() {
-  draw(true);
-}
-
-void AboutScreen::draw(bool showOkay) {
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
   cmd.Cmd_Clear_Color(Theme::about_bg);
   cmd.Cmd_Clear(1,1,1);
 
   #define GRID_COLS 4
-  #define GRID_ROWS 6
+  #define GRID_ROWS 8
 
   BTX( BTN_POS(1,2), BTN_SIZE(4,1), F("Color LCD Interface"),          FONT_LRG);
   BTN_TAG(2)
   BTX( BTN_POS(1,3), BTN_SIZE(4,1), F("(c) 2018 Aleph Objects, Inc."), FONT_LRG);
 
-  if(showOkay) {
-    BTN_TAG(1) THEME(about_btn) BTN( BTN_POS(2,5), BTN_SIZE(2,1), F("Okay"), MENU_BTN_STYLE);
-  }
+  BTX( BTN_POS(1,5), BTN_SIZE(4,1), Marlin_LCD_API::getFirmwareName(), FONT_LRG);
+
+  BTN_TAG(1) THEME(about_btn) BTN( BTN_POS(2,7), BTN_SIZE(2,1), F("Okay"), MENU_BTN_STYLE);
 
   cmd.Cmd(DL_DISPLAY);
   cmd.Cmd(CMD_SWAP);
@@ -363,25 +395,8 @@ void AboutScreen::onTouchStart(uint8_t tag) {
   }
 }
 
-void AboutScreen::playChime() {
-  CLCD::Mem_Write8(REG_VOL_SOUND, 0xFF);
-  CLCD::Mem_Write16(REG_SOUND, (0x37<< 8) | 0x47); // C8 MIDI note on xylophone 37
-  CLCD::Mem_Write8(REG_PLAY, 1);
-
-  delay(800);
-
-  CLCD::Mem_Write16(REG_SOUND, (0x40<< 8) | 0x47); // C8 MIDI note on xylophone 40
-  CLCD::Mem_Write8(REG_PLAY, 1);
-
-  delay(800);
-
-  CLCD::Mem_Write16(REG_SOUND, (0x3C<< 8) | 0x47); // C8 MIDI note on xylophone 3C
-  CLCD::Mem_Write8(REG_PLAY, 1);
-
-  delay(1200);
-
-  CLCD::Mem_Write16(REG_SOUND, 0);
-  CLCD::Mem_Write8(REG_PLAY, 1);
+void AboutScreen::onIdle() {
+  sound.onIdle();
 }
 
 /*********************************** STATUS SCREEN ******************************/
@@ -1255,8 +1270,11 @@ void lcd_update() {
     // except when pressed is IGNORE.
     if(pressed == IGNORE) {
       pressed = NONE;
+      sound.play(Theme::unpress_sound);
     }
     else if(pressed != NONE) {
+      sound.play(Theme::unpress_sound);
+
       current_screen.onTouchEnd(pressed);
       pressed = NONE;
       #if defined(UI_FRAMEWORK_DEBUG)
@@ -1274,6 +1292,8 @@ void lcd_update() {
     const uint8_t lastScreen = current_screen.getScreen();
     current_screen.onTouchStart(tag);
     last_repeat = millis();
+
+    sound.play(Theme::press_sound);
 
     #if defined(UI_FRAMEWORK_DEBUG)
       #if defined (SERIAL_PROTOCOLLNPAIR)
@@ -1296,6 +1316,7 @@ void lcd_update() {
     // The user is holding down a button.
     if((millis() - last_repeat) > 250) {
       current_screen.onTouchHeld(tag);
+      sound.play(Theme::repeat_sound);
       last_repeat = millis();
     }
   }

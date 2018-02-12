@@ -41,6 +41,8 @@ class Marlin_LCD_API {
     static const uint8_t getFeedRate_percent();
     static const float getZOffset_mm();
     static const bool isAxisPositionKnown(const axis_t axis);
+
+    static const progmem_str getFirmwareName();
 };
 
 #if defined(MSG_MARLIN)
@@ -102,5 +104,9 @@ const bool Marlin_LCD_API::isAxisPositionKnown(const axis_t axis) {
     case Y:  return axis_known_position[Y_AXIS];  break;
     case Z:  return axis_known_position[Z_AXIS];  break;
   }
+}
+
+const Marlin_LCD_API::progmem_str Marlin_LCD_API::getFirmwareName() {
+  return F("Marlin " SHORT_BUILD_VERSION LULZBOT_FW_VERSION);
 }
 #endif

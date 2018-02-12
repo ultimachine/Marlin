@@ -160,96 +160,9 @@ class CLCD {
       const uint16_t height;
     } bitmap_info_t;
 
-    class CommandFifo {
-      protected:
-        static uint32_t getRegCmdWrite();
-        static uint32_t getRegCmdRead();
-
-        #if defined(LCD_IS_FT800)
-          static uint32_t command_write_ptr;
-          template <class T> void _write_unaligned(T data, uint16_t len);
-        #else
-          uint32_t getRegCmdBSpace();
-        #endif
-        void Cmd_Start(void);
-
-      public:
-        template <class T> void write(T data, uint16_t len);
-
-      public:
-        CommandFifo() {Cmd_Start();}
-
-        static void Cmd_Reset (void);
-        static bool Cmd_Is_Idle();
-        static void Cmd_Wait_Until_Idle();
-
-        void Cmd_Execute(void);
-
-        void Cmd (uint32_t cmd32);
-        void Cmd (void* data, uint16_t len);
-        void Cmd_Str (char* data);
-        void Cmd_Str (progmem_str data);
-        void Cmd_Clear_Color (uint32_t rgb);
-        void Cmd_Clear (bool Clr, bool Stl, bool Tag);
-        void Cmd_Color (uint32_t rgb);
-        void Cmd_Set_Foreground_Color (uint32_t rgb);
-        void Cmd_Set_Background_Color (uint32_t rgb);
-        void Cmd_Set_Tag (uint8_t Tag);
-        void Cmd_Bitmap_Source (uint32_t RAM_G_Addr);
-
-        // The following functions *must* be inlined since we are relying on the compiler to do
-        // substitution of the constants from the data structure rather than actually storing
-        // it in PROGMEM (which would fail, since we are not using pgm_read_near to read them).
-        // Plus, by inlining, all the equations are evaluated at compile-time as everything
-        // should be a constant.
-
-        FORCEDINLINE void Cmd_Bitmap_Source (const bitmap_info_t& info) {Cmd_Bitmap_Source (info.RAMG_addr);};
-        FORCEDINLINE void Cmd_Bitmap_Layout (const bitmap_info_t& info) {Cmd_Bitmap_Layout (info.format, info.linestride, info.height);};
-        FORCEDINLINE void Cmd_Bitmap_Size(const bitmap_info_t& info)    {Cmd_Bitmap_Size (info.filter, info.wrapx, info.wrapy, info.width, info.height);}
-        FORCEDINLINE void Cmd_Draw_Button_Icon(int16_t x, int16_t y, int16_t w, int16_t h, const bitmap_info_t& info, const float scale = 1) {
-          Cmd_Begin(BEGIN_BITMAPS);
-          if(scale != 1) {
-            Cmd(BITMAP_TRANSFORM_A | uint32_t(float(256)/scale) & 0xFFFF);
-            Cmd(BITMAP_TRANSFORM_E | uint32_t(float(256)/scale) & 0xFFFF);
-          }
-          Cmd_Bitmap_Size(info.filter, info.wrapx, info.wrapy, info.width*scale, info.height*scale);
-          Cmd_Vertex_2F((x + w/2 - info.width*scale/2)*16, (y + h/2 - info.height*scale/2)*16);
-          if(scale != 1) {
-            Cmd(BITMAP_TRANSFORM_A | 256);
-            Cmd(BITMAP_TRANSFORM_E | 256);
-          }
-        }
-        template<typename T> FORCEDINLINE void Cmd_Draw_Button_Text(int16_t x, int16_t y, int16_t w, int16_t h, T text, int16_t font) {
-          Cmd_Draw_Text(x + w/2, y + h/2, text, font, OPT_CENTER);
-        }
-
-        void Cmd_Bitmap_Layout (uint8_t format, uint16_t linestride, uint16_t height);
-        void Cmd_Bitmap_Size(uint8_t filter, uint8_t wrapx, uint8_t wrapy, uint16_t width, uint16_t height);
-        void Cmd_Bitmap_Handle (uint16_t Handle);
-        void Cmd_Begin (uint32_t Primitive);
-        void Cmd_Vertex_2F  (uint16_t X_Coord, uint16_t Y_Coord);
-        void Cmd_Vertex_2II (uint16_t X_Coord, uint16_t Y_Coord, uint8_t B_Handle, uint8_t Cell);
-
-        template<typename T> void Cmd_Draw_Button(int16_t x, int16_t y, int16_t w, int16_t h, T text, int16_t font,  uint16_t option);
-        template<typename T> void Cmd_Draw_Text(int16_t x, int16_t y, T text, int16_t font,  uint16_t options);
-
-        void Cmd_Draw_Clock (int16_t x, int16_t y, int16_t r, uint16_t option, int16_t h, int16_t m, int16_t s, int16_t ms);
-        void Cmd_Draw_Progress_Bar (int16_t x, int16_t y, int16_t w, int16_t h, int16_t val, int16_t range);
-        void Cmd_Draw_Slider (int16_t x, int16_t y, int16_t w, int16_t h, uint16_t options, uint16_t val, uint16_t range);
-        void Cmd_Mem_Cpy (uint32_t dst, uint32_t src, uint32_t size);
-        void Cmd_Append (uint32_t ptr, uint32_t size);
-    };
-
-    class DLCache {
-      private:
-        static uint16_t dl_free;
-        uint16_t dl_addr = 0;
-        uint16_t dl_size = 0;
-      public:
-        bool hasData();
-        void store();
-        void append();
-    };
+    class CommandFifo;
+    class SoundPlayer;
+    class DLCache;
 
   public:
     static void Init (void);
@@ -330,122 +243,87 @@ void CLCD::Flash_Write_RGB332_Bitmap(uint32_t Mem_Address, const unsigned char* 
   }
 }
 
-uint8_t Device_ID;
-
-void CLCD::Init (void) {
-  spiInit();                                  // Set Up I/O Lines for SPI and FT800/810 Control
-  delay(50);
-
-  Reset();                                    // Power Down the FT800/810 for 50 ms
-  delay(50);
-
-/*
- *  If driving the 4D Systems 4DLCD-FT843 Board, the following Init sequence is needed for its FT800 Driver
- */
-
-#ifdef LCD_IS_FT800                                    // Use External Crystal and 48 MHz System Clock
-  Host_Cmd(CLKEXT, 0);
-
-  delay(20);
-  Host_Cmd(CLK48M, 0);
-#else
-  Host_Cmd(CLKINT, 0);
-  delay(20);
-  Host_Cmd(CLKSEL, Clksel);                     // Use Internal RC Oscillator and 48 MHz System Clock
-#endif
-
-  delay(20);
-
-  Host_Cmd(ACTIVE, 0);                        // Activate the System Clock
-  delay(50);
-
-  delay(400);
-  Device_ID = Mem_Read8(REG_ID);            // Read Device ID, Should Be 0x7C;
-  #if defined(UI_FRAMEWORK_DEBUG)
-  if(Device_ID != 0x7C) {
-    #if defined (SERIAL_PROTOCOLLNPAIR)
-      SERIAL_PROTOCOLLNPAIR("Incorrect device ID, should be 7C, got ", Device_ID);
-    #else
-      Serial.print(F("Incorrect device ID, should be 7C, got "));
-      Serial.println(Device_ID, HEX);
-    #endif
-  } else {
-    #if defined (SERIAL_PROTOCOLLNPGM)
-      SERIAL_PROTOCOLLNPGM("Device is correct ");
-    #else
-      Serial.println(F("Device is correct "));
-    #endif
-  }
-  #endif
-  delay(400);
-
-  Mem_Write8(REG_GPIO, 0x00);                 // Turn OFF Display Enable (GPIO Bit 7);
-  Mem_Write8(REG_PCLK, 0x00);                 // Turn OFF LCD PCLK
-  Set_Backlight(0x00FA, 0);
-
-  /*
-   *  Configure the FT800/810 Registers
-   */
-
-  Mem_Write16(REG_HCYCLE, Hcycle);
-  Mem_Write16(REG_HOFFSET, Hoffset);
-  Mem_Write16(REG_HSYNC0, Hsync0);
-  Mem_Write16(REG_HSYNC1, Hsync1);
-  Mem_Write16(REG_VCYCLE, Vcycle);
-  Mem_Write16(REG_VOFFSET, Voffset);
-  Mem_Write16(REG_VSYNC0, Vsync0);
-  Mem_Write16(REG_VSYNC1, Vsync1);
-  Mem_Write16(REG_HSIZE, Hsize);
-  Mem_Write16(REG_VSIZE, Vsize);
-  Mem_Write8(REG_SWIZZLE, Swizzle);
-  Mem_Write8(REG_PCLK_POL, Pclkpol);
-  Mem_Write8(REG_CSPREAD, 1);
-
-  #if   defined(LCD_PORTRAIT)  &&  defined(LCD_UPSIDE_DOWN)
-  Mem_Write8(REG_ROTATE, 3);
-  #elif defined(LCD_PORTRAIT)  && !defined(LCD_UPSIDE_DOWN)
-  Mem_Write8(REG_ROTATE, 2);
-  #elif !defined(LCD_PORTRAIT) &&  defined(LCD_UPSIDE_DOWN)
-  Mem_Write8(REG_ROTATE, 1);
-  #else !defined(LCD_PORTRAIT) && !defined(LCD_UPSIDE_DOWN)
-  Mem_Write8(REG_ROTATE, 0);
-  #endif
-
-  Mem_Write8(REG_TOUCH_MODE, 0x03);           // Configure the Touch Screen
-  Mem_Write8(REG_TOUCH_ADC_MODE, 0x01);
-  Mem_Write8(REG_TOUCH_OVERSAMPLE, 0x0F);
-  Mem_Write16(REG_TOUCH_RZTHRESH, 5000);
-  Mem_Write8(REG_VOL_SOUND, 0x00);            // Turn Synthesizer Volume Off
-  Mem_Write8(REG_DLSWAP, 0x02);               // Swap on New Frame
-
-  /*
-   *  Turn On the Display
-   */
-  #if defined(LCD_IS_FT800)
-  Mem_Write8(REG_GPIO_DIR, 0x80);             // Turn ON Display Enable
-  Mem_Write8(REG_GPIO,     0x80);
-  #else
-  Mem_Write16(REG_GPIOX_DIR, 1 << 15);        // Turn ON Display Enable
-  Mem_Write16(REG_GPIOX,     1 << 15);
-  #endif
-
-  Enable();                                   // Turns on Clock by setting PCLK Register to 5
-  delay(50);
-
-  CommandFifo::Cmd_Reset();
-  delay(50);
-
-  // Set Initial Values for Touch Transform Registers
-
-  CLCD::Mem_Write32(REG_TOUCH_TRANSFORM_A, default_transform_a);
-  CLCD::Mem_Write32(REG_TOUCH_TRANSFORM_B, default_transform_b);
-  CLCD::Mem_Write32(REG_TOUCH_TRANSFORM_C, default_transform_c);
-  CLCD::Mem_Write32(REG_TOUCH_TRANSFORM_D, default_transform_d);
-  CLCD::Mem_Write32(REG_TOUCH_TRANSFORM_E, default_transform_e);
-  CLCD::Mem_Write32(REG_TOUCH_TRANSFORM_F, default_transform_f);
-}
-
 /******************* FT800/810 Graphic Commands *********************************/
+
+class CLCD::CommandFifo {
+  protected:
+    static uint32_t getRegCmdWrite();
+    static uint32_t getRegCmdRead();
+
+    #if defined(LCD_IS_FT800)
+      static uint32_t command_write_ptr;
+      template <class T> void _write_unaligned(T data, uint16_t len);
+    #else
+      uint32_t getRegCmdBSpace();
+    #endif
+    void Cmd_Start(void);
+
+  public:
+    template <class T> void write(T data, uint16_t len);
+
+  public:
+    CommandFifo() {Cmd_Start();}
+
+    static void Cmd_Reset (void);
+    static bool Cmd_Is_Idle();
+    static void Cmd_Wait_Until_Idle();
+
+    void Cmd_Execute(void);
+
+    void Cmd (uint32_t cmd32);
+    void Cmd (void* data, uint16_t len);
+    void Cmd_Str (char* data);
+    void Cmd_Str (progmem_str data);
+    void Cmd_Clear_Color (uint32_t rgb);
+    void Cmd_Clear (bool Clr, bool Stl, bool Tag);
+    void Cmd_Color (uint32_t rgb);
+    void Cmd_Set_Foreground_Color (uint32_t rgb);
+    void Cmd_Set_Background_Color (uint32_t rgb);
+    void Cmd_Set_Tag (uint8_t Tag);
+    void Cmd_Bitmap_Source (uint32_t RAM_G_Addr);
+
+    // The following functions *must* be inlined since we are relying on the compiler to do
+    // substitution of the constants from the data structure rather than actually storing
+    // it in PROGMEM (which would fail, since we are not using pgm_read_near to read them).
+    // Plus, by inlining, all the equations are evaluated at compile-time as everything
+    // should be a constant.
+
+    FORCEDINLINE void Cmd_Bitmap_Source (const bitmap_info_t& info) {Cmd_Bitmap_Source (info.RAMG_addr);};
+    FORCEDINLINE void Cmd_Bitmap_Layout (const bitmap_info_t& info) {Cmd_Bitmap_Layout (info.format, info.linestride, info.height);};
+    FORCEDINLINE void Cmd_Bitmap_Size(const bitmap_info_t& info)    {Cmd_Bitmap_Size (info.filter, info.wrapx, info.wrapy, info.width, info.height);}
+    FORCEDINLINE void Cmd_Draw_Button_Icon(int16_t x, int16_t y, int16_t w, int16_t h, const bitmap_info_t& info, const float scale = 1) {
+      Cmd_Begin(BEGIN_BITMAPS);
+      if(scale != 1) {
+        Cmd(BITMAP_TRANSFORM_A | uint32_t(float(256)/scale) & 0xFFFF);
+        Cmd(BITMAP_TRANSFORM_E | uint32_t(float(256)/scale) & 0xFFFF);
+      }
+      Cmd_Bitmap_Size(info.filter, info.wrapx, info.wrapy, info.width*scale, info.height*scale);
+      Cmd_Vertex_2F((x + w/2 - info.width*scale/2)*16, (y + h/2 - info.height*scale/2)*16);
+      if(scale != 1) {
+        Cmd(BITMAP_TRANSFORM_A | 256);
+        Cmd(BITMAP_TRANSFORM_E | 256);
+      }
+    }
+    template<typename T> FORCEDINLINE void Cmd_Draw_Button_Text(int16_t x, int16_t y, int16_t w, int16_t h, T text, int16_t font) {
+      Cmd_Draw_Text(x + w/2, y + h/2, text, font, OPT_CENTER);
+    }
+
+    void Cmd_Bitmap_Layout (uint8_t format, uint16_t linestride, uint16_t height);
+    void Cmd_Bitmap_Size(uint8_t filter, uint8_t wrapx, uint8_t wrapy, uint16_t width, uint16_t height);
+    void Cmd_Bitmap_Handle (uint16_t Handle);
+    void Cmd_Begin (uint32_t Primitive);
+    void Cmd_Vertex_2F  (uint16_t X_Coord, uint16_t Y_Coord);
+    void Cmd_Vertex_2II (uint16_t X_Coord, uint16_t Y_Coord, uint8_t B_Handle, uint8_t Cell);
+
+    template<typename T> void Cmd_Draw_Button(int16_t x, int16_t y, int16_t w, int16_t h, T text, int16_t font,  uint16_t option);
+    template<typename T> void Cmd_Draw_Text(int16_t x, int16_t y, T text, int16_t font,  uint16_t options);
+
+    void Cmd_Draw_Clock (int16_t x, int16_t y, int16_t r, uint16_t option, int16_t h, int16_t m, int16_t s, int16_t ms);
+    void Cmd_Draw_Progress_Bar (int16_t x, int16_t y, int16_t w, int16_t h, int16_t val, int16_t range);
+    void Cmd_Draw_Slider (int16_t x, int16_t y, int16_t w, int16_t h, uint16_t options, uint16_t val, uint16_t range);
+    void Cmd_Mem_Cpy (uint32_t dst, uint32_t src, uint32_t size);
+    void Cmd_Append (uint32_t ptr, uint32_t size);
+};
 
 #if defined(LCD_IS_FT800)
 uint32_t CLCD::CommandFifo::command_write_ptr = 0xFFFFFFFFul;
@@ -709,6 +587,17 @@ void CLCD::CommandFifo::Cmd_Append (uint32_t ptr, uint32_t size)
  *     }
  */
 
+class CLCD::DLCache {
+  private:
+    static uint16_t dl_free;
+    uint16_t dl_addr = 0;
+    uint16_t dl_size = 0;
+  public:
+    bool hasData();
+    void store();
+    void append();
+};
+
 uint16_t CLCD::DLCache::dl_free = 0;
 
 bool CLCD::DLCache::hasData() {
@@ -778,6 +667,192 @@ void CLCD::DLCache::append() {
       Serial.println(")");
     #endif
   #endif
+}
+
+/******************* LCD INITIALIZATION ************************/
+
+void CLCD::Init (void) {
+  spiInit();                                  // Set Up I/O Lines for SPI and FT800/810 Control
+  delay(50);
+
+  Reset();                                    // Power Down the FT800/810 for 50 ms
+  delay(50);
+
+/*
+ *  If driving the 4D Systems 4DLCD-FT843 Board, the following Init sequence is needed for its FT800 Driver
+ */
+
+#ifdef LCD_IS_FT800                                    // Use External Crystal and 48 MHz System Clock
+  Host_Cmd(CLKEXT, 0);
+
+  delay(20);
+  Host_Cmd(CLK48M, 0);
+#else
+  Host_Cmd(CLKINT, 0);
+  delay(20);
+  Host_Cmd(CLKSEL, Clksel);                     // Use Internal RC Oscillator and 48 MHz System Clock
+#endif
+
+  delay(20);
+
+  Host_Cmd(ACTIVE, 0);                        // Activate the System Clock
+  delay(50);
+
+  delay(400);
+  uint8_t Device_ID = Mem_Read8(REG_ID);            // Read Device ID, Should Be 0x7C;
+  #if defined(UI_FRAMEWORK_DEBUG)
+  if(Device_ID != 0x7C) {
+    #if defined (SERIAL_PROTOCOLLNPAIR)
+      SERIAL_PROTOCOLLNPAIR("Incorrect device ID, should be 7C, got ", Device_ID);
+    #else
+      Serial.print(F("Incorrect device ID, should be 7C, got "));
+      Serial.println(Device_ID, HEX);
+    #endif
+  } else {
+    #if defined (SERIAL_PROTOCOLLNPGM)
+      SERIAL_PROTOCOLLNPGM("Device is correct ");
+    #else
+      Serial.println(F("Device is correct "));
+    #endif
+  }
+  #endif
+  delay(400);
+
+  Mem_Write8(REG_GPIO, 0x00);                 // Turn OFF Display Enable (GPIO Bit 7);
+  Mem_Write8(REG_PCLK, 0x00);                 // Turn OFF LCD PCLK
+  Set_Backlight(0x00FA, 0);
+
+  /*
+   *  Configure the FT800/810 Registers
+   */
+
+  Mem_Write16(REG_HCYCLE, Hcycle);
+  Mem_Write16(REG_HOFFSET, Hoffset);
+  Mem_Write16(REG_HSYNC0, Hsync0);
+  Mem_Write16(REG_HSYNC1, Hsync1);
+  Mem_Write16(REG_VCYCLE, Vcycle);
+  Mem_Write16(REG_VOFFSET, Voffset);
+  Mem_Write16(REG_VSYNC0, Vsync0);
+  Mem_Write16(REG_VSYNC1, Vsync1);
+  Mem_Write16(REG_HSIZE, Hsize);
+  Mem_Write16(REG_VSIZE, Vsize);
+  Mem_Write8(REG_SWIZZLE, Swizzle);
+  Mem_Write8(REG_PCLK_POL, Pclkpol);
+  Mem_Write8(REG_CSPREAD, 1);
+
+  #if   defined(LCD_PORTRAIT)  &&  defined(LCD_UPSIDE_DOWN)
+  Mem_Write8(REG_ROTATE, 3);
+  #elif defined(LCD_PORTRAIT)  && !defined(LCD_UPSIDE_DOWN)
+  Mem_Write8(REG_ROTATE, 2);
+  #elif !defined(LCD_PORTRAIT) &&  defined(LCD_UPSIDE_DOWN)
+  Mem_Write8(REG_ROTATE, 1);
+  #else !defined(LCD_PORTRAIT) && !defined(LCD_UPSIDE_DOWN)
+  Mem_Write8(REG_ROTATE, 0);
+  #endif
+
+  Mem_Write8(REG_TOUCH_MODE, 0x03);           // Configure the Touch Screen
+  Mem_Write8(REG_TOUCH_ADC_MODE, 0x01);
+  Mem_Write8(REG_TOUCH_OVERSAMPLE, 0x0F);
+  Mem_Write16(REG_TOUCH_RZTHRESH, 5000);
+  Mem_Write8(REG_VOL_SOUND, 0x00);            // Turn Synthesizer Volume Off
+  Mem_Write8(REG_DLSWAP, 0x02);               // Swap on New Frame
+
+  /*
+   *  Turn On the Display
+   */
+  #if defined(LCD_IS_FT800)
+  Mem_Write8(REG_GPIO_DIR, 0x80);             // Turn ON Display Enable
+  Mem_Write8(REG_GPIO,     0x80);
+  #else
+  Mem_Write16(REG_GPIOX_DIR, 1 << 15);        // Turn ON Display Enable
+  Mem_Write16(REG_GPIOX,     1 << 15);
+  #endif
+
+  Enable();                                   // Turns on Clock by setting PCLK Register to 5
+  delay(50);
+
+  CommandFifo::Cmd_Reset();
+  delay(50);
+
+  // Set Initial Values for Touch Transform Registers
+
+  CLCD::Mem_Write32(REG_TOUCH_TRANSFORM_A, default_transform_a);
+  CLCD::Mem_Write32(REG_TOUCH_TRANSFORM_B, default_transform_b);
+  CLCD::Mem_Write32(REG_TOUCH_TRANSFORM_C, default_transform_c);
+  CLCD::Mem_Write32(REG_TOUCH_TRANSFORM_D, default_transform_d);
+  CLCD::Mem_Write32(REG_TOUCH_TRANSFORM_E, default_transform_e);
+  CLCD::Mem_Write32(REG_TOUCH_TRANSFORM_F, default_transform_f);
+}
+
+/******************* SOUND HELPER CLASS ************************/
+
+class CLCD::SoundPlayer {
+  public:
+    struct sound_t {
+      effect_t effect;      // The sound effect number
+      uint8_t  note;        // The MIDI note value
+      uint8_t  sixteenths;  // Duration of note, in sixteeths of a second, or zero to play to completion
+    };
+
+  private:
+    const sound_t *sequence;
+    uint32_t       next;
+
+  public:
+    static const uint8_t MIDDLE_C = 60; // C4
+
+    static void setVolume(uint8_t volume);
+    static void play(effect_t effect, uint8_t note = MIDDLE_C);
+    static bool soundPlaying();
+
+    void play(const sound_t* seq);
+
+    void onIdle();
+};
+
+void CLCD::SoundPlayer::setVolume(uint8_t vol) {
+  CLCD::Mem_Write8(REG_VOL_SOUND, vol);
+}
+
+void CLCD::SoundPlayer::play(effect_t effect, uint8_t note) {
+  CLCD::Mem_Write16(REG_SOUND, (note << 8) | effect);
+  CLCD::Mem_Write8( REG_PLAY,  1);
+
+  #if defined(UI_FRAMEWORK_DEBUG)
+    #if defined (SERIAL_PROTOCOLLNPAIR)
+      SERIAL_PROTOCOLPAIR("Playing note ", note);
+      SERIAL_PROTOCOLLNPAIR(", instrument ", effect);
+    #endif
+  #endif
+}
+
+void CLCD::SoundPlayer::play(const sound_t* seq) {
+  sequence = seq;
+  next     = 0;
+}
+
+bool CLCD::SoundPlayer::soundPlaying() {
+  return CLCD::Mem_Read8( REG_PLAY ) & 0x1;
+}
+
+void CLCD::SoundPlayer::onIdle() {
+  if(!sequence) return;
+
+  const bool readyForNextNote = next != 0 ? (millis() > next) : !soundPlaying();
+
+  if(readyForNextNote) {
+    const effect_t fx = effect_t(pgm_read_byte_near(&sequence->effect));
+    const uint8_t  nt =          pgm_read_byte_near(&sequence->note);
+    const uint16_t ms = uint32_t(pgm_read_byte_near(&sequence->sixteenths)) * 1000 / 16;
+
+    if(ms == 0 && fx == SILENCE && nt == 0) {
+      sequence = 0;
+    } else {
+      next = ms ? (millis() + ms) : 0;
+      play(fx, nt != 0 ? nt : MIDDLE_C);
+      sequence++;
+    }
+  }
 }
 
 #endif // _AO_FT810_FUNC_H
