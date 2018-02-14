@@ -199,7 +199,9 @@
 //
 #if ENABLED(ULTRA_LCD)
 
+  #if !defined(LULZBOT_DISABLE_KILL_BUTTON)
   #define KILL_PIN 80
+  #endif
 
   #if ENABLED(NEWPANEL)
 
