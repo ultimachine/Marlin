@@ -720,7 +720,6 @@ void lcd_reset_status() { lcd_setstatusPGM(PSTR(""), -1); }
 void kill_screen(const char* lcd_msg) {
   lcd_init();
   lcd_setalertstatusPGM(lcd_msg);
-    LULZBOT_LCD_CLEAR
   lcd_kill_screen();
 }
 

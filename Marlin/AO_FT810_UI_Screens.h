@@ -411,6 +411,7 @@ void AboutScreen::onIdle() {
 void StatusScreen::static_axis_position() {
   CLCD::CommandFifo cmd;
 
+  BTN_TAG(6)
   #if defined(LCD_PORTRAIT)
     THEME(axis_label) BTN( BTN_POS(1,5), BTN_SIZE(2,1), F(""),  FONT_LRG, OPT_FLAT);
     THEME(axis_label) BTN( BTN_POS(1,6), BTN_SIZE(2,1), F(""),  FONT_LRG, OPT_FLAT);
@@ -449,6 +450,7 @@ void StatusScreen::dynamic_axis_position() {
   strcat_P(y_str, PSTR(" mm"));
   strcat_P(z_str, PSTR(" mm"));
 
+  BTN_TAG(6)
   #if defined(LCD_PORTRAIT)
     BTX( BTN_POS(2,5), BTN_SIZE(2,1), x_str, FONT_MED);
     BTX( BTN_POS(2,6), BTN_SIZE(2,1), y_str, FONT_MED);
@@ -471,17 +473,20 @@ void StatusScreen::dynamic_axis_position() {
 void StatusScreen::static_temperature() {
   CLCD::CommandFifo cmd;
 
-  BTN_TAG(0)
   #if defined(LCD_PORTRAIT)
+    BTN_TAG(5)
     THEME(temp)      BTN( BTN_POS(1,1), BTN_SIZE(4,2), F(""), FONT_SML, OPT_FLAT);
     THEME(temp)      BTN( BTN_POS(1,1), BTN_SIZE(8,1), F(""), FONT_SML, OPT_FLAT);
     THEME(fan_speed) BTN( BTN_POS(5,2), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
+    BTN_TAG(0)
     THEME(progress)  BTN( BTN_POS(1,3), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
     THEME(progress)  BTN( BTN_POS(5,3), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
   #else
+    BTN_TAG(5)
     THEME(temp)      BTN( BTN_POS(1,1), BTN_SIZE(4,2), F(""), FONT_SML, OPT_FLAT);
     THEME(temp)      BTN( BTN_POS(1,1), BTN_SIZE(8,1), F(""), FONT_SML, OPT_FLAT);
     THEME(fan_speed) BTN( BTN_POS(5,2), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
+    BTN_TAG(0)
     THEME(progress)  BTN( BTN_POS(9,1), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
     THEME(progress)  BTN( BTN_POS(9,2), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
   #endif
@@ -492,7 +497,7 @@ void StatusScreen::static_temperature() {
   cmd.Cmd_Bitmap_Layout(Extruder_Icon_Info);
   cmd.Cmd_Bitmap_Size  (Extruder_Icon_Info);
 
-  BTN_TAG(0)
+  BTN_TAG(5)
   BTI(BTN_POS(1,1), BTN_SIZE(1,1),  Extruder_Icon_Info, Theme::icon_scale);
   BTI(BTN_POS(5,1), BTN_SIZE(1,1),  Extruder_Icon_Info, Theme::icon_scale);
 
@@ -501,7 +506,6 @@ void StatusScreen::static_temperature() {
   cmd.Cmd_Bitmap_Layout(Bed_Heat_Icon_Info);
   cmd.Cmd_Bitmap_Size  (Bed_Heat_Icon_Info);
 
-  BTN_TAG(0)
   BTI(BTN_POS(1,2), BTN_SIZE(1,1), Bed_Heat_Icon_Info, Theme::icon_scale);
 
   // Draw Fan Percent Bitmap on Bed Heat Button
@@ -510,7 +514,6 @@ void StatusScreen::static_temperature() {
   cmd.Cmd_Bitmap_Layout(Fan_Icon_Info);
   cmd.Cmd_Bitmap_Size  (Fan_Icon_Info);
 
-  BTN_TAG(0)
   BTI(BTN_POS(5,2), BTN_SIZE(1,1), Fan_Icon_Info, Theme::icon_scale);
 }
 
@@ -558,6 +561,7 @@ void StatusScreen::dynamic_temperature() {
     );
   #endif
 
+  BTN_TAG(5)
   BTX( BTN_POS(2,1), BTN_SIZE(3,1), e0_str,  FONT_MED);
   BTX( BTN_POS(6,1), BTN_SIZE(3,1), e1_str,  FONT_MED);
   BTX( BTN_POS(2,2), BTN_SIZE(3,1), bed_str, FONT_MED);
@@ -567,6 +571,7 @@ void StatusScreen::dynamic_temperature() {
 void StatusScreen::static_progress() {
   CLCD::CommandFifo cmd;
 
+  BTN_TAG(0)
   #if defined(LCD_PORTRAIT)
     THEME(progress)  BTN( BTN_POS(1,3), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
     THEME(progress)  BTN( BTN_POS(5,3), BTN_SIZE(4,1), F(""), FONT_SML, OPT_FLAT);
@@ -697,7 +702,9 @@ void StatusScreen::onIdle() {
 
 void StatusScreen::onTouchStart(uint8_t tag) {
   switch(tag) {
-    case 4:  GOTO_SCREEN(MenuScreen); break;
+    case 4:  GOTO_SCREEN(MenuScreen);        break;
+    case 5:  GOTO_SCREEN(TemperatureScreen); break;
+    case 6:  GOTO_SCREEN(MoveAxisScreen); break;
   }
 }
 

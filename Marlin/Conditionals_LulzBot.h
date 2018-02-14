@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".6" // Change this with each update
+#define LULZBOT_FW_VERSION ".7" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -245,6 +245,9 @@
 // report.
 //      Back port of upstream https://github.com/MarlinFirmware/Marlin/commit/6ed284061580ffc6eef40df391afb30d2f8b45f5
 #define LULZBOT_OCTOPRINT_RX_BUFFER_OVERFLOW_WORKAROUND delay(2);
+
+// Fix for bug where the LCD is not being properly cleared at startup
+#define LULZBOT_LCD_CLEAR_WORKAROUND
 
 /************************* EXPERIMENTAL FEATURES ******************************/
 
@@ -1905,17 +1908,14 @@
             NOLESS(max_display_update_time, millis() - ms); \
             return; \
         }
-    #define LULZBOT_LCD_CLEAR_DECL void lcd_clear_text_buffer();
-    #define LULZBOT_LCD_CLEAR lcd_clear_text_buffer();
     #if defined(LULZBOT_IS_MINI)
         #define WELCOME_MSG _UxGT("Mini 2 ready.")
     #else
         #define WELCOME_MSG _UxGT("TAZ 7 ready.")
     #endif
+    #define LULZBOT_DELAY_TO_SHOW_POSITION 20
 #else
     #define LULZBOT_ABOUT_TO_DRAW_SCREEN(a)
-    #define LULZBOT_LCD_CLEAR
-    #define LULZBOT_LCD_CLEAR_DECL
 #endif
 
 #if defined(LULZBOT_USE_TOUCH_UI)
