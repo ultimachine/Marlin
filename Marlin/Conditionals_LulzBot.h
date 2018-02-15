@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".7" // Change this with each update
+#define LULZBOT_FW_VERSION ".8" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -234,12 +234,6 @@
 // Marlin 1.1.5 does not respect ENDSTOPS_ALWAYS_ON_DEFAULT at startup,
 // as described in T1393
 #define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT_WORKAROUND
-
-// In Marlin 1.1.5, a paused print cannot be resumed from the LCD if
-// PAUSE_PARK_RETRACT_LENGTH is non-zero. This has been submitted as
-// bug #8703
-
-#define LULZBOT_LCD_PAUSE_WORKAROUND
 
 // Fix for OctoPrint serial buffer overflow when using auto temperature
 // report.
@@ -596,53 +590,6 @@
       LULZBOT_ENABLE_PROBE_PINS(pin_status); \
       return; \
     }
-
-/****************************** BACKLASH COMPENSATION **************************/
-
-#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
-    //#define LULZBOT_AXIS_BACKLASH {0.00, 0.00, 0.35, 0}
-#endif
-
-#if defined(LULZBOT_AXIS_BACKLASH)
-    #define SIGN(v) ((v < 0) ? -1.0 : 1.0)
-    #define LULZBOT_AXIS_BACKLASH_CORRECTION \
-        { \
-            static const float backlash[NUM_AXIS] = LULZBOT_AXIS_BACKLASH; \
-            static uint8_t last_direction_bits; \
-            static bool is_correction = false; \
-            if(!is_correction && leveling_is_active()) { \
-                uint8_t changed_dir = last_direction_bits ^ dm; \
-                /* Ignore direction change if no steps are taken in that direction */ \
-                if(da == 0) CBI(changed_dir, X_AXIS); \
-                if(db == 0) CBI(changed_dir, Y_AXIS); \
-                if(dc == 0) CBI(changed_dir, Z_AXIS); \
-                if(de == 0) CBI(changed_dir, E_AXIS); \
-                /* Update the direction bits */ \
-                last_direction_bits ^= changed_dir; \
-                /* When there is motion in an opposing direction, apply the backlash correction */ \
-                if(changed_dir) { \
-                    long saved_position[NUM_AXIS] = { 0 }; \
-                    COPY(saved_position, position); \
-                    const long x_backlash = TEST(changed_dir, X_AXIS) ? backlash[X_AXIS] * axis_steps_per_mm[X_AXIS] * SIGN(da) : 0; \
-                    const long y_backlash = TEST(changed_dir, Y_AXIS) ? backlash[Y_AXIS] * axis_steps_per_mm[Y_AXIS] * SIGN(db) : 0; \
-                    const long z_backlash = TEST(changed_dir, Z_AXIS) ? backlash[Z_AXIS] * axis_steps_per_mm[Z_AXIS] * SIGN(dc) : 0; \
-                    const long e_backlash = TEST(changed_dir, E_AXIS) ? backlash[E_AXIS] * axis_steps_per_mm[E_AXIS] * SIGN(de) : 0; \
-                    is_correction = true; /* Avoid infinite recursion */ \
-                    _buffer_line( \
-                        (position[X_AXIS] + x_backlash)/axis_steps_per_mm[X_AXIS], \
-                        (position[Y_AXIS] + y_backlash)/axis_steps_per_mm[Y_AXIS], \
-                        (position[Z_AXIS] + z_backlash)/axis_steps_per_mm[Z_AXIS], \
-                        (position[E_AXIS] + e_backlash)/axis_steps_per_mm[E_AXIS_N], \
-                        fr_mm_s, extruder \
-                    ); \
-                    is_correction = false; \
-                    COPY(position, saved_position); \
-                } \
-            } \
-        }
-#else
-    #define LULZBOT_AXIS_BACKLASH_CORRECTION
-#endif
 
 /*************************** COMMON TOOLHEADS PARAMETERS ***********************/
 
@@ -1306,122 +1253,9 @@
         st.external_ref(0);     /* I_scale_analog  = 0 */ \
         st.internal_sense_R(0); /* internal_Rsense = 0 */ \
 
-    #define LULZBOT_TMC_REPORT(AXIS) \
-        { \
-            uint32_t DRVSTATUS  = stepper##AXIS.DRV_STATUS(); \
-            uint32_t IOIN       = stepper##AXIS.IOIN(); \
-            uint32_t IHOLD_IRUN = stepper##AXIS.IHOLD_IRUN(); \
-            uint32_t CHOPCONF   = stepper##AXIS.CHOPCONF(); \
-            uint32_t COOLCONF   = stepper##AXIS.COOLCONF(); \
-            int8_t   SGT        = (COOLCONF  >> 16) & 0b1111111; \
-            uint16_t SG_RESULT  = (DRVSTATUS)       & 0b111111111; \
-            bool drv_enn        = (IOIN      >>  4) & 0b1; \
-            bool stst           = (DRVSTATUS >> 31) & 0b1; \
-            bool olb            = (DRVSTATUS >> 30) & 0b1; \
-            bool ola            = (DRVSTATUS >> 29) & 0b1; \
-            bool s2gb           = (DRVSTATUS >> 28) & 0b1; \
-            bool s2ga           = (DRVSTATUS >> 27) & 0b1; \
-            bool otpw           = (DRVSTATUS >> 26) & 0b1; \
-            bool ot             = (DRVSTATUS >> 25) & 0b1; \
-            bool fsactive       = (DRVSTATUS >> 15) & 0b1; \
-            uint16_t ihold      = (IHOLD_IRUN)      & 0b11111; \
-            uint16_t irun       = (IHOLD_IRUN >> 8) & 0b11111; \
-            uint16_t csactual   = (DRVSTATUS >> 16) & 0b11111; \
-            bool vsense         = (CHOPCONF  >> 17) & 0b1; \
-            SERIAL_ECHOPGM(" " #AXIS ":"); \
-            SERIAL_ECHOPGM(" ihr:"); \
-            SERIAL_ECHO(ihold+1); \
-            SERIAL_ECHOPGM("/"); \
-            SERIAL_ECHO(irun+1); \
-            SERIAL_ECHOPGM(" vsen:"); \
-            SERIAL_ECHO(vsense); \
-            if(stepper##AXIS.coolstep_min_speed() != 0) { \
-                SERIAL_ECHOPGM(" sgt:"); \
-                SERIAL_ECHO(LULZBOT_SIGN_EXTEND_SGT(SGT)); \
-                if(num_sg > 0) { \
-                    SERIAL_ECHOPGM(" avg_sg:"); \
-                    SERIAL_ECHO(sum_sg_##AXIS/num_sg); \
-                } \
-                SERIAL_ECHOPGM(" csact:"); \
-                SERIAL_ECHO(csactual); \
-            } else { \
-                SERIAL_ECHOPGM(" stealth"); \
-            } \
-            SERIAL_ECHOPGM(" tstep_avg:"); \
-            SERIAL_ECHO(sum_tstep_##AXIS/num_sg); \
-            if(!drv_enn) SERIAL_ECHOPGM(" en"); \
-            if(stst)     SERIAL_ECHOPGM(" st"); \
-            if(olb)      SERIAL_ECHOPGM(" olb"); \
-            if(ola)      SERIAL_ECHOPGM(" ola"); \
-            if(s2gb)     SERIAL_ECHOPGM(" s2gb"); \
-            if(s2ga)     SERIAL_ECHOPGM(" s2ga"); \
-            if(otpw)     SERIAL_ECHOPGM(" otpw"); \
-            if(ot)       SERIAL_ECHOPGM(" ot"); \
-            if(fsactive) SERIAL_ECHOPGM(" fsactive"); \
-            SERIAL_EOL(); \
-        }
-
     #define LULZBOT_SIGN_EXTEND_SGT(sgt) int8_t(sgt | ((sgt << 1) & 0x80))
 
-    /* The following function accumulates the average of a
-       stallguard values during a planner move */
-    #define LULZBOT_TMC_AVG_VARS \
-        static uint8_t   current_tail, tally_freq = 10; \
-        static uint32_t  sum_sg_X = 0, sum_sg_Y = 0, sum_sg_Z = 0, sum_sg_E0 = 0, num_sg = 0; \
-        static uint32_t  sum_tstep_X = 0, sum_tstep_Y = 0, sum_tstep_Z = 0, sum_tstep_E0 = 0;
-
-    #define LULZBOT_TMC_AVG_FUNC \
-        if(--tally_freq == 0) { \
-            tally_freq = 10; \
-            if(planner.blocks_queued()) { \
-                /* Reset accumulators at the start of each movement */ \
-                if(current_tail != planner.block_buffer_tail) { \
-                    current_tail = planner.block_buffer_tail; \
-                    sum_sg_X = sum_sg_Y = sum_sg_Z = sum_sg_E0 = 0; \
-                    sum_tstep_X = sum_tstep_Y = sum_tstep_Z = sum_tstep_E0 = num_sg = 0; \
-                } \
-                /* While in motion, accumulate sg values */ \
-                sum_tstep_X += stepperX.TSTEP(); \
-                sum_tstep_Y += stepperY.TSTEP(); \
-                sum_tstep_Z += stepperZ.TSTEP(); \
-                sum_tstep_E0 += stepperE0.TSTEP(); \
-                sum_sg_X    += stepperX.DRV_STATUS()  & 0b111111111; \
-                sum_sg_Y    += stepperY.DRV_STATUS()  & 0b111111111; \
-                sum_sg_Z    += stepperZ.DRV_STATUS()  & 0b111111111; \
-                sum_sg_E0   += stepperE0.DRV_STATUS() & 0b111111111; \
-                num_sg++; \
-            } \
-        }
-
     #define TMC_CS_TO_mA(cs,vsense) (float(cs)+1)/32 * (vsense?0.180:0.325)/(LULZBOT_R_SENSE+0.02) * 1/sqrt(2) * 1000
-
-    #if defined(LULZBOT_TMC_SHOW_CURRENT_ADJUSTMENTS)
-        #define LULZBOT_TMC_REPORT_CURRENT_ADJUSTMENTS(AXIS) \
-            { \
-                static uint16_t last = 0; \
-                uint32_t DRVSTATUS  = stepper##AXIS.DRV_STATUS(); \
-                uint16_t csactual   = (DRVSTATUS >> 16) & 0b11111; \
-                if(csactual != last) { \
-                    last = csactual; \
-                    SERIAL_ECHOPGM(#AXIS " current set to "); \
-                    SERIAL_ECHO(TMC_CS_TO_mA(csactual,stepper##AXIS.vsense())); \
-                    SERIAL_ECHOPGM(" mA (irun="); \
-                    SERIAL_ECHO(csactual+1); \
-                    SERIAL_ECHOPGM("/32, vsense="); \
-                    SERIAL_ECHO(stepper##AXIS.vsense()); \
-                    SERIAL_ECHOLNPGM(")"); \
-                } \
-            }
-    #else
-        #define LULZBOT_TMC_REPORT_CURRENT_ADJUSTMENTS(AXIS)
-    #endif
-
-    #define LULZBOT_TMC_M119_REPORT \
-        SERIAL_ECHOLNPGM("TMC2130 Status:"); \
-        LULZBOT_TMC_REPORT(X) \
-        LULZBOT_TMC_REPORT(Y) \
-        LULZBOT_TMC_REPORT(Z) \
-        LULZBOT_TMC_REPORT(E0)
 
     #define LULZBOT_ENABLE_COOLSTEP_WITH_STALLGUARD(st) \
         /* Disable steathchop */ \
@@ -1549,11 +1383,6 @@
                 LULZBOT_BACKOFF_FEEDRATE \
             ); \
         }
-#else
-    #define LULZBOT_TMC_M119_REPORT
-    #define LULZBOT_TMC_AVG_VARS
-    #define LULZBOT_TMC_AVG_FUNC
-    #define LULZBOT_TMC_REPORT_CURRENT_ADJUSTMENTS(AXIS)
 #endif
 
 #if defined(LULZBOT_SENSORLESS_HOMING)

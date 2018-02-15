@@ -6513,9 +6513,6 @@ inline void gcode_M17() {
         }
       }
     }
-    #if ENABLED(ULTIPANEL) && defined(LULZBOT_LCD_PAUSE_WORKAROUND)
-      lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_STATUS);
-    #endif
   }
 
   #if IS_KINEMATIC
@@ -10688,7 +10685,7 @@ inline void gcode_M502() {
   static void tmc_get_sgt(TMC &st, const char name[]) {
     SERIAL_ECHO(name);
     SERIAL_ECHOPGM(" driver homing sensitivity set to ");
-    MYSERIAL.println(st.sgt(), DEC);
+    MYSERIAL.println(LULZBOT_SIGN_EXTEND_SGT(st.sgt()), DEC);
   }
   template<typename TMC>
   static void tmc_set_sgt(TMC &st, const char name[], const int8_t sgt_val) {
