@@ -130,7 +130,7 @@
     #define LULZBOT_USE_EINSYRAMBO
     #define LULZBOT_USE_EINSY_RETRO
     #define LULZBOT_USE_TOUCH_UI
-    #define LULZBOT_USE_HIGH_RES
+    //#define LULZBOT_USE_HIGH_RES
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
@@ -1759,7 +1759,7 @@
     #endif
     #define LCD_PORTRAIT
     #define LCD_UPSIDE_DOWN
-    #define UI_FRAMEWORK_DEBUG
+    //#define UI_FRAMEWORK_DEBUG
 #endif
 
 /***************************** CUSTOM SPLASH SCREEN *****************************/

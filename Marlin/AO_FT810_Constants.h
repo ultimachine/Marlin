@@ -689,6 +689,28 @@ namespace FTDI {
     MUTE                                            = 0x60,
     UNMUTE                                          = 0x61
   };
+
+  enum note_t {
+    END_SONG                                        = 0x00,
+    NOTE_D3                                         = 0x33,
+    NOTE_D3S                                        = 0x34,
+    NOTE_F3                                         = 0x35,
+    NOTE_F3S                                        = 0x36,
+    NOTE_G3                                         = 0x37,
+    NOTE_G3S                                        = 0x38,
+    NOTE_A3                                         = 0x39,
+    NOTE_A3S                                        = 0x3A,
+    NOTE_B3                                         = 0x3B,
+    NOTE_C4                                         = 0x3C,
+    NOTE_C4S                                        = 0x3D,
+    NOTE_D4                                         = 0x3E,
+    NOTE_D4S                                        = 0x3F,
+    NOTE_E4                                         = 0x40,
+    NOTE_F4                                         = 0x41,
+    NOTE_F4S                                        = 0x42,
+    NOTE_G4                                         = 0x43,
+    NOTE_G4S                                        = 0x44
+  };
 }
 
 // If LCD_IS_FT800 is defined, then copy the FT800 namespace into the FTDI namespace

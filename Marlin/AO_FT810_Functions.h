@@ -790,7 +790,7 @@ class CLCD::SoundPlayer {
   public:
     struct sound_t {
       effect_t effect;      // The sound effect number
-      uint8_t  note;        // The MIDI note value
+      note_t   note;        // The MIDI note value
       uint8_t  sixteenths;  // Duration of note, in sixteeths of a second, or zero to play to completion
     };
 
@@ -799,22 +799,22 @@ class CLCD::SoundPlayer {
     uint32_t       next;
 
   public:
-    static const uint8_t MIDDLE_C = 60; // C4
-
     static void setVolume(uint8_t volume);
-    static void play(effect_t effect, uint8_t note = MIDDLE_C);
+    static void play(effect_t effect, note_t note = NOTE_C4);
     static bool soundPlaying();
 
     void play(const sound_t* seq);
 
     void onIdle();
+
+    bool hasMoreNotes() {return sequence != 0;};
 };
 
 void CLCD::SoundPlayer::setVolume(uint8_t vol) {
   CLCD::Mem_Write8(REG_VOL_SOUND, vol);
 }
 
-void CLCD::SoundPlayer::play(effect_t effect, uint8_t note) {
+void CLCD::SoundPlayer::play(effect_t effect, note_t note) {
   CLCD::Mem_Write16(REG_SOUND, (note << 8) | effect);
   CLCD::Mem_Write8( REG_PLAY,  1);
 
@@ -842,14 +842,14 @@ void CLCD::SoundPlayer::onIdle() {
 
   if(readyForNextNote) {
     const effect_t fx = effect_t(pgm_read_byte_near(&sequence->effect));
-    const uint8_t  nt =          pgm_read_byte_near(&sequence->note);
+    const note_t  nt =    note_t(pgm_read_byte_near(&sequence->note));
     const uint16_t ms = uint32_t(pgm_read_byte_near(&sequence->sixteenths)) * 1000 / 16;
 
     if(ms == 0 && fx == SILENCE && nt == 0) {
       sequence = 0;
     } else {
       next = ms ? (millis() + ms) : 0;
-      play(fx, nt != 0 ? nt : MIDDLE_C);
+      play(fx, nt != 0 ? nt : NOTE_C4);
       sequence++;
     }
   }

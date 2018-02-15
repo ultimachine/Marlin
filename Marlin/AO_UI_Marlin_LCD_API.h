@@ -43,6 +43,13 @@ class Marlin_LCD_API {
     static const bool isAxisPositionKnown(const axis_t axis);
 
     static const progmem_str getFirmwareName();
+
+    static const void setTargetTemp_celsius(const uint8_t extruder, float temp);
+    static const void setFan_percent(const uint8_t fan, float percent);
+
+    static float clamp(float value, float minimum, float maximum) {return max(min(value,maximum),minimum);};
+
+    static void showKillScreen(const char* lcd_msg);
 };
 
 #if defined(MSG_MARLIN)
@@ -66,7 +73,7 @@ const float Marlin_LCD_API::getTargetTemp_celsius(const uint8_t extruder) {
 }
 
 const float Marlin_LCD_API::getFan_percent(const uint8_t fan) {
- return ((fanSpeeds[fan] + 1) * 100) / 256;
+ return ((float(fanSpeeds[fan]) + 1) * 100) / 256;
 }
 
 const float Marlin_LCD_API::getAxisPosition_mm(const Marlin_LCD_API::axis_t axis) {
@@ -108,5 +115,19 @@ const bool Marlin_LCD_API::isAxisPositionKnown(const axis_t axis) {
 
 const Marlin_LCD_API::progmem_str Marlin_LCD_API::getFirmwareName() {
   return F("Marlin " SHORT_BUILD_VERSION LULZBOT_FW_VERSION);
+}
+
+const void Marlin_LCD_API::setTargetTemp_celsius(const uint8_t extruder, float temp) {
+  if(extruder) {
+    thermalManager.setTargetHotend(clamp(temp,0,500), extruder-1);
+  } else {
+    thermalManager.setTargetBed(clamp(temp,0,200));
+  }
+}
+
+const void Marlin_LCD_API::setFan_percent(const uint8_t fan, float percent) {
+  if (fan < FAN_COUNT) {
+    fanSpeeds[fan] = clamp(round(percent*256/100-1), 0, 255);
+  }
 }
 #endif

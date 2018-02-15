@@ -22,10 +22,6 @@ char lcd_status_message[STATUS_MESSAGE_BUFFER_LENGTH] = WELCOME_MSG;
 static float marlin_x_axis     = 100;
 static float marlin_y_axis     = 50;
 static float marlin_z_axis     = 170;
-static int   marlin_e0_temp    = 25;
-static int   marlin_e1_temp    = 25;
-static int   marlin_bed_temp   = 25;
-static int   marlin_fan_speed  = 25;
 static float marlin_x_steps    = 100;
 static float marlin_y_steps    = 100;
 static float marlin_z_steps    = 100;
@@ -114,6 +110,12 @@ class AboutScreen : public UIScreen {
     static void onIdle();
 };
 
+class KillScreen : public UIScreen {
+  public:
+    static void onEntry();
+    static void onRefresh();
+};
+
 class StatusScreen : public UIScreen {
   private:
     static void static_axis_position();
@@ -161,25 +163,38 @@ class AdvancedSettingsScreen : public UIScreen {
 class ValueAdjusters : public UIScreen {
   private:
     static uint8_t increment;
-    static void draw_increment_btn(const uint8_t tag, uint8_t decimals);
+    static void draw_increment_btn(uint8_t line, const uint8_t tag, uint8_t decimals);
   protected:
+    struct stacker_t {
+      uint8_t line;
+
+      void static_parts();
+      void dynamic_parts();
+    };
+
     struct heading_t {
       const char    *label;
-      uint8_t        decimals;
 
-      void static_parts() const;
-      void dynamic_parts() const;
+      void static_parts(stacker_t &s) const;
+      void dynamic_parts(stacker_t &s) const;
     };
 
     struct adjuster_t {
-      uint8_t        line;
+      uint8_t        tag;
       const char    *label;
       const char    *units;
       uint32_t       color;
       uint8_t        decimals;
 
-      void static_parts() const;
-      void dynamic_parts(float value) const;
+      void static_parts(stacker_t &s) const;
+      void dynamic_parts(stacker_t &s,float value) const;
+    };
+
+    struct increment_t {
+      const uint8_t decimals;
+
+      void static_parts(stacker_t &s) const;
+      void dynamic_parts(stacker_t &s) const;
     };
 
     static float getIncrement();
@@ -216,6 +231,7 @@ class TemperatureScreen : public ValueAdjusters {
 SCREEN_TABLE {
   DECL_SCREEN(BootScreen),
   DECL_SCREEN(AboutScreen),
+  DECL_SCREEN(KillScreen),
   DECL_SCREEN(CalibrationScreen),
   DECL_SCREEN(StatusScreen),
   DECL_SCREEN(MenuScreen),
@@ -330,9 +346,10 @@ void BootScreen::onIdle() {
 CLCD::SoundPlayer sound;
 
 const PROGMEM CLCD::SoundPlayer::sound_t chimes[] = {
-  {CHIMES, 55, 13},
-  {CHIMES, 64, 13},
-  {CHIMES, 60, 19}
+  {CHIMES,  NOTE_G3,  13},
+  {CHIMES,  NOTE_E4,  13},
+  {CHIMES,  NOTE_C4,  19},
+  {SILENCE, END_SONG, 0}
 };
 
 const PROGMEM CLCD::SoundPlayer::sound_t samples[] = {
@@ -397,6 +414,49 @@ void AboutScreen::onTouchStart(uint8_t tag) {
 
 void AboutScreen::onIdle() {
   sound.onIdle();
+}
+
+/************************************ KILL SCREEN *******************************/
+
+const PROGMEM CLCD::SoundPlayer::sound_t sad_trombone[] = {
+  {TRUMPET, NOTE_A3S,  10},
+  {TRUMPET, NOTE_A3 ,  10},
+  {TRUMPET, NOTE_G3S,  10},
+  {TRUMPET, NOTE_G3,   20},
+  {SILENCE, END_SONG,  0}
+};
+
+void KillScreen::onEntry() {
+  UIScreen::onEntry();
+
+  CLCD::Mem_Write8(REG_VOL_SOUND, 0xFF);
+  sound.play(sad_trombone);
+
+  // Marlin won't call the idle function anymore, so we
+  // have to do it to play the sounds.
+  while(sound.hasMoreNotes()) {
+    sound.onIdle();
+  }
+}
+
+void KillScreen::onRefresh() {
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
+  cmd.Cmd_Clear_Color(Theme::about_bg);
+  cmd.Cmd_Clear(1,1,1);
+
+  #define GRID_COLS 4
+  #define GRID_ROWS 8
+
+  BTX( BTN_POS(1,2), BTN_SIZE(4,1), lcd_status_message,          FONT_LRG);
+
+  BTX( BTN_POS(1,3), BTN_SIZE(4,1), F("PRINTER HALTED"),         FONT_LRG);
+
+  BTX( BTN_POS(1,6), BTN_SIZE(4,1), F("Please reset"),           FONT_LRG);
+
+  cmd.Cmd(DL_DISPLAY);
+  cmd.Cmd(CMD_SWAP);
+  cmd.Cmd_Execute();
 }
 
 /*********************************** STATUS SCREEN ******************************/
@@ -940,18 +1000,36 @@ void CalibrationRegistersScreen::onTouchStart(uint8_t tag) {
   #define GRID_ROWS  6
 #endif
 
-void ValueAdjusters::draw_increment_btn(const uint8_t tag, uint8_t decimals) {
+void ValueAdjusters::stacker_t::static_parts() {
+  CLCD::CommandFifo cmd;
+  cmd.Cmd_Clear_Color(Theme::adjust_bg);
+  cmd.Cmd_Clear(1,1,1);
+
+  #if defined(LCD_PORTRAIT)
+    BTN_TAG(1) THEME(navi_btn)  BTN( BTN_POS(1,10), BTN_SIZE(6,1), F("Back"),           MENU_BTN_STYLE);
+  #else
+    BTN_TAG(1) THEME(navi_btn)  BTN( BTN_POS(8,6),  BTN_SIZE(2,1), F("Back"),           MENU_BTN_STYLE);
+  #endif
+
+  line = 1;
+}
+
+void ValueAdjusters::stacker_t::dynamic_parts() {
+  line = 1;
+}
+
+void ValueAdjusters::draw_increment_btn(uint8_t line, const uint8_t tag, uint8_t decimals) {
   CLCD::CommandFifo  cmd;
   const char        *label = PSTR("?");
   uint8_t            pos;
 
   switch(tag) {
-    case 20: label = PSTR(   ".001"); pos = decimals - 3; break;
-    case 21: label = PSTR(   ".01"); pos = decimals - 2; break;
-    case 22: label = PSTR(  "0.1"); pos = decimals - 1; break;
-    case 23: label = PSTR(  "1"  ); pos = decimals + 0; break;
-    case 24: label = PSTR( "10"  ); pos = decimals + 1; break;
-    case 25: label = PSTR("100"  ); pos = decimals + 2; break;
+    case 240: label = PSTR(   ".001"); pos = decimals - 3; break;
+    case 241: label = PSTR(   ".01" ); pos = decimals - 2; break;
+    case 242: label = PSTR(  "0.1"  ); pos = decimals - 1; break;
+    case 243: label = PSTR(  "1"    ); pos = decimals + 0; break;
+    case 244: label = PSTR( "10"    ); pos = decimals + 1; break;
+    case 245: label = PSTR("100"    ); pos = decimals + 2; break;
     default:
       #if defined(UI_FRAMEWORK_DEBUG)
         #if defined(SERIAL_PROTOCOLLNPAIR)
@@ -961,14 +1039,15 @@ void ValueAdjusters::draw_increment_btn(const uint8_t tag, uint8_t decimals) {
         Serial.println(tag);
         #endif
       #endif
+      ;
   }
 
   BTN_TAG(tag)
   switch(pos) {
     #if defined(LCD_PORTRAIT)
-      case 0: BTN( BTN_POS(3,8), BTN_SIZE(1,1), progmem_str(label), FONT_SML, OPT_3D); break;
-      case 1: BTN( BTN_POS(4,8), BTN_SIZE(1,1), progmem_str(label), FONT_SML, OPT_3D); break;
-      case 2: BTN( BTN_POS(5,8), BTN_SIZE(1,1), progmem_str(label), FONT_SML, OPT_3D); break;
+      case 0: BTN( BTN_POS(3,line), BTN_SIZE(1,1), progmem_str(label), FONT_SML, OPT_3D); break;
+      case 1: BTN( BTN_POS(4,line), BTN_SIZE(1,1), progmem_str(label), FONT_SML, OPT_3D); break;
+      case 2: BTN( BTN_POS(5,line), BTN_SIZE(1,1), progmem_str(label), FONT_SML, OPT_3D); break;
     #else
       case 0: BTN( BTN_POS(8,2), BTN_SIZE(2,1), progmem_str(label), FONT_MED, OPT_3D); break;
       case 1: BTN( BTN_POS(8,3), BTN_SIZE(2,1), progmem_str(label), FONT_MED, OPT_3D); break;
@@ -977,33 +1056,46 @@ void ValueAdjusters::draw_increment_btn(const uint8_t tag, uint8_t decimals) {
   }
 }
 
-void ValueAdjusters::heading_t::static_parts() const {
+void ValueAdjusters::increment_t::static_parts(stacker_t &s) const {
   CLCD::CommandFifo cmd;
-  cmd.Cmd_Clear_Color(Theme::adjust_bg);
-  cmd.Cmd_Clear(1,1,1);
+
+  #if defined(LCD_PORTRAIT)
+    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(1, s.line), BTN_SIZE(6,1), F("Increment:"),     FONT_MED, OPT_FLAT);
+  #else
+    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(8,1),       BTN_SIZE(2,1), F("Increment"),      FONT_MED, OPT_FLAT);
+  #endif
 
   // Draw all the buttons in the off state.
   THEME(toggle_off);
-  draw_increment_btn(23 - decimals, decimals);
-  draw_increment_btn(24 - decimals, decimals);
-  draw_increment_btn(25 - decimals, decimals);
+  draw_increment_btn(s.line+1, 243 - decimals, decimals);
+  draw_increment_btn(s.line+1, 244 - decimals, decimals);
+  draw_increment_btn(s.line+1, 245 - decimals, decimals);
+  s.line += 2;
 
-  #if defined(LCD_PORTRAIT)
-    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(1,1),  BTN_SIZE(6,1), (progmem_str) label, FONT_MED, OPT_FLAT);
-    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(1,7),  BTN_SIZE(6,1), F("Increment:"),     FONT_MED, OPT_FLAT);
-    BTN_TAG(1) THEME(navi_btn)  BTN( BTN_POS(1,10), BTN_SIZE(6,1), F("Back"),           MENU_BTN_STYLE);
-  #else
-    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(3,1),  BTN_SIZE(4,1), (progmem_str) label, FONT_MED, OPT_FLAT);
-    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(8,1),  BTN_SIZE(2,1), F("Increment"),      FONT_MED, OPT_FLAT);
-    BTN_TAG(1) THEME(navi_btn)  BTN( BTN_POS(8,6),  BTN_SIZE(2,1), F("Back"),           MENU_BTN_STYLE);
-  #endif
+  increment = 243 - decimals;
 }
 
-void ValueAdjusters::heading_t::dynamic_parts() const {
+void ValueAdjusters::increment_t::dynamic_parts(stacker_t &s) const {
   CLCD::CommandFifo cmd;
 
   THEME(toggle_on);
-  draw_increment_btn(increment, decimals);
+  draw_increment_btn(s.line+1, increment, decimals);
+  s.line += 2;
+}
+
+void ValueAdjusters::heading_t::static_parts(stacker_t &s) const {
+  CLCD::CommandFifo cmd;
+
+  #if defined(LCD_PORTRAIT)
+    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(1, s.line),  BTN_SIZE(6,1), (progmem_str) label, FONT_MED, OPT_FLAT);
+  #else
+    BTN_TAG(0) THEME(adjust_bg) BTN( BTN_POS(3, s.line),  BTN_SIZE(4,1), (progmem_str) label, FONT_MED, OPT_FLAT);
+  #endif
+  s.line++;
+}
+
+void ValueAdjusters::heading_t::dynamic_parts(stacker_t &s) const {
+  s.line++;
 }
 
 #if defined(LCD_PORTRAIT)
@@ -1020,20 +1112,17 @@ void ValueAdjusters::heading_t::dynamic_parts() const {
   #endif
 #endif
 
-void ValueAdjusters::adjuster_t::static_parts() const {
+void ValueAdjusters::adjuster_t::static_parts(stacker_t &s) const {
   CLCD::CommandFifo cmd;
   progmem_str   str  = (progmem_str) label;
-  const uint8_t tag  = line * 2;
-
-  BTN_TAG( 0     ) RGB(color)       BTN( BTN_POS(3,line+1), BTN_SIZE(2,1), F(""),  FONT_SML, OPT_FLAT);
-  BTN_TAG( 0     ) THEME(adjust_bg) BTN( BTN_POS(1,line+1), BTN_SIZE(2,1), str,    FONT_SML, OPT_FLAT);
-  BTN_TAG(tag    ) THEME(incr_btn)  BTN( BTN_POS(5,line+1), BTN_SIZE(1,1), F("-"), FONT_MED, OPT_3D);
-  BTN_TAG(tag + 1) THEME(incr_btn)  BTN( BTN_POS(6,line+1), BTN_SIZE(1,1), F("+"), FONT_MED, OPT_3D);
-
-  increment = 23 - decimals;
+  BTN_TAG( 0     ) RGB(color)       BTN( BTN_POS(3,s.line), BTN_SIZE(2,1), F(""),  FONT_SML, OPT_FLAT);
+  BTN_TAG( 0     ) THEME(adjust_bg) BTN( BTN_POS(1,s.line), BTN_SIZE(2,1), str,    FONT_SML, OPT_FLAT);
+  BTN_TAG(tag    ) THEME(incr_btn)  BTN( BTN_POS(5,s.line), BTN_SIZE(1,1), F("-"), FONT_MED, OPT_3D);
+  BTN_TAG(tag + 1) THEME(incr_btn)  BTN( BTN_POS(6,s.line), BTN_SIZE(1,1), F("+"), FONT_MED, OPT_3D);
+  s.line++;
 }
 
-void ValueAdjusters::adjuster_t::dynamic_parts(float value) const {
+void ValueAdjusters::adjuster_t::dynamic_parts(stacker_t &s, float value) const {
   CLCD::CommandFifo cmd;
   char b[32];
 
@@ -1042,26 +1131,27 @@ void ValueAdjusters::adjuster_t::dynamic_parts(float value) const {
   strcat_P(b, (const char*) units);
 
   BTN_TAG(0)
-  BTX( BTN_POS(3,line+1), BTN_SIZE(2,1), b, FONT_SML);
+  BTX( BTN_POS(3,s.line), BTN_SIZE(2,1), b, FONT_SML);
+  s.line++;
 }
 
 void ValueAdjusters::onTouchStart(uint8_t tag) {
   switch(tag) {
-    case 1:         GOTO_PREVIOUS();                 return;
-    case 2  ... 9:  current_screen.onTouchHeld(tag); return;
-    case 20 ... 25: increment = tag;                 break;
+    case 1:           GOTO_PREVIOUS();                 return;
+    case 240 ... 245: increment = tag;                 break;
+    default:          current_screen.onTouchHeld(tag); return;
   }
   current_screen.onRefresh();
 }
 
 float ValueAdjusters::getIncrement() {
   switch(increment) {
-    case 20: return   0.001;
-    case 21: return   0.01;
-    case 22: return   0.1;
-    case 23: return   1.0;
-    case 24: return  10.0;
-    case 25: return 100.0;
+    case 240: return   0.001;
+    case 241: return   0.01;
+    case 242: return   0.1;
+    case 243: return   1.0;
+    case 244: return  10.0;
+    case 245: return 100.0;
   }
 }
 
@@ -1076,25 +1166,31 @@ void MoveAxisScreen::onRefresh() {
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
 
-  /*                    #  Label:              Units:      Color:         Precision: */
-  const heading_t  a = {   PSTR("Move Axis"),                             1          };
-  const adjuster_t b = {1, PSTR("X:"),         PSTR("mm"), Theme::x_axis, 1          };
-  const adjuster_t c = {2, PSTR("Y:"),         PSTR("mm"), Theme::y_axis, 1          };
-  const adjuster_t d = {3, PSTR("Z:"),         PSTR("mm"), Theme::z_axis, 1          };
+  /*                     Tag  Label:              Units:      Color:         Precision: */
+  const heading_t   h = {     PSTR("Move Axis")                                         };
+  const adjuster_t  x = {2,   PSTR("X:"),         PSTR("mm"), Theme::x_axis, 1          };
+  const adjuster_t  y = {4,   PSTR("Y:"),         PSTR("mm"), Theme::y_axis, 1          };
+  const adjuster_t  z = {6,   PSTR("Z:"),         PSTR("mm"), Theme::z_axis, 1          };
+  const increment_t i = {                                                    1          };
 
+  stacker_t s;
   if(dlcache.hasData()) {
     dlcache.append();
   } else {
-    a.static_parts();
-    b.static_parts();
-    c.static_parts();
-    d.static_parts();
+    s.static_parts();
+    h.static_parts(s);
+    x.static_parts(s);
+    y.static_parts(s);
+    z.static_parts(s);
+    i.static_parts(s);
     dlcache.store();
   }
-  a.dynamic_parts();
-  b.dynamic_parts(marlin_x_axis);
-  c.dynamic_parts(marlin_y_axis);
-  d.dynamic_parts(marlin_z_axis);
+  s.dynamic_parts();
+  h.dynamic_parts(s);
+  x.dynamic_parts(s,marlin_x_axis);
+  y.dynamic_parts(s,marlin_y_axis);
+  z.dynamic_parts(s,marlin_z_axis);
+  i.dynamic_parts(s);
 
   cmd.Cmd(DL_DISPLAY);
   cmd.Cmd(CMD_SWAP);
@@ -1120,25 +1216,36 @@ void TemperatureScreen::onRefresh() {
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
 
-  /*                    #  Label:              Units:     Color:            Precision: */
-  const heading_t  a = {   PSTR("Nozzle:"),                                 0          };
-  const adjuster_t b = {1, PSTR("Nozzle:"),    PSTR("C"), Theme::temp,      0          };
-  const adjuster_t c = {2, PSTR("Bed:"),       PSTR("C"), Theme::temp,      0          };
-  const adjuster_t d = {3, PSTR("Fan Speed:"), PSTR("%"), Theme::fan_speed, 0          };
+  /*                      Tag  Label:              Units:     Color:            Precision: */
+  const heading_t    h = {     PSTR("Temperature:")                                        };
+  #if EXTRUDERS == 1
+  const adjuster_t  n1 = {2,   PSTR("Nozzle:"),    PSTR("C"), Theme::temp,      0          };
+  #else
+  const adjuster_t  n1 = {2,   PSTR("Nozzle 1:"),  PSTR("C"), Theme::temp,      0          };
+  const adjuster_t  n2 = {4,   PSTR("Nozzle 2:"),  PSTR("C"), Theme::temp,      0          };
+  #endif
+  const adjuster_t  b  = {20,  PSTR("Bed:"),       PSTR("C"), Theme::temp,      0          };
+  const adjuster_t  f1 = {10,  PSTR("Fan Speed:"), PSTR("%"), Theme::fan_speed, 0          };
+  const increment_t i  = {                                                      0          };
 
-  if(dlcache.hasData()) {
+  stacker_t s;
+  if(dlcache.hasData())  {
     dlcache.append();
   } else {
-    a.static_parts();
-    b.static_parts();
-    c.static_parts();
-    d.static_parts();
+    s .static_parts();
+    h .static_parts(s);
+    n1.static_parts(s);
+    b .static_parts(s);
+    f1.static_parts(s);
+    i .static_parts(s);
     dlcache.store();
   }
-  a.dynamic_parts();
-  b.dynamic_parts(marlin_e0_temp);
-  c.dynamic_parts(marlin_bed_temp);
-  d.dynamic_parts(marlin_fan_speed);
+  s .dynamic_parts();
+  h .dynamic_parts(s);
+  n1.dynamic_parts(s, Marlin_LCD_API::getTargetTemp_celsius(1));
+  b .dynamic_parts(s, Marlin_LCD_API::getTargetTemp_celsius(0));
+  f1.dynamic_parts(s, Marlin_LCD_API::getFan_percent(0));
+  i .dynamic_parts(s);
 
   cmd.Cmd(DL_DISPLAY);
   cmd.Cmd(CMD_SWAP);
@@ -1147,12 +1254,14 @@ void TemperatureScreen::onRefresh() {
 
 void TemperatureScreen::onTouchHeld(uint8_t tag) {
   switch(tag) {
-    case 2:  marlin_e0_temp   -= getIncrement(); break;
-    case 3:  marlin_e0_temp   += getIncrement(); break;
-    case 4:  marlin_bed_temp  -= getIncrement(); break;
-    case 5:  marlin_bed_temp  += getIncrement(); break;
-    case 6:  marlin_fan_speed -= getIncrement(); break;
-    case 7:  marlin_fan_speed += getIncrement(); break;
+    case 20: Marlin_LCD_API::setTargetTemp_celsius(0, Marlin_LCD_API::getTargetTemp_celsius(0) - getIncrement()); break;
+    case 21: Marlin_LCD_API::setTargetTemp_celsius(0, Marlin_LCD_API::getTargetTemp_celsius(0) + getIncrement()); break;
+    case  2: Marlin_LCD_API::setTargetTemp_celsius(1, Marlin_LCD_API::getTargetTemp_celsius(1) - getIncrement()); break;
+    case  3: Marlin_LCD_API::setTargetTemp_celsius(1, Marlin_LCD_API::getTargetTemp_celsius(1) + getIncrement()); break;
+    case  4: Marlin_LCD_API::setTargetTemp_celsius(2, Marlin_LCD_API::getTargetTemp_celsius(2) - getIncrement()); break;
+    case  5: Marlin_LCD_API::setTargetTemp_celsius(2, Marlin_LCD_API::getTargetTemp_celsius(2) + getIncrement()); break;
+    case 10: Marlin_LCD_API::setFan_percent(       0, Marlin_LCD_API::getFan_percent(0)        - getIncrement()); break;
+    case 11: Marlin_LCD_API::setFan_percent(       0, Marlin_LCD_API::getFan_percent(0)        + getIncrement()); break;
   }
   onRefresh();
 }
@@ -1164,28 +1273,34 @@ void StepsScreen::onRefresh() {
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
 
-  /*                    #  Label:      Units:             Color:            Precision: */
-  const heading_t  a = {               PSTR("Steps/mm"),                    0};
-  const adjuster_t b = {1, PSTR("X:"), PSTR(""),          Theme::x_axis,    0};
-  const adjuster_t c = {2, PSTR("Y:"), PSTR(""),          Theme::y_axis,    0};
-  const adjuster_t d = {3, PSTR("Z:"), PSTR(""),          Theme::z_axis,    0};
-  const adjuster_t e = {4, PSTR("E:"), PSTR(""),          Theme::e_axis,    0};
+  /*                     Tag  Label:              Units:     Color:            Precision: */
+  const heading_t   h = {     PSTR("Steps/mm")                                            };
+  const adjuster_t  x = {2,   PSTR("X:"), PSTR(""),          Theme::x_axis,    0          };
+  const adjuster_t  y = {4,   PSTR("Y:"), PSTR(""),          Theme::y_axis,    0          };
+  const adjuster_t  z = {6,   PSTR("Z:"), PSTR(""),          Theme::z_axis,    0          };
+  const adjuster_t  e = {8,   PSTR("E:"), PSTR(""),          Theme::e_axis,    0          };
+  const increment_t i  = {                                                     0          };
 
+  stacker_t s;
   if(dlcache.hasData()) {
     dlcache.append();
   } else {
-    a.static_parts();
-    b.static_parts();
-    c.static_parts();
-    d.static_parts();
-    e.static_parts();
+    s.static_parts();
+    h.static_parts(s);
+    x.static_parts(s);
+    y.static_parts(s);
+    z.static_parts(s);
+    e.static_parts(s);
+    i.static_parts(s);
     dlcache.store();
   }
-  a.dynamic_parts();
-  b.dynamic_parts(marlin_x_steps );
-  c.dynamic_parts(marlin_y_steps );
-  d.dynamic_parts(marlin_z_steps );
-  e.dynamic_parts(marlin_e0_steps);
+  s.dynamic_parts();
+  h.dynamic_parts(s);
+  x.dynamic_parts(s,marlin_x_steps );
+  y.dynamic_parts(s,marlin_y_steps );
+  z.dynamic_parts(s,marlin_z_steps );
+  e.dynamic_parts(s,marlin_e0_steps);
+  i.dynamic_parts(s);
 
   cmd.Cmd(DL_DISPLAY);
   cmd.Cmd(CMD_SWAP);
@@ -1213,19 +1328,25 @@ void ZOffsetScreen::onRefresh() {
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
 
-  /*                    #  Label:             Units:      Color:            Precision: */
-  const heading_t  a = {   PSTR("Z Offset"),                                3          };
-  const adjuster_t b = {2, PSTR("Z Offset:"), PSTR("mm"), Theme::z_axis,    3          };
+  /*                    Tag  Label:              Units:     Color:            Precision: */
+  const heading_t   h = {    PSTR("Z Offset")                                            };
+  const adjuster_t  z = {4,  PSTR("Z Offset:"), PSTR("mm"), Theme::z_axis,    3          };
+  const increment_t i = {                                                     3          };
 
+  stacker_t s;
   if(dlcache.hasData()) {
     dlcache.append();
   } else {
-    a.static_parts();
-    b.static_parts();
+    s.static_parts();
+    h.static_parts(s);
+    z.static_parts(s);
+    i.static_parts(s);
     dlcache.store();
   }
-  a.dynamic_parts();
-  b.dynamic_parts(marlin_z_offset);
+  s.dynamic_parts();
+  h.dynamic_parts(s);
+  z.dynamic_parts(s,marlin_z_offset);
+  i.dynamic_parts(s);
 
   cmd.Cmd(DL_DISPLAY);
   cmd.Cmd(CMD_SWAP);
@@ -1355,3 +1476,8 @@ void lcd_buttons_update() {}
 inline void lcd_reset_alert_level() {}
 inline bool lcd_detected() { return true; }
 inline void lcd_refresh() {current_screen.onIdle();}
+
+void kill_screen(const char* lcd_msg) {
+  strncpy_P(lcd_status_message, lcd_msg, STATUS_MESSAGE_BUFFER_LENGTH);
+  GOTO_SCREEN(KillScreen);
+}
