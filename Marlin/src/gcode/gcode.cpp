@@ -644,6 +644,12 @@ void GcodeSuite::process_next_command() {
         case 476: M476(); break;
 	  #endif
 
+    #if ENABLED(HAVE_CURRAX)
+      case 480: M480(); break;    // M480: Read temperature adc data
+      case 481: M481(); break;    // M481: Read currax endstops
+      case 482: M482(); break;    // M482: Read temperature data in Celsius
+    #endif
+
       case 500: M500(); break;    // M500: Store settings in EEPROM
       case 501: M501(); break;    // M501: Read settings from EEPROM
       case 502: M502(); break;    // M502: Revert to default settings

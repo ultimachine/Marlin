@@ -672,8 +672,16 @@ void pca9685_init(); //In src/gcode/feature/pca9685
 void hx711_init(); //In src/gcode/feature/hx711
 #endif
 
+#if ENABLED(HAVE_CURRAX)
+void currax_init_endstops(); //In src/gcode/feature/currax
+#endif
+
 void setup() {
     feynmanlight_init_chipselects();
+
+  #if ENABLED(HAVE_CURRAX)
+    currax_init_endstops();
+  #endif
 
   #if ENABLED(HAVE_PCA9685)
     pca9685_init();

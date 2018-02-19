@@ -1515,4 +1515,22 @@
   #define HX711_CHECKINTERVAL_MILLIS 5000  // HX711 check interval in milliseconds.
 #endif
 
+/**
+ * Currax Custom Mcodes
+ */
+#define HAVE_CURRAX
+#if ENABLED(HAVE_CURRAX)
+  #define CURRAX_COOLANT_TEMP_PIN 19 //PA19 RES_B_THERM
+  #define CURRAX_LCD_TEMP_PIN     32 //PB0  ARRAY_THERM
+  #define CURRAX_RESIN_TEMP_PIN   18 //PA18 RESIN_THERM
+  #define CURRAX_PUMP_TEMP_PIN    17 //PA17 RESIN_LEVEL
+  #define CURRAX_CASE_TEMP_PIN    20 //PA20 AIR_THERM
+
+  #define ENDSTOP0_PIN            25 //PA25 ENDSTOP0
+  #define ENDSTOP1_PIN            27 //PA27 ENDSTOP1
+  #define ENDSTOP2_PIN            33 //PB1  ENDSTOP2
+  #define ENDSTOP3_PIN            26 //PA26 ENDSTOP3
+  #define RESIN_SW_PIN            2  //PA2 RESIN_SW
+#endif
+
 #endif // CONFIGURATION_ADV_H

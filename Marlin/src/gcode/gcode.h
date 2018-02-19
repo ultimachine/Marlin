@@ -202,6 +202,9 @@
  * M474 - HX711 Set scale "M474 S<value>"
  * M475 - HX711 Get scale "M475"
  * M476 - HX711 Get units "M476 S<times>"
+ * M480 - Read temperature ADC data "M480"
+ * M481 - Read currax endstops "M481"
+ * M482 - Read temperature data in Celsius "M482"
  * M500 - Store parameters in EEPROM. (Requires EEPROM_SETTINGS)
  * M501 - Restore parameters from EEPROM. (Requires EEPROM_SETTINGS)
  * M502 - Revert to the default "factory settings". ** Does not write them to EEPROM! **
@@ -618,6 +621,12 @@ private:
 	static void M475();
 	static void M476();
   #endif
+
+ #if ENABLED(HAVE_CURRAX)
+  static void M480();
+  static void M481();
+  static void M482();
+ #endif
 
   #if HAS_BUZZER
     static void M300();
