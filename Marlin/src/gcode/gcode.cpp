@@ -348,6 +348,10 @@ void GcodeSuite::process_next_command() {
         case 43: M43(); break;    // M43: Read pin state
       #endif
 
+      case 44: M44(); break;      // M44: Change pin state
+      case 45: M45(); break;      // M45: Read pin state
+      case 47: M47(); break;      // M47: Analog read pin
+
       #if ENABLED(Z_MIN_PROBE_REPEATABILITY_TEST)
         case 48: M48(); break;    // M48: Z probe repeatability test
       #endif
