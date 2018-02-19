@@ -16,12 +16,14 @@
  *   location: <http://www.gnu.org/licenses/>.                              *
  ****************************************************************************/
 
-#define STATUS_MESSAGE_BUFFER_LENGTH 32
-char lcd_status_message[STATUS_MESSAGE_BUFFER_LENGTH] = WELCOME_MSG;
+#define DISPLAY_UPDATE_INTERVAL    1000
+#define TOUCH_REPEATS_PER_SECOND      4
 
-static float marlin_x_axis     = 100;
-static float marlin_y_axis     = 50;
-static float marlin_z_axis     = 170;
+// To save MCU RAM, the status message is "baked" in to the status screen
+// cache, so we reserve a large chunk of memory for the DL cache
+
+#define RAMG_STATUS_SCREEN_DL_SIZE     2048
+
 static float marlin_x_steps    = 100;
 static float marlin_y_steps    = 100;
 static float marlin_z_steps    = 100;
@@ -94,6 +96,8 @@ static float marlin_z_offset   = 0.150;
 
 #define MENU_BTN_STYLE   Theme::font_medium, OPT_3D
 
+#define EXEC_GCODE(cmd)  Marlin_LCD_API::runGCode(cmd)
+
 /************************* MENU SCREEN DECLARATIONS *************************/
 
 class BootScreen : public UIScreen {
@@ -106,14 +110,14 @@ class AboutScreen : public UIScreen {
   public:
     static void onEntry();
     static void onRefresh();
-    static void onTouchStart(uint8_t tag);
-    static void onIdle();
+    static bool onTouchStart(uint8_t tag);
 };
 
-class KillScreen : public UIScreen {
+class KillScreen {
+  // The KillScreen is behaves differently than the
+  // others, so we do not bother extending UIScreen.
   public:
-    static void onEntry();
-    static void onRefresh();
+    static void show(progmem_str msg);
 };
 
 class StatusScreen : public UIScreen {
@@ -122,24 +126,25 @@ class StatusScreen : public UIScreen {
     static void static_temperature();
     static void static_progress();
     static void static_interaction_buttons();
+    static void static_status_message(const char * const message);
 
     static void dynamic_axis_position();
     static void dynamic_temperature();
     static void dynamic_progress();
-    static void dynamic_status_message();
 
   public:
+    static void setStatusMessage(const char * message);
     static void onRefresh();
     static void onStartup();
     static void onEntry();
     static void onIdle();
-    static void onTouchStart(uint8_t tag);
+    static bool onTouchStart(uint8_t tag);
 };
 
 class MenuScreen : public UIScreen {
   public:
     static void onRefresh();
-    static void onTouchStart(uint8_t tag);
+    static bool onTouchStart(uint8_t tag);
 };
 
 class CalibrationScreen : public UIScreen {
@@ -151,13 +156,13 @@ class CalibrationScreen : public UIScreen {
 class CalibrationRegistersScreen : public UIScreen {
   public:
     static void onRefresh();
-    static void onTouchStart(uint8_t tag);
+    static bool onTouchStart(uint8_t tag);
 };
 
 class AdvancedSettingsScreen : public UIScreen {
   public:
     static void onRefresh();
-    static void onTouchStart(uint8_t tag);
+    static bool onTouchStart(uint8_t tag);
 };
 
 class ValueAdjusters : public UIScreen {
@@ -199,31 +204,37 @@ class ValueAdjusters : public UIScreen {
 
     static float getIncrement();
   public:
-    static void onTouchStart(uint8_t tag);
+    static bool onTouchStart(uint8_t tag);
 };
 
 class MoveAxisScreen : public ValueAdjusters {
   public:
     static void onRefresh();
-    static void onTouchHeld(uint8_t tag);
+    static bool onTouchHeld(uint8_t tag);
 };
 
 class StepsScreen : public ValueAdjusters {
   public:
     static void onRefresh();
-    static void onTouchHeld(uint8_t tag);
+    static bool onTouchHeld(uint8_t tag);
 };
 
 class ZOffsetScreen : public ValueAdjusters {
   public:
     static void onRefresh();
-    static void onTouchHeld(uint8_t tag);
+    static bool onTouchHeld(uint8_t tag);
 };
 
 class TemperatureScreen : public ValueAdjusters {
   public:
     static void onRefresh();
-    static void onTouchHeld(uint8_t tag);
+    static bool onTouchHeld(uint8_t tag);
+};
+
+class FilesScreen : public UIScreen {
+  public:
+    static void onRefresh();
+    static bool onTouchHeld(uint8_t tag);
 };
 
 /******************************* MENU SCREEN TABLE ******************************/
@@ -231,7 +242,6 @@ class TemperatureScreen : public ValueAdjusters {
 SCREEN_TABLE {
   DECL_SCREEN(BootScreen),
   DECL_SCREEN(AboutScreen),
-  DECL_SCREEN(KillScreen),
   DECL_SCREEN(CalibrationScreen),
   DECL_SCREEN(StatusScreen),
   DECL_SCREEN(MenuScreen),
@@ -240,10 +250,28 @@ SCREEN_TABLE {
   DECL_SCREEN(StepsScreen),
   DECL_SCREEN(ZOffsetScreen),
   DECL_SCREEN(TemperatureScreen),
-  DECL_SCREEN(CalibrationRegistersScreen)
+  DECL_SCREEN(CalibrationRegistersScreen),
+  DECL_SCREEN(FilesScreen),
 };
 
 SCREEN_TABLE_POST
+
+/********************************* DL CACHE SLOTS ******************************/
+
+// In order to reduce SPI traffic, we cache display lists (DL) in RAMG. This
+// is done using the CLCD::DLCache class, which takes a unique ID for each
+// cache location. These IDs are defined here:
+
+enum {
+  STATUS_SCREEN_CACHE,
+  MENU_SCREEN_CACHE,
+  ADVANCED_SETTINGS_SCREEN_CACHE,
+  MOVE_AXIS_SCREEN_CACHE,
+  TEMPERATURE_SCREEN_CACHE,
+  STEPS_SCREEN_CACHE,
+  ZOFFSET_SCREEN_CACHE,
+  FILES_SCREEN_CACHE
+};
 
 /************************************ MENU THEME ********************************/
 
@@ -345,37 +373,6 @@ void BootScreen::onIdle() {
 
 CLCD::SoundPlayer sound;
 
-const PROGMEM CLCD::SoundPlayer::sound_t chimes[] = {
-  {CHIMES,  NOTE_G3,  13},
-  {CHIMES,  NOTE_E4,  13},
-  {CHIMES,  NOTE_C4,  19},
-  {SILENCE, END_SONG, 0}
-};
-
-const PROGMEM CLCD::SoundPlayer::sound_t samples[] = {
-  {HARP},
-  {XYLOPHONE},
-  {TUBA},
-  {GLOCKENSPIEL},
-  {ORGAN},
-  {TRUMPET},
-  {PIANO},
-  {CHIMES},
-  {MUSIC_BOX},
-  {BELL},
-  {CLICK},
-  {SWITCH},
-  {COWBELL},
-  {NOTCH},
-  {HIHAT},
-  {KICKDRUM},
-  {SWITCH},
-  {POP},
-  {CLACK},
-  {CHACK},
-  {SILENCE}
-};
-
 void AboutScreen::onEntry() {
   UIScreen::onEntry();
 
@@ -405,42 +402,22 @@ void AboutScreen::onRefresh() {
   cmd.Cmd_Execute();
 }
 
-void AboutScreen::onTouchStart(uint8_t tag) {
+bool AboutScreen::onTouchStart(uint8_t tag) {
   switch(tag) {
-    case 1:        GOTO_PREVIOUS();                         return;
-    case 2:        GOTO_SCREEN(CalibrationRegistersScreen); return;
+    case 1:        GOTO_PREVIOUS();                         return true;
+    case 2:        GOTO_SCREEN(CalibrationRegistersScreen); return true;
   }
-}
-
-void AboutScreen::onIdle() {
-  sound.onIdle();
 }
 
 /************************************ KILL SCREEN *******************************/
 
-const PROGMEM CLCD::SoundPlayer::sound_t sad_trombone[] = {
-  {TRUMPET, NOTE_A3S,  10},
-  {TRUMPET, NOTE_A3 ,  10},
-  {TRUMPET, NOTE_G3S,  10},
-  {TRUMPET, NOTE_G3,   20},
-  {SILENCE, END_SONG,  0}
-};
+// The kill screen is an oddball that happens after Marlin has killed the events
+// loop. So we only have a show() method rather than onRefresh(). The KillScreen
+// should not be used as a model for other UI screens as it is an exception.
 
-void KillScreen::onEntry() {
-  UIScreen::onEntry();
-
-  CLCD::Mem_Write8(REG_VOL_SOUND, 0xFF);
-  sound.play(sad_trombone);
-
-  // Marlin won't call the idle function anymore, so we
-  // have to do it to play the sounds.
-  while(sound.hasMoreNotes()) {
-    sound.onIdle();
-  }
-}
-
-void KillScreen::onRefresh() {
+void KillScreen::show(progmem_str message) {
   CLCD::CommandFifo cmd;
+
   cmd.Cmd(CMD_DLSTART);
   cmd.Cmd_Clear_Color(Theme::about_bg);
   cmd.Cmd_Clear(1,1,1);
@@ -448,7 +425,7 @@ void KillScreen::onRefresh() {
   #define GRID_COLS 4
   #define GRID_ROWS 8
 
-  BTX( BTN_POS(1,2), BTN_SIZE(4,1), lcd_status_message,          FONT_LRG);
+  BTX( BTN_POS(1,2), BTN_SIZE(4,1), message,                     FONT_LRG);
 
   BTX( BTN_POS(1,3), BTN_SIZE(4,1), F("PRINTER HALTED"),         FONT_LRG);
 
@@ -457,6 +434,14 @@ void KillScreen::onRefresh() {
   cmd.Cmd(DL_DISPLAY);
   cmd.Cmd(CMD_SWAP);
   cmd.Cmd_Execute();
+
+  sound.play(sad_trombone);
+
+  // Marlin won't call the idle function anymore,
+  // so we have to loop here to play the sounds.
+  while(sound.hasMoreNotes()) {
+    sound.onIdle();
+  }
 }
 
 /*********************************** STATUS SCREEN ******************************/
@@ -590,7 +575,7 @@ void StatusScreen::dynamic_temperature() {
   sprintf_P(
     fan_str,
     PSTR("%-3d %%"),
-    Marlin_LCD_API::getFan_percent(0)
+    int8_t(Marlin_LCD_API::getFan_percent(0))
   );
 
   sprintf_P(
@@ -696,14 +681,39 @@ void StatusScreen::static_interaction_buttons() {
 
 #define GRID_COLS 1
 
-void StatusScreen::dynamic_status_message() {
-  CLCD::CommandFifo cmd;
+void StatusScreen::static_status_message(const char * const message) {
+    CLCD::CommandFifo cmd;
 
-  #if defined(LCD_PORTRAIT)
-    THEME(status_msg) BTN( BTN_POS(1,4), BTN_SIZE(1,1), lcd_status_message, FONT_LRG, OPT_FLAT);
-  #else
-    THEME(status_msg) BTN( BTN_POS(1,3), BTN_SIZE(1,2), lcd_status_message, FONT_LRG, OPT_FLAT);
-  #endif
+    #if defined(LCD_PORTRAIT)
+      THEME(status_msg) BTN( BTN_POS(1,4), BTN_SIZE(1,1), message, FONT_LRG, OPT_FLAT);
+    #else
+      THEME(status_msg) BTN( BTN_POS(1,3), BTN_SIZE(1,2), message, FONT_LRG, OPT_FLAT);
+    #endif
+}
+
+void StatusScreen::setStatusMessage(const char * const message) {
+  CLCD::DLCache dlcache(STATUS_SCREEN_CACHE);
+
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
+
+  cmd.Cmd_Clear_Color(Theme::background);
+  cmd.Cmd_Clear(1,1,1);
+
+  static_temperature();
+  static_progress();
+  static_axis_position();
+  static_interaction_buttons();
+  static_status_message(message);
+
+  if(!dlcache.store(RAMG_STATUS_SCREEN_DL_SIZE)) {
+    #if defined (SERIAL_PROTOCOLLNPAIR)
+      SERIAL_PROTOCOLLNPAIR("Unable to set the status message, not enough DL cache space: ",message);
+    #else
+      Serial.print(F("Unable to set the status message, not enough DL cache space: "));
+      Serial.println(message);
+    #endif
+  }
 }
 
 #if defined(LCD_PORTRAIT)
@@ -722,29 +732,21 @@ void StatusScreen::onStartup() {
 }
 
 void StatusScreen::onRefresh() {
-  static CLCD::DLCache dlcache;
+  CLCD::DLCache dlcache(STATUS_SCREEN_CACHE);
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
 
   if(dlcache.hasData()) {
     dlcache.append();
   } else {
-    cmd.Cmd_Clear_Color(Theme::background);
-    cmd.Cmd_Clear(1,1,1);
-
-    static_temperature();
-    static_progress();
-    static_axis_position();
-    static_interaction_buttons();
-
-    dlcache.store();
+    // This should not happen, as setStatusMessage will
+    // populate the cache.
   }
 
   /* Dynamic content, non-cached data follows */
 
   dynamic_temperature();
   dynamic_progress();
-  dynamic_status_message();
   dynamic_axis_position();
 
   cmd.Cmd(DL_DISPLAY);
@@ -760,12 +762,13 @@ void StatusScreen::onIdle() {
   onRefresh();
 }
 
-void StatusScreen::onTouchStart(uint8_t tag) {
+bool StatusScreen::onTouchStart(uint8_t tag) {
   switch(tag) {
     case 4:  GOTO_SCREEN(MenuScreen);        break;
     case 5:  GOTO_SCREEN(TemperatureScreen); break;
-    case 6:  GOTO_SCREEN(MoveAxisScreen); break;
+    case 6:  GOTO_SCREEN(MoveAxisScreen);    break;
   }
+  return true;
 }
 
 /************************************ MENU SCREEN *******************************/
@@ -779,7 +782,7 @@ void StatusScreen::onTouchStart(uint8_t tag) {
 #endif
 
 void MenuScreen::onRefresh() {
-  static CLCD::DLCache dlcache;
+  CLCD::DLCache dlcache(MENU_SCREEN_CACHE);
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
 
@@ -826,15 +829,20 @@ void MenuScreen::onRefresh() {
   cmd.Cmd_Execute();
 }
 
-void MenuScreen::onTouchStart(uint8_t tag) {
+bool MenuScreen::onTouchStart(uint8_t tag) {
   switch(tag) {
     case 1:  GOTO_PREVIOUS();                     break;
+    case 2:  EXEC_GCODE(F("G28"));                break;
     case 3:  GOTO_SCREEN(MoveAxisScreen);         break;
+    case 4:  EXEC_GCODE(F("M84"));                break;
     case 5:  GOTO_SCREEN(TemperatureScreen);      break;
     case 6:  GOTO_SCREEN(AdvancedSettingsScreen); break;
     case 7:  GOTO_SCREEN(AboutScreen);            break;
     case 8:  GOTO_SCREEN(CalibrationScreen);      break;
+    default:
+      return false;
   }
+  return true;
 }
 
 /******************************* CONFIGURATION SCREEN ****************************/
@@ -848,7 +856,7 @@ void MenuScreen::onTouchStart(uint8_t tag) {
 #endif
 
 void AdvancedSettingsScreen::onRefresh() {
-  static CLCD::DLCache dlcache;
+  CLCD::DLCache dlcache(ADVANCED_SETTINGS_SCREEN_CACHE);
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
 
@@ -889,13 +897,16 @@ void AdvancedSettingsScreen::onRefresh() {
   cmd.Cmd_Execute();
 }
 
-void AdvancedSettingsScreen::onTouchStart(uint8_t tag) {
+bool AdvancedSettingsScreen::onTouchStart(uint8_t tag) {
   switch(tag) {
     case 1:  GOTO_PREVIOUS();            break;
     case 2:  GOTO_PREVIOUS();            break;
     case 3:  GOTO_SCREEN(ZOffsetScreen); break;
     case 4:  GOTO_SCREEN(StepsScreen);   break;
+    default:
+      return false;
   }
+  return true;
 }
 
 /******************************** CALIBRATION SCREEN ****************************/
@@ -984,10 +995,13 @@ void CalibrationRegistersScreen::onRefresh() {
   cmd.Cmd_Execute();
 }
 
-void CalibrationRegistersScreen::onTouchStart(uint8_t tag) {
+bool CalibrationRegistersScreen::onTouchStart(uint8_t tag) {
   switch(tag) {
-    case 1:        GOTO_PREVIOUS();                 return;
+    case 1:        GOTO_PREVIOUS();                 break;
+    default:
+      return false;
   }
+  return true;
 }
 
 /*************************** GENERIC VALUE ADJUSTMENT SCREEN ******************************/
@@ -1135,13 +1149,14 @@ void ValueAdjusters::adjuster_t::dynamic_parts(stacker_t &s, float value) const 
   s.line++;
 }
 
-void ValueAdjusters::onTouchStart(uint8_t tag) {
+bool ValueAdjusters::onTouchStart(uint8_t tag) {
   switch(tag) {
-    case 1:           GOTO_PREVIOUS();                 return;
+    case 1:           GOTO_PREVIOUS();                 return true;
     case 240 ... 245: increment = tag;                 break;
-    default:          current_screen.onTouchHeld(tag); return;
+    default:          return current_screen.onTouchHeld(tag);
   }
   current_screen.onRefresh();
+  return true;
 }
 
 float ValueAdjusters::getIncrement() {
@@ -1162,7 +1177,7 @@ uint8_t ValueAdjusters::increment = 20;
 /******************************** MOVE AXIS SCREEN ******************************/
 
 void MoveAxisScreen::onRefresh() {
-  static CLCD::DLCache dlcache;
+  CLCD::DLCache dlcache(MOVE_AXIS_SCREEN_CACHE);
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
 
@@ -1187,9 +1202,9 @@ void MoveAxisScreen::onRefresh() {
   }
   s.dynamic_parts();
   h.dynamic_parts(s);
-  x.dynamic_parts(s,marlin_x_axis);
-  y.dynamic_parts(s,marlin_y_axis);
-  z.dynamic_parts(s,marlin_z_axis);
+  x.dynamic_parts(s,Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::X));
+  y.dynamic_parts(s,Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::Y));
+  z.dynamic_parts(s,Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::Z));
   i.dynamic_parts(s);
 
   cmd.Cmd(DL_DISPLAY);
@@ -1197,22 +1212,34 @@ void MoveAxisScreen::onRefresh() {
   cmd.Cmd_Execute();
 }
 
-void MoveAxisScreen::onTouchHeld(uint8_t tag) {
-  switch(tag) {
-    case 2:  marlin_x_axis -= getIncrement(); break;
-    case 3:  marlin_x_axis += getIncrement(); break;
-    case 4:  marlin_y_axis -= getIncrement(); break;
-    case 5:  marlin_y_axis += getIncrement(); break;
-    case 6:  marlin_z_axis -= getIncrement(); break;
-    case 7:  marlin_z_axis += getIncrement(); break;
+bool MoveAxisScreen::onTouchHeld(uint8_t tag) {
+  // We don't want to stack up moves, so wait until the
+  // machine is idle before sending another.
+  if(Marlin_LCD_API::isMoving()) {
+    return false;
   }
+
+  float inc = getIncrement();
+  Marlin_LCD_API::axis_t axis;
+  const float feedrate_mm_s = inc * TOUCH_REPEATS_PER_SECOND;
+
+  switch(tag) {
+    case 2:  axis = Marlin_LCD_API::X; inc *= -1;  break;
+    case 3:  axis = Marlin_LCD_API::X; inc *=  1;  break;
+    case 4:  axis = Marlin_LCD_API::Y; inc *= -1;  break;
+    case 5:  axis = Marlin_LCD_API::Y; inc *=  1;  break;
+    case 6:  axis = Marlin_LCD_API::Z; inc *= -1;  break;
+    case 7:  axis = Marlin_LCD_API::Z; inc *=  1;  break;
+  }
+  Marlin_LCD_API::setAxisPosition_mm(axis, Marlin_LCD_API::getAxisPosition_mm(axis) + inc, feedrate_mm_s);
   onRefresh();
+  return true;
 }
 
 /******************************* TEMPERATURE SCREEN ******************************/
 
 void TemperatureScreen::onRefresh() {
-  static CLCD::DLCache dlcache;
+  CLCD::DLCache dlcache(TEMPERATURE_SCREEN_CACHE);
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
 
@@ -1252,7 +1279,7 @@ void TemperatureScreen::onRefresh() {
   cmd.Cmd_Execute();
 }
 
-void TemperatureScreen::onTouchHeld(uint8_t tag) {
+bool TemperatureScreen::onTouchHeld(uint8_t tag) {
   switch(tag) {
     case 20: Marlin_LCD_API::setTargetTemp_celsius(0, Marlin_LCD_API::getTargetTemp_celsius(0) - getIncrement()); break;
     case 21: Marlin_LCD_API::setTargetTemp_celsius(0, Marlin_LCD_API::getTargetTemp_celsius(0) + getIncrement()); break;
@@ -1262,14 +1289,17 @@ void TemperatureScreen::onTouchHeld(uint8_t tag) {
     case  5: Marlin_LCD_API::setTargetTemp_celsius(2, Marlin_LCD_API::getTargetTemp_celsius(2) + getIncrement()); break;
     case 10: Marlin_LCD_API::setFan_percent(       0, Marlin_LCD_API::getFan_percent(0)        - getIncrement()); break;
     case 11: Marlin_LCD_API::setFan_percent(       0, Marlin_LCD_API::getFan_percent(0)        + getIncrement()); break;
+    default:
+      return false;
   }
   onRefresh();
+  return true;
 }
 
 /******************************* STEPS SCREEN ******************************/
 
 void StepsScreen::onRefresh() {
-  static CLCD::DLCache dlcache;
+  CLCD::DLCache dlcache(STEPS_SCREEN_CACHE);
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
 
@@ -1307,7 +1337,7 @@ void StepsScreen::onRefresh() {
   cmd.Cmd_Execute();
 }
 
-void StepsScreen::onTouchHeld(uint8_t tag) {
+bool StepsScreen::onTouchHeld(uint8_t tag) {
   switch(tag) {
     case 2:  marlin_x_steps   -= getIncrement(); break;
     case 3:  marlin_x_steps   += getIncrement(); break;
@@ -1317,14 +1347,17 @@ void StepsScreen::onTouchHeld(uint8_t tag) {
     case 7:  marlin_z_steps   += getIncrement(); break;
     case 8:  marlin_e0_steps  -= getIncrement(); break;
     case 9:  marlin_e0_steps  += getIncrement(); break;
+    default:
+      return false;
   }
   onRefresh();
+  return true;
 }
 
 /***************************** Z-OFFSET SCREEN ***************************/
 
 void ZOffsetScreen::onRefresh() {
-  static CLCD::DLCache dlcache;
+  CLCD::DLCache dlcache(ZOFFSET_SCREEN_CACHE);
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
 
@@ -1353,20 +1386,48 @@ void ZOffsetScreen::onRefresh() {
   cmd.Cmd_Execute();
 }
 
-void ZOffsetScreen::onTouchHeld(uint8_t tag) {
+bool ZOffsetScreen::onTouchHeld(uint8_t tag) {
   switch(tag) {
     case 4:  marlin_z_offset -= getIncrement(); break;
     case 5:  marlin_z_offset += getIncrement(); break;
+    default:
+      return false;
   }
   onRefresh();
+  return true;
+}
+
+/***************************** FILES SCREEN ***************************/
+
+void FilesScreen::onRefresh() {
+  CLCD::DLCache dlcache(FILES_SCREEN_CACHE);
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
+
+  cmd.Cmd(DL_DISPLAY);
+  cmd.Cmd(CMD_SWAP);
+  cmd.Cmd_Execute();
+}
+
+bool FilesScreen::onTouchHeld(uint8_t tag) {
+  switch(tag) {
+    default:
+      return false;
+  }
+  onRefresh();
+  return true;
 }
 
 /******************************** MAIN EVENT HANDLER *******************************/
 
-#define DISPLAY_UPDATE_INTERVAL 1000
+void lcd_setstatusPGM(const char * const message, int8_t level = 0);
 
 void lcd_init() {
   CLCD::Init();
+  CLCD::DLCache::init();
+
+  lcd_setstatusPGM(PSTR(WELCOME_MSG));
+
   current_screen.start();
 }
 
@@ -1376,6 +1437,8 @@ void lcd_update() {
   static uint8_t  pressed = NONE;
   static uint32_t last_repeat = 0;
   static uint32_t last_update = 0;
+
+  sound.onIdle();
 
   if(millis() - last_update > DISPLAY_UPDATE_INTERVAL) {
     current_screen.onIdle();
@@ -1418,19 +1481,20 @@ void lcd_update() {
   else if(pressed == NONE) {
     // When the user taps on a button, activate the onTouchStart handler
     const uint8_t lastScreen = current_screen.getScreen();
-    current_screen.onTouchStart(tag);
-    last_repeat = millis();
 
-    sound.play(Theme::press_sound);
+    if(current_screen.onTouchStart(tag)) {
+      last_repeat = millis();
+      sound.play(Theme::press_sound);
 
-    #if defined(UI_FRAMEWORK_DEBUG)
-      #if defined (SERIAL_PROTOCOLLNPAIR)
-        SERIAL_PROTOCOLLNPAIR("Touch start: ", tag);
-      #else
-        Serial.print("Touch start: ");
-        Serial.println(tag);
+      #if defined(UI_FRAMEWORK_DEBUG)
+        #if defined (SERIAL_PROTOCOLLNPAIR)
+          SERIAL_PROTOCOLLNPAIR("Touch start: ", tag);
+        #else
+          Serial.print("Touch start: ");
+          Serial.println(tag);
+        #endif
       #endif
-    #endif
+    }
 
     if(lastScreen != current_screen.getScreen()) {
       // In the case in which a touch event triggered a new screen to be
@@ -1442,10 +1506,11 @@ void lcd_update() {
     }
   } else if(tag == pressed) {
     // The user is holding down a button.
-    if((millis() - last_repeat) > 250) {
-      current_screen.onTouchHeld(tag);
-      sound.play(Theme::repeat_sound);
-      last_repeat = millis();
+    if((millis() - last_repeat) > (1000 / TOUCH_REPEATS_PER_SECOND)) {
+      if(current_screen.onTouchHeld(tag)) {
+        sound.play(Theme::repeat_sound);
+        last_repeat = millis();
+      }
     }
   }
 }
@@ -1453,18 +1518,22 @@ void lcd_update() {
 inline bool lcd_hasstatus() { return true; }
 
 void lcd_setstatus(const char * const message, const bool persist = false) {
-  strncpy(lcd_status_message, message, STATUS_MESSAGE_BUFFER_LENGTH);
+  StatusScreen::setStatusMessage(message);
 }
 
-void lcd_setstatusPGM(const char * const message, int8_t level = 0) {
-  strncpy_P(lcd_status_message, message, STATUS_MESSAGE_BUFFER_LENGTH);
+void lcd_setstatusPGM(const char * const message, int8_t level /* = 0 */) {
+  char buff[64];
+  strncpy_P(buff, message, sizeof(buff));
+  StatusScreen::setStatusMessage(buff);
 }
 
 void lcd_status_printf_P(const uint8_t level, const char * const fmt, ...) {
+  char buff[64];
   va_list args;
   va_start(args, fmt);
-  vsnprintf_P(lcd_status_message, STATUS_MESSAGE_BUFFER_LENGTH, fmt, args);
+  vsnprintf_P(buff, sizeof(buff), fmt, args);
   va_end(args);
+  StatusScreen::setStatusMessage(buff);
 }
 
 void lcd_setalertstatusPGM(const char * const message) {
@@ -1478,6 +1547,5 @@ inline bool lcd_detected() { return true; }
 inline void lcd_refresh() {current_screen.onIdle();}
 
 void kill_screen(const char* lcd_msg) {
-  strncpy_P(lcd_status_message, lcd_msg, STATUS_MESSAGE_BUFFER_LENGTH);
-  GOTO_SCREEN(KillScreen);
+  KillScreen::show(progmem_str(lcd_msg));
 }

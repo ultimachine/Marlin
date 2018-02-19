@@ -41,11 +41,15 @@ class Marlin_LCD_API {
     static const uint8_t getFeedRate_percent();
     static const float getZOffset_mm();
     static const bool isAxisPositionKnown(const axis_t axis);
+    static const bool isMoving();
 
     static const progmem_str getFirmwareName();
 
     static const void setTargetTemp_celsius(const uint8_t extruder, float temp);
     static const void setFan_percent(const uint8_t fan, float percent);
+    static const void setAxisPosition_mm(const Marlin_LCD_API::axis_t axis, float position, float _feedrate_mm_s);
+
+    static const void runGCode(progmem_str gcode);
 
     static float clamp(float value, float minimum, float maximum) {return max(min(value,maximum),minimum);};
 
@@ -86,6 +90,26 @@ const float Marlin_LCD_API::getAxisPosition_mm(const Marlin_LCD_API::axis_t axis
   }
 }
 
+const void Marlin_LCD_API::setAxisPosition_mm(const Marlin_LCD_API::axis_t axis, float position, float _feedrate_mm_s) {
+  set_destination_from_current();
+  switch(axis) {
+    case X:  destination[X_AXIS]   = position; break;
+    case Y:  destination[Y_AXIS]   = position; break;
+    case Z:  destination[Z_AXIS]   = position; break;
+    case E0: destination[E_AXIS]   = position; break;
+    case E1: destination[E_AXIS+1] = position; break;
+  }
+
+  const float old_feedrate = feedrate_mm_s;
+  feedrate_mm_s = _feedrate_mm_s;
+  prepare_move_to_destination();
+  feedrate_mm_s = old_feedrate;
+}
+
+const bool Marlin_LCD_API::isMoving() {
+  return planner.blocks_queued();
+}
+
 const float Marlin_LCD_API::getAxisSteps_per_mm(const Marlin_LCD_API::axis_t axis) {
   return 0;
 }
@@ -103,6 +127,10 @@ const uint32_t Marlin_LCD_API::getProgress_seconds_elapsed() {
 
 const uint8_t Marlin_LCD_API::getFeedRate_percent() {
   return feedrate_percentage;
+}
+
+const void Marlin_LCD_API::runGCode(progmem_str gcode) {
+  enqueue_and_echo_commands_P((const char*)gcode);
 }
 
 const bool Marlin_LCD_API::isAxisPositionKnown(const axis_t axis) {

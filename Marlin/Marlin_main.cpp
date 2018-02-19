@@ -356,6 +356,7 @@
   #include "AO_FT810_Pins.h"
   #include "AO_FT810_SPI.h"
   #include "AO_FT810_UI_Bitmaps.h"
+  #include "AO_FT810_UI_Sounds.h"
   #include "AO_FT810_UI_Screens.h"
 #endif
 

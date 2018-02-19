@@ -105,13 +105,10 @@
 #ifndef _AO_FT810_FUNC_H
 #define _AO_FT810_FUNC_H
 
-#if defined(LCD_IS_FT800)
-  #define DL_CACHE_START 0x035000
-#else
-  #define DL_CACHE_START 0x0F5000
-#endif
+#define DL_CACHE_START RAM_G_SIZE - 0xFFFF
 
 // Uncomment the following to disable the DL caching mechanism
+// (note, this will keep the LCD status message from working)
 //#define DL_CACHE_DISABLED
 
 #if defined(LCD_800x480)
@@ -272,7 +269,7 @@ class CLCD::CommandFifo {
 
     void Cmd (uint32_t cmd32);
     void Cmd (void* data, uint16_t len);
-    void Cmd_Str (char* data);
+    void Cmd_Str (const char * const data);
     void Cmd_Str (progmem_str data);
     void Cmd_Clear_Color (uint32_t rgb);
     void Cmd_Clear (bool Clr, bool Stl, bool Tag);
@@ -577,7 +574,7 @@ void CLCD::CommandFifo::Cmd_Append (uint32_t ptr, uint32_t size)
  * The DLCache can be used like so:
  *
  *   void some_function() {
- *     static CLCD::DLCache dlcache;
+ *     CLCD::DLCache dlcache(UNIQUE_ID);
  *
  *     if(dlcache.hasData()) {
  *        dlcache.append();
@@ -585,26 +582,88 @@ void CLCD::CommandFifo::Cmd_Append (uint32_t ptr, uint32_t size)
  *        // Add stuff to the DL
  *        dlcache.store();
  *     }
+ *
+ *
+ * Layout of Cache memory:
+ *
+ * The cache memory begins with a table at
+ * DL_CACHE_START: each table entry contains
+ * an address and size for a cached DL slot.
+ *
+ * Immediately following the table is the
+ * DL_FREE_ADDR, which points to free cache
+ * space; following this is occupied DL space,
+ * and after that free space that is yet to
+ * be used.
+ *
+ *  location        data        sizeof
+ *
+ *  DL_CACHE_START  slot0_addr     4
+ *                  slot0_size     4
+ *                  slot1_addr     4
+ *                  slot1_size     4
+ *                      ...
+ *                  slotN_addr     4
+ *                  slotN_size     4
+ *  DL_FREE_ADDR    dl_free_ptr    4
+ *                  cached data
+ *                      ...
+ *  dl_free_ptr     empty space
+ *                      ...
  */
 
 class CLCD::DLCache {
   private:
-    static uint16_t dl_free;
-    uint16_t dl_addr = 0;
-    uint16_t dl_size = 0;
+    uint8_t  dl_slot;
+    uint32_t dl_addr;
+    uint16_t dl_size;
+
+    void load_slot();
+    static void save_slot(uint8_t dl_slot, uint32_t dl_addr, uint32_t dl_size);
+
   public:
+    static void init();
+
+    DLCache(uint8_t slot) {
+      dl_slot = slot;
+      load_slot();
+    }
+
     bool hasData();
-    void store();
+    bool store(uint32_t num_bytes = 0);
     void append();
 };
 
-uint16_t CLCD::DLCache::dl_free = 0;
+#define DL_CACHE_SLOTS   250
+#define DL_FREE_ADDR     DL_CACHE_START + DL_CACHE_SLOTS * 8
 
-bool CLCD::DLCache::hasData() {
-  return dl_size != 0;
+// The init function ensures all cache locatios are marked as empty
+
+void CLCD::DLCache::init() {
+  Mem_Write32(DL_FREE_ADDR, DL_FREE_ADDR + 4);
+  for(uint8_t slot = 0; slot < DL_CACHE_SLOTS; slot++) {
+    save_slot(slot, 0, 0);
+  }
 }
 
-void CLCD::DLCache::store() {
+bool CLCD::DLCache::hasData() {
+  #if !defined(DL_CACHE_DISABLED)
+  return dl_size != 0;
+  #else
+  return false;
+  #endif
+}
+
+/* This caches the current display list in RAMG so
+ * that it can be appended later. The memory is
+ * dynamically allocated following DL_FREE_ADDR.
+ *
+ * If num_bytes is provided, then that many bytes
+ * will be reserved so that the cache may be re-written
+ * later with potentially a bigger DL.
+ */
+
+bool CLCD::DLCache::store(uint32_t num_bytes /* = 0*/) {
   #if !defined(DL_CACHE_DISABLED)
   CLCD::CommandFifo cmd;
 
@@ -613,45 +672,79 @@ void CLCD::DLCache::store() {
   cmd.Cmd_Wait_Until_Idle();
 
   // Figure out how long the display list is
-  dl_size = Mem_Read32(REG_CMD_DL) & 0x1FFF;
-  dl_addr = dl_free;
+  uint32_t new_dl_size = Mem_Read32(REG_CMD_DL) & 0x1FFF;
+  uint32_t free_space  = 0;
+  uint32_t dl_alloc    = 0;
 
-  if((dl_addr + dl_size) > RAM_G_SIZE) {
+  if(dl_addr == 0) {
+    // If we are allocating new space...
+    dl_addr     = Mem_Read32(DL_FREE_ADDR);
+    free_space  = RAM_G_SIZE - dl_addr;
+    dl_alloc    = num_bytes ? num_bytes : new_dl_size;
+    dl_size     = new_dl_size;
+  } else {
+    // Otherwise, we can only store as much space
+    // as was previously allocated.
+    free_space  = num_bytes ? num_bytes : dl_size;
+    dl_alloc    = 0;
+    dl_size     = new_dl_size;
+  }
+
+  if(dl_size > free_space) {
     // Not enough memory to cache the display list.
-    dl_addr = 0;
-    dl_size = 0;
     #if defined(UI_FRAMEWORK_DEBUG)
       #if defined (SERIAL_PROTOCOLLNPAIR)
-        SERIAL_PROTOCOLLNPAIR("Not enough space in GRAM to cache display list, free space: ", RAM_G_SIZE - dl_free);
+        SERIAL_PROTOCOLPAIR("Not enough space in GRAM to cache display list, free space: ", free_space);
+        SERIAL_PROTOCOLLNPAIR(" Required: ", dl_size);
       #else
         Serial.print(F("Not enough space in GRAM to cache display list, free space:"));
-        Serial.println(RAM_G_SIZE - dl_free);
+        Serial.print(free_space);
+        Serial.print(F(" Required: "));
+        Serial.println(dl_size);
       #endif
     #endif
+    return false;
   } else {
     #if defined(UI_FRAMEWORK_DEBUG)
       #if defined (SERIAL_PROTOCOLLNPAIR)
         SERIAL_PROTOCOLPAIR("Saving DL to RAMG cache, bytes: ", dl_size);
-        SERIAL_PROTOCOLPAIR(" (Free space: ", RAM_G_SIZE - dl_free);
+        SERIAL_PROTOCOLPAIR(" (Free space: ", free_space);
         SERIAL_PROTOCOLLNPGM(")");
       #else
         Serial.print(F("Saving DL to RAMG cache, bytes: "));
         Serial.println(dl_size);
         Serial.print(F(" (Free space: "));
-        Serial.println(RAM_G_SIZE - dl_free);
+        Serial.println(free_space);
         Serial.print(F(")"));
       #endif
     #endif
-    cmd.Cmd_Mem_Cpy(DL_CACHE_START + dl_addr, RAM_DL, dl_size);
+    cmd.Cmd_Mem_Cpy(dl_addr, RAM_DL, dl_size);
     cmd.Cmd_Execute();
-    dl_free += dl_size;
+    save_slot(dl_slot, dl_addr, dl_size);
+    if(dl_alloc > 0) {
+      // If we allocated space dynamically, then adjust dl_free_addr.
+      Mem_Write32(DL_FREE_ADDR, dl_addr + dl_alloc);
+    }
+    return true;
   }
   #endif
 }
 
+void CLCD::DLCache::save_slot(uint8_t dl_slot, uint32_t dl_addr, uint32_t dl_size) {
+  Mem_Write32(DL_CACHE_START + dl_slot * 8 + 0, dl_addr);
+  Mem_Write32(DL_CACHE_START + dl_slot * 8 + 4, dl_size);
+}
+
+void CLCD::DLCache::load_slot() {
+  dl_addr  = Mem_Read32(DL_CACHE_START + dl_slot * 8 + 0);
+  dl_size  = Mem_Read32(DL_CACHE_START + dl_slot * 8 + 4);
+}
+
 void CLCD::DLCache::append() {
   CLCD::CommandFifo cmd;
-  cmd.Cmd_Append(DL_CACHE_START + dl_addr, dl_size);
+  #if !defined(DL_CACHE_DISABLED)
+  cmd.Cmd_Append(dl_addr, dl_size);
+  #endif
   #if defined(UI_FRAMEWORK_DEBUG)
     cmd.Cmd_Execute();
     cmd.Cmd_Wait_Until_Idle();
@@ -758,14 +851,15 @@ void CLCD::Init (void) {
   Mem_Write8(REG_DLSWAP, 0x02);               // Swap on New Frame
 
   /*
-   *  Turn On the Display
+   *  Turn on the Display         (set DISP high)
+   *  Turn on the Audio Amplifier (set GP0 high; on the AO CLCD board, this is tied to the amplifier control)
    */
   #if defined(LCD_IS_FT800)
-  Mem_Write8(REG_GPIO_DIR, 0x80);             // Turn ON Display Enable
-  Mem_Write8(REG_GPIO,     0x80);
+    Mem_Write8(REG_GPIO_DIR,   GPIO_DISP  | GPIO_GP0);
+    Mem_Write8(REG_GPIO,       GPIO_DISP  | GPIO_GP0);
   #else
-  Mem_Write16(REG_GPIOX_DIR, 1 << 15);        // Turn ON Display Enable
-  Mem_Write16(REG_GPIOX,     1 << 15);
+    Mem_Write16(REG_GPIOX_DIR, GPIOX_DISP | GPIOX_GP0);
+    Mem_Write16(REG_GPIOX,     GPIOX_DISP | GPIOX_GP0);
   #endif
 
   Enable();                                   // Turns on Clock by setting PCLK Register to 5
@@ -793,6 +887,8 @@ class CLCD::SoundPlayer {
       note_t   note;        // The MIDI note value
       uint8_t  sixteenths;  // Duration of note, in sixteeths of a second, or zero to play to completion
     };
+
+    const uint8_t WAIT = 0;
 
   private:
     const sound_t *sequence;
@@ -838,18 +934,23 @@ bool CLCD::SoundPlayer::soundPlaying() {
 void CLCD::SoundPlayer::onIdle() {
   if(!sequence) return;
 
-  const bool readyForNextNote = next != 0 ? (millis() > next) : !soundPlaying();
+  const bool readyForNextNote = (next == WAIT) ? !soundPlaying() : (millis() > next);
 
   if(readyForNextNote) {
     const effect_t fx = effect_t(pgm_read_byte_near(&sequence->effect));
-    const note_t  nt =    note_t(pgm_read_byte_near(&sequence->note));
-    const uint16_t ms = uint32_t(pgm_read_byte_near(&sequence->sixteenths)) * 1000 / 16;
+    const note_t   nt =   note_t(pgm_read_byte_near(&sequence->note));
+    const uint32_t ms = uint32_t(pgm_read_byte_near(&sequence->sixteenths)) * 1000 / 16;
 
     if(ms == 0 && fx == SILENCE && nt == 0) {
       sequence = 0;
     } else {
-      next = ms ? (millis() + ms) : 0;
-      play(fx, nt != 0 ? nt : NOTE_C4);
+      #if defined(UI_FRAMEWORK_DEBUG)
+        #if defined (SERIAL_PROTOCOLLNPAIR)
+          SERIAL_PROTOCOLLNPAIR("Scheduling note in ", ms);
+        #endif
+      #endif
+      next =   (ms == WAIT) ? 0       : (millis() + ms);
+      play(fx, (nt == 0)    ? NOTE_C4 : nt);
       sequence++;
     }
   }

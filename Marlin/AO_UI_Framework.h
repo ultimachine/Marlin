@@ -46,9 +46,9 @@ class ScreenRef {
     typedef void onExit_func_t(void);
     typedef void onIdle_func_t(void);
     typedef void onRefresh_func_t(void);
-    typedef void onTouchStart_func_t(uint8_t);
-    typedef void onTouchHeld_func_t(uint8_t);
-    typedef void onTouchEnd_func_t(uint8_t);
+    typedef bool onTouchStart_func_t(uint8_t);
+    typedef bool onTouchHeld_func_t(uint8_t);
+    typedef bool onTouchEnd_func_t(uint8_t);
 
   private:
     typedef struct {
@@ -103,9 +103,9 @@ class ScreenRef {
     void onExit()                  {GET_METHOD(type, onExit)();}
     void onIdle()                  {GET_METHOD(type, onIdle)();}
     void onRefresh()               {GET_METHOD(type, onRefresh)();}
-    void onTouchStart(uint8_t tag) {GET_METHOD(type, onTouchStart)(tag);}
-    void onTouchHeld(uint8_t tag)  {GET_METHOD(type, onTouchHeld)(tag);}
-    void onTouchEnd(uint8_t tag)   {GET_METHOD(type, onTouchEnd)(tag);}
+    bool onTouchStart(uint8_t tag) {return GET_METHOD(type, onTouchStart)(tag);}
+    bool onTouchHeld(uint8_t tag)  {return GET_METHOD(type, onTouchHeld)(tag);}
+    bool onTouchEnd(uint8_t tag)   {return GET_METHOD(type, onTouchEnd)(tag);}
 
     void initializeAll() {
       for(uint8_t type = 0; type < functionTableSize; type++) {
@@ -171,9 +171,9 @@ class UIScreen {
     static void onEntry()              {current_screen.onRefresh();}
     static void onExit()               {}
     static void onIdle()               {}
-    static void onTouchStart(uint8_t)  {}
-    static void onTouchHeld(uint8_t)   {}
-    static void onTouchEnd(uint8_t)    {}
+    static bool onTouchStart(uint8_t)  {return false;}
+    static bool onTouchHeld(uint8_t)   {return false;}
+    static bool onTouchEnd(uint8_t)    {return false;}
 };
 
 #define GOTO_SCREEN(screen) current_screen.goTo(screen::onRefresh);

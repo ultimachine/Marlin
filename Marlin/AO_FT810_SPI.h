@@ -398,7 +398,7 @@ void CLCD::CommandFifo::Cmd (void* data, uint16_t len) {                        
 }
 
 
-void CLCD::CommandFifo::Cmd_Str (char* data) {
+void CLCD::CommandFifo::Cmd_Str (const char * const data) {
   write(data, strlen(data)+1);
 }
 

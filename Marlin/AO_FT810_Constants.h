@@ -298,6 +298,20 @@ namespace FTDI {
   const uint16_t OPT_NOHANDS     = 49152;
 }
 
+// GPIO Bits
+
+namespace FT800 {
+  const uint8_t GPIO_GP0         = 1 << 0;
+  const uint8_t GPIO_GP1         = 1 << 1;
+  const uint8_t GPIO_DISP        = 1 << 7;
+}
+
+namespace FT810 {
+  const uint16_t GPIOX_GP0       = 1 << 0;
+  const uint16_t GPIOX_GP1       = 1 << 1;
+  const uint16_t GPIOX_DISP      = 1 << 15;
+}
+
 // GLOBAL LCD REGISTER SET VALUES FOR WQVGA 480x272 DISPLAY
 
 /*
