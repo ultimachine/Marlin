@@ -22,13 +22,10 @@
 // To save MCU RAM, the status message is "baked" in to the status screen
 // cache, so we reserve a large chunk of memory for the DL cache
 
-#define RAMG_STATUS_SCREEN_DL_SIZE     2048
+#define STATUS_SCREEN_DL_SIZE        2048
+#define CONFIRMATION_SCREEN_DL_SIZE  2048
 
-static float marlin_x_steps    = 100;
-static float marlin_y_steps    = 100;
-static float marlin_z_steps    = 100;
-static float marlin_e0_steps   = 100;
-static float marlin_z_offset   = 0.150;
+#define N_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
 /**************************** GRID LAYOUT MACROS **************************/
 
@@ -118,6 +115,24 @@ class KillScreen {
   // others, so we do not bother extending UIScreen.
   public:
     static void show(progmem_str msg);
+};
+
+class ConfirmationScreen : public UIScreen {
+  protected:
+    static void onEntry();
+    static void show(const progmem_str message[], size_t lines, progmem_str btn1, progmem_str btn2 );
+    static bool onTouchStart(uint8_t tag);
+
+  public:
+    static void onRefresh();
+};
+
+class RestoreFailsafeScreen : public ConfirmationScreen {
+  protected:
+    static void showCompletion();
+  public:
+    static void onEntry();
+    static bool onTouchStart(uint8_t tag);
 };
 
 class StatusScreen : public UIScreen {
@@ -242,6 +257,7 @@ class FilesScreen : public UIScreen {
 SCREEN_TABLE {
   DECL_SCREEN(BootScreen),
   DECL_SCREEN(AboutScreen),
+  DECL_SCREEN(RestoreFailsafeScreen),
   DECL_SCREEN(CalibrationScreen),
   DECL_SCREEN(StatusScreen),
   DECL_SCREEN(MenuScreen),
@@ -265,6 +281,7 @@ SCREEN_TABLE_POST
 enum {
   STATUS_SCREEN_CACHE,
   MENU_SCREEN_CACHE,
+  CONFIRMATION_SCREEN_CACHE,
   ADVANCED_SETTINGS_SCREEN_CACHE,
   MOVE_AXIS_SCREEN_CACHE,
   TEMPERATURE_SCREEN_CACHE,
@@ -406,6 +423,106 @@ bool AboutScreen::onTouchStart(uint8_t tag) {
   switch(tag) {
     case 1:        GOTO_PREVIOUS();                         return true;
     case 2:        GOTO_SCREEN(CalibrationRegistersScreen); return true;
+  }
+}
+
+/**************************** GENERIC CONFIRMATION SCREEN ****************************/
+
+void ConfirmationScreen::onEntry() {
+  progmem_str lines[] = {
+    F("Are you sure?")
+  };
+  ConfirmationScreen::show(lines, N_ELEMENTS(lines), F("Yes"), F("No"));
+}
+
+void ConfirmationScreen::show(const progmem_str lines[], size_t n_lines, progmem_str btn1, progmem_str btn2 ) {
+  CLCD::DLCache dlcache(CONFIRMATION_SCREEN_CACHE);
+
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
+  cmd.Cmd_Clear_Color(Theme::about_bg);
+  cmd.Cmd_Clear(1,1,1);
+
+  #define GRID_COLS 2
+  #define GRID_ROWS 8
+
+  for(uint8_t line = 0; line < n_lines; line++) {
+    BTX( BTN_POS(1,3-n_lines/2+line), BTN_SIZE(2,1), lines[line], FONT_LRG);
+  }
+
+  if(btn1 && btn2) {
+    BTN_TAG(1) THEME(about_btn) BTN( BTN_POS(1,8), BTN_SIZE(1,1), btn1, MENU_BTN_STYLE);
+    BTN_TAG(2) THEME(about_btn) BTN( BTN_POS(2,8), BTN_SIZE(1,1), btn2, MENU_BTN_STYLE);
+  } else if(btn1) {
+    BTN_TAG(1) THEME(about_btn) BTN( BTN_POS(1,8), BTN_SIZE(2,1), btn1, MENU_BTN_STYLE);
+  } else if(btn2) {
+    BTN_TAG(2) THEME(about_btn) BTN( BTN_POS(1,8), BTN_SIZE(2,1), btn2, MENU_BTN_STYLE);
+  }
+
+  cmd.Cmd(DL_DISPLAY);
+  cmd.Cmd(CMD_SWAP);
+  cmd.Cmd_Execute();
+
+  if(!dlcache.store(CONFIRMATION_SCREEN_DL_SIZE)) {
+    #if defined (SERIAL_PROTOCOLLNPAIR)
+      SERIAL_PROTOCOLLN("Unable to set the confirmation message, not enough DL cache space");
+    #else
+      #if defined(UI_FRAMEWORK_DEBUG)
+        Serial.print(F("Unable to set the confirmation message, not enough DL cache space"));
+      #endif
+    #endif
+  }
+}
+
+void ConfirmationScreen::onRefresh() {
+  CLCD::DLCache dlcache(CONFIRMATION_SCREEN_CACHE);
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
+
+  if(dlcache.hasData()) {
+    dlcache.append();
+  }
+
+  cmd.Cmd(DL_DISPLAY);
+  cmd.Cmd(CMD_SWAP);
+  cmd.Cmd_Execute();
+}
+
+bool ConfirmationScreen::onTouchStart(uint8_t tag) {
+  switch(tag) {
+    case 1: GOTO_PREVIOUS(); return true;
+    case 2: GOTO_PREVIOUS(); return true;
+  }
+}
+
+/**************************** RESTORE FAILSAFE SCREEN ***************************/
+
+void RestoreFailsafeScreen::onEntry() {
+  progmem_str lines[] = {
+    F("Are you sure?"),
+    F("Customizations will be lost.")
+  };
+
+  ConfirmationScreen::show(lines, N_ELEMENTS(lines), F("Yes"), F("No"));
+}
+
+void RestoreFailsafeScreen::showCompletion() {
+  progmem_str lines[] = {
+    F("Default settings restored.")
+  };
+
+  sound.play(c_maj_arpeggio);
+  ConfirmationScreen::show(lines, N_ELEMENTS(lines), 0, F("Okay"));
+}
+
+bool RestoreFailsafeScreen::onTouchStart(uint8_t tag) {
+  switch(tag) {
+    case 1:
+      EXEC_GCODE(F("M502\nM500"));
+      showCompletion();
+      return true;
+    default:
+      ConfirmationScreen::onTouchStart(tag);
   }
 }
 
@@ -706,12 +823,14 @@ void StatusScreen::setStatusMessage(const char * const message) {
   static_interaction_buttons();
   static_status_message(message);
 
-  if(!dlcache.store(RAMG_STATUS_SCREEN_DL_SIZE)) {
+  if(!dlcache.store(STATUS_SCREEN_DL_SIZE)) {
     #if defined (SERIAL_PROTOCOLLNPAIR)
       SERIAL_PROTOCOLLNPAIR("Unable to set the status message, not enough DL cache space: ",message);
     #else
-      Serial.print(F("Unable to set the status message, not enough DL cache space: "));
-      Serial.println(message);
+      #if defined(UI_FRAMEWORK_DEBUG)
+        Serial.print(F("Unable to set the status message, not enough DL cache space: "));
+        Serial.println(message);
+      #endif
     #endif
   }
 }
@@ -870,20 +989,20 @@ void AdvancedSettingsScreen::onRefresh() {
       BTN_TAG(3) THEME(menu_btn) BTN( BTN_POS(1,1), BTN_SIZE(1,2), F("Z Offset "),        MENU_BTN_STYLE);
       BTN_TAG(4) THEME(menu_btn) BTN( BTN_POS(1,3), BTN_SIZE(1,2), F("Steps/mm"),         MENU_BTN_STYLE);
 
-      BTN_TAG(6) THEME(disabled) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Velocity "),        MENU_BTN_STYLE);
-      BTN_TAG(7) THEME(disabled) BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Acceleration"),     MENU_BTN_STYLE);
-      BTN_TAG(8) THEME(disabled) BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("Jerk"),             MENU_BTN_STYLE);
-      BTN_TAG(5) THEME(menu_btn) BTN( BTN_POS(1,5), BTN_SIZE(2,1), F("Restore Failsafe"), MENU_BTN_STYLE);
+      BTN_TAG(5) THEME(disabled) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Velocity "),        MENU_BTN_STYLE);
+      BTN_TAG(6) THEME(disabled) BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Acceleration"),     MENU_BTN_STYLE);
+      BTN_TAG(7) THEME(disabled) BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("Jerk"),             MENU_BTN_STYLE);
+      BTN_TAG(8) THEME(menu_btn) BTN( BTN_POS(1,5), BTN_SIZE(2,1), F("Restore Failsafe"), MENU_BTN_STYLE);
       BTN_TAG(1) THEME(navi_btn) BTN( BTN_POS(1,6), BTN_SIZE(1,1), F("Save"),             MENU_BTN_STYLE);
       BTN_TAG(2) THEME(navi_btn) BTN( BTN_POS(2,6), BTN_SIZE(1,1), F("Back"),             MENU_BTN_STYLE);
     #else
       BTN_TAG(3) THEME(menu_btn) BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("Z Offset "),        MENU_BTN_STYLE);
       BTN_TAG(4) THEME(menu_btn) BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("Steps/mm"),         MENU_BTN_STYLE);
 
-      BTN_TAG(6) THEME(disabled) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Velocity "),        MENU_BTN_STYLE);
-      BTN_TAG(7) THEME(disabled) BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Acceleration"),     MENU_BTN_STYLE);
-      BTN_TAG(8) THEME(disabled) BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("Jerk"),             MENU_BTN_STYLE);
-      BTN_TAG(5) THEME(menu_btn) BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("Restore Failsafe"), MENU_BTN_STYLE);
+      BTN_TAG(5) THEME(disabled) BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Velocity "),        MENU_BTN_STYLE);
+      BTN_TAG(6) THEME(disabled) BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Acceleration"),     MENU_BTN_STYLE);
+      BTN_TAG(7) THEME(disabled) BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("Jerk"),             MENU_BTN_STYLE);
+      BTN_TAG(8) THEME(menu_btn) BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("Restore Failsafe"), MENU_BTN_STYLE);
 
       BTN_TAG(1) THEME(navi_btn) BTN( BTN_POS(1,4), BTN_SIZE(1,1), F("Save"),             MENU_BTN_STYLE);
       BTN_TAG(2) THEME(navi_btn) BTN( BTN_POS(2,4), BTN_SIZE(1,1), F("Back"),             MENU_BTN_STYLE);
@@ -899,10 +1018,11 @@ void AdvancedSettingsScreen::onRefresh() {
 
 bool AdvancedSettingsScreen::onTouchStart(uint8_t tag) {
   switch(tag) {
-    case 1:  GOTO_PREVIOUS();            break;
-    case 2:  GOTO_PREVIOUS();            break;
-    case 3:  GOTO_SCREEN(ZOffsetScreen); break;
-    case 4:  GOTO_SCREEN(StepsScreen);   break;
+    case 1:  GOTO_PREVIOUS();                    break;
+    case 2:  GOTO_PREVIOUS();                    break;
+    case 3:  GOTO_SCREEN(ZOffsetScreen);         break;
+    case 4:  GOTO_SCREEN(StepsScreen);           break;
+    case 8:  GOTO_SCREEN(RestoreFailsafeScreen); break;
     default:
       return false;
   }
@@ -919,7 +1039,6 @@ void CalibrationScreen::onRefresh() {
   cmd.Cmd(CMD_DLSTART);
   cmd.Cmd_Clear_Color(Theme::background);
   cmd.Cmd_Clear(1,1,1);
-
 
   #if defined(LCD_PORTRAIT)
   BTX( BTN_POS(1,8), BTN_SIZE(4,1), F("Touch the dots"), FONT_LRG);
@@ -979,12 +1098,12 @@ void CalibrationRegistersScreen::onRefresh() {
   THEME(transformVal) BTN( BTN_POS(2,5), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
   THEME(transformVal) BTN( BTN_POS(2,6), BTN_SIZE(1,1), F(""), 28, OPT_FLAT);
 
-  sprintf(b, "0x%08lX", T_Transform_A); BTX( BTN_POS(2,1), BTN_SIZE(1,1), b, 28);
-  sprintf(b, "0x%08lX", T_Transform_B); BTX( BTN_POS(2,2), BTN_SIZE(1,1), b, 28);
-  sprintf(b, "0x%08lX", T_Transform_C); BTX( BTN_POS(2,3), BTN_SIZE(1,1), b, 28);
-  sprintf(b, "0x%08lX", T_Transform_D); BTX( BTN_POS(2,4), BTN_SIZE(1,1), b, 28);
-  sprintf(b, "0x%08lX", T_Transform_E); BTX( BTN_POS(2,5), BTN_SIZE(1,1), b, 28);
-  sprintf(b, "0x%08lX", T_Transform_F); BTX( BTN_POS(2,6), BTN_SIZE(1,1), b, 28);
+  sprintf_P(b, PSTR("0x%08lX"), T_Transform_A); BTX( BTN_POS(2,1), BTN_SIZE(1,1), b, 28);
+  sprintf_P(b, PSTR("0x%08lX"), T_Transform_B); BTX( BTN_POS(2,2), BTN_SIZE(1,1), b, 28);
+  sprintf_P(b, PSTR("0x%08lX"), T_Transform_C); BTX( BTN_POS(2,3), BTN_SIZE(1,1), b, 28);
+  sprintf_P(b, PSTR("0x%08lX"), T_Transform_D); BTX( BTN_POS(2,4), BTN_SIZE(1,1), b, 28);
+  sprintf_P(b, PSTR("0x%08lX"), T_Transform_E); BTX( BTN_POS(2,5), BTN_SIZE(1,1), b, 28);
+  sprintf_P(b, PSTR("0x%08lX"), T_Transform_F); BTX( BTN_POS(2,6), BTN_SIZE(1,1), b, 28);
 
   #define GRID_COLS 3
 
@@ -1230,6 +1349,8 @@ bool MoveAxisScreen::onTouchHeld(uint8_t tag) {
     case 5:  axis = Marlin_LCD_API::Y; inc *=  1;  break;
     case 6:  axis = Marlin_LCD_API::Z; inc *= -1;  break;
     case 7:  axis = Marlin_LCD_API::Z; inc *=  1;  break;
+    default:
+      return false;
   }
   Marlin_LCD_API::setAxisPosition_mm(axis, Marlin_LCD_API::getAxisPosition_mm(axis) + inc, feedrate_mm_s);
   onRefresh();
@@ -1303,13 +1424,18 @@ void StepsScreen::onRefresh() {
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
 
-  /*                     Tag  Label:              Units:     Color:            Precision: */
-  const heading_t   h = {     PSTR("Steps/mm")                                            };
-  const adjuster_t  x = {2,   PSTR("X:"), PSTR(""),          Theme::x_axis,    0          };
-  const adjuster_t  y = {4,   PSTR("Y:"), PSTR(""),          Theme::y_axis,    0          };
-  const adjuster_t  z = {6,   PSTR("Z:"), PSTR(""),          Theme::z_axis,    0          };
-  const adjuster_t  e = {8,   PSTR("E:"), PSTR(""),          Theme::e_axis,    0          };
-  const increment_t i  = {                                                     0          };
+  /*                      Tag  Label:              Units:     Color:            Precision: */
+  const heading_t   h  = {     PSTR("Steps/mm")                                            };
+  const adjuster_t  x  = {2,   PSTR("X:"),         PSTR(""),  Theme::x_axis,    0          };
+  const adjuster_t  y  = {4,   PSTR("Y:"),         PSTR(""),  Theme::y_axis,    0          };
+  const adjuster_t  z  = {6,   PSTR("Z:"),         PSTR(""),  Theme::z_axis,    0          };
+  #if EXTRUDERS == 1
+  const adjuster_t  e0 = {8,   PSTR("E:"),         PSTR(""),  Theme::e_axis,    0          };
+  #else
+  const adjuster_t  e0 = {8,   PSTR("E0:"),        PSTR(""),  Theme::e_axis,    0          };
+  const adjuster_t  e1 = {10,  PSTR("E1:"),        PSTR(""),  Theme::e_axis,    0          };
+  #endif
+  const increment_t i  = {                                                      0          };
 
   stacker_t s;
   if(dlcache.hasData()) {
@@ -1320,16 +1446,22 @@ void StepsScreen::onRefresh() {
     x.static_parts(s);
     y.static_parts(s);
     z.static_parts(s);
-    e.static_parts(s);
+    e0.static_parts(s);
+    #if EXTRUDERS == 2
+      e1.static_parts(s);
+    #endif
     i.static_parts(s);
     dlcache.store();
   }
   s.dynamic_parts();
   h.dynamic_parts(s);
-  x.dynamic_parts(s,marlin_x_steps );
-  y.dynamic_parts(s,marlin_y_steps );
-  z.dynamic_parts(s,marlin_z_steps );
-  e.dynamic_parts(s,marlin_e0_steps);
+  x.dynamic_parts(s,Marlin_LCD_API::getAxisSteps_per_mm(Marlin_LCD_API::X) );
+  y.dynamic_parts(s,Marlin_LCD_API::getAxisSteps_per_mm(Marlin_LCD_API::Y) );
+  z.dynamic_parts(s,Marlin_LCD_API::getAxisSteps_per_mm(Marlin_LCD_API::Z) );
+  e0.dynamic_parts(s,Marlin_LCD_API::getAxisSteps_per_mm(Marlin_LCD_API::E0));
+  #if EXTRUDERS == 2
+    e1.dynamic_parts(s,Marlin_LCD_API::getAxisSteps_per_mm(Marlin_LCD_API::E1));
+  #endif
   i.dynamic_parts(s);
 
   cmd.Cmd(DL_DISPLAY);
@@ -1338,18 +1470,27 @@ void StepsScreen::onRefresh() {
 }
 
 bool StepsScreen::onTouchHeld(uint8_t tag) {
+  float inc = getIncrement();
+  Marlin_LCD_API::axis_t axis;
+
   switch(tag) {
-    case 2:  marlin_x_steps   -= getIncrement(); break;
-    case 3:  marlin_x_steps   += getIncrement(); break;
-    case 4:  marlin_y_steps   -= getIncrement(); break;
-    case 5:  marlin_y_steps   += getIncrement(); break;
-    case 6:  marlin_z_steps   -= getIncrement(); break;
-    case 7:  marlin_z_steps   += getIncrement(); break;
-    case 8:  marlin_e0_steps  -= getIncrement(); break;
-    case 9:  marlin_e0_steps  += getIncrement(); break;
+    case  2:  axis = Marlin_LCD_API::X;  inc *= -1;  break;
+    case  3:  axis = Marlin_LCD_API::X;  inc *=  1;  break;
+    case  4:  axis = Marlin_LCD_API::Y;  inc *= -1;  break;
+    case  5:  axis = Marlin_LCD_API::Y;  inc *=  1;  break;
+    case  6:  axis = Marlin_LCD_API::Z;  inc *= -1;  break;
+    case  7:  axis = Marlin_LCD_API::Z;  inc *=  1;  break;
+    case  8:  axis = Marlin_LCD_API::E0; inc *= -1;  break;
+    case  9:  axis = Marlin_LCD_API::E0; inc *=  1;  break;
+    #if EXTRUDERS == 2
+    case 10:  axis = Marlin_LCD_API::E1; inc *= -1;  break;
+    case 11:  axis = Marlin_LCD_API::E1; inc *=  1;  break;
+    #endif
     default:
       return false;
   }
+
+  Marlin_LCD_API::setAxisSteps_per_mm(axis, Marlin_LCD_API::getAxisSteps_per_mm(axis) + inc);
   onRefresh();
   return true;
 }
@@ -1378,7 +1519,7 @@ void ZOffsetScreen::onRefresh() {
   }
   s.dynamic_parts();
   h.dynamic_parts(s);
-  z.dynamic_parts(s,marlin_z_offset);
+  z.dynamic_parts(s,Marlin_LCD_API::getZOffset_mm());
   i.dynamic_parts(s);
 
   cmd.Cmd(DL_DISPLAY);
@@ -1388,8 +1529,8 @@ void ZOffsetScreen::onRefresh() {
 
 bool ZOffsetScreen::onTouchHeld(uint8_t tag) {
   switch(tag) {
-    case 4:  marlin_z_offset -= getIncrement(); break;
-    case 5:  marlin_z_offset += getIncrement(); break;
+    case 4:  Marlin_LCD_API::incrementZOffset_mm(-getIncrement()); break;
+    case 5:  Marlin_LCD_API::incrementZOffset_mm( getIncrement()); break;
     default:
       return false;
   }
@@ -1432,17 +1573,19 @@ void lcd_init() {
 }
 
 void lcd_update() {
-  const  uint8_t  NONE    = 0xFF;
-  const  uint8_t  IGNORE  = 0xFE;
-  static uint8_t  pressed = NONE;
-  static uint32_t last_repeat = 0;
-  static uint32_t last_update = 0;
+  const  uint8_t NONE        = 0xFF;
+  const  uint8_t IGNORE      = 0xFE;
+  static uint8_t pressed     = NONE;
+  static uint8_t last_repeat = 0;
+  static uint8_t last_update = 0;
+
+  const uint8_t  tiny_millis = tiny_interval(millis());
 
   sound.onIdle();
 
-  if(millis() - last_update > DISPLAY_UPDATE_INTERVAL) {
+  if(tiny_millis - last_update > tiny_interval(DISPLAY_UPDATE_INTERVAL)) {
     current_screen.onIdle();
-    last_update = millis();
+    last_update = tiny_millis;
   }
 
   // If the LCD is processing commands, don't check
@@ -1472,7 +1615,7 @@ void lcd_update() {
         #if defined (SERIAL_PROTOCOLLNPAIR)
           SERIAL_PROTOCOLLNPAIR("Touch end: ", tag);
         #else
-          Serial.print("Touch end: ");
+          Serial.print(F("Touch end: "));
           Serial.println(tag);
         #endif
       #endif
@@ -1483,14 +1626,14 @@ void lcd_update() {
     const uint8_t lastScreen = current_screen.getScreen();
 
     if(current_screen.onTouchStart(tag)) {
-      last_repeat = millis();
+      last_repeat = tiny_millis;
       sound.play(Theme::press_sound);
 
       #if defined(UI_FRAMEWORK_DEBUG)
         #if defined (SERIAL_PROTOCOLLNPAIR)
           SERIAL_PROTOCOLLNPAIR("Touch start: ", tag);
         #else
-          Serial.print("Touch start: ");
+          Serial.print(F("Touch start: "));
           Serial.println(tag);
         #endif
       #endif
@@ -1506,10 +1649,10 @@ void lcd_update() {
     }
   } else if(tag == pressed) {
     // The user is holding down a button.
-    if((millis() - last_repeat) > (1000 / TOUCH_REPEATS_PER_SECOND)) {
+    if((tiny_millis - last_repeat) > tiny_interval(1000 / TOUCH_REPEATS_PER_SECOND)) {
       if(current_screen.onTouchHeld(tag)) {
         sound.play(Theme::repeat_sound);
-        last_repeat = millis();
+        last_repeat = tiny_millis;
       }
     }
   }

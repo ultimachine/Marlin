@@ -47,7 +47,9 @@ class Marlin_LCD_API {
 
     static const void setTargetTemp_celsius(const uint8_t extruder, float temp);
     static const void setFan_percent(const uint8_t fan, float percent);
-    static const void setAxisPosition_mm(const Marlin_LCD_API::axis_t axis, float position, float _feedrate_mm_s);
+    static const void setAxisPosition_mm(const axis_t axis, float position, float _feedrate_mm_s);
+    static const void setAxisSteps_per_mm(const axis_t axis, float steps_per_mm);
+    static const void incrementZOffset_mm(const float z_offset);
 
     static const void runGCode(progmem_str gcode);
 
@@ -111,7 +113,36 @@ const bool Marlin_LCD_API::isMoving() {
 }
 
 const float Marlin_LCD_API::getAxisSteps_per_mm(const Marlin_LCD_API::axis_t axis) {
-  return 0;
+  switch(axis) {
+    case X:  return planner.axis_steps_per_mm[X_AXIS];
+    case Y:  return planner.axis_steps_per_mm[Y_AXIS];
+    case Z:  return planner.axis_steps_per_mm[Z_AXIS];
+    case E0: return planner.axis_steps_per_mm[E_AXIS];
+    case E1: return planner.axis_steps_per_mm[E_AXIS+1];
+  }
+}
+
+const void Marlin_LCD_API::setAxisSteps_per_mm(const Marlin_LCD_API::axis_t axis, float steps_per_mm) {
+  switch(axis) {
+    case X:  planner.axis_steps_per_mm[X_AXIS]   = steps_per_mm; break;
+    case Y:  planner.axis_steps_per_mm[Y_AXIS]   = steps_per_mm; break;
+    case Z:  planner.axis_steps_per_mm[Z_AXIS]   = steps_per_mm; break;
+    case E0: planner.axis_steps_per_mm[E_AXIS]   = steps_per_mm; break;
+    case E1: planner.axis_steps_per_mm[E_AXIS+1] = steps_per_mm; break;
+  }
+}
+
+
+const void Marlin_LCD_API::incrementZOffset_mm(float babystep_increment) {
+  const float new_zoffset = zprobe_zoffset + babystep_increment;
+  if (WITHIN(new_zoffset, Z_PROBE_OFFSET_RANGE_MIN, Z_PROBE_OFFSET_RANGE_MAX)) {
+    #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
+      if (planner.leveling_active) {
+        thermalManager.babystep_axis(Z_AXIS, babystep_increment);
+      }
+    #endif
+    zprobe_zoffset = new_zoffset;
+  }
 }
 
 const uint8_t Marlin_LCD_API::getProgress_percent() {
@@ -127,6 +158,10 @@ const uint32_t Marlin_LCD_API::getProgress_seconds_elapsed() {
 
 const uint8_t Marlin_LCD_API::getFeedRate_percent() {
   return feedrate_percentage;
+}
+
+const float Marlin_LCD_API::getZOffset_mm() {
+  return zprobe_zoffset;
 }
 
 const void Marlin_LCD_API::runGCode(progmem_str gcode) {

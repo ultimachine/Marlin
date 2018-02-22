@@ -52,6 +52,13 @@ const PROGMEM CLCD::SoundPlayer::sound_t sad_trombone[] = {
   {SILENCE, END_SONG, 0}
 };
 
+const PROGMEM CLCD::SoundPlayer::sound_t c_maj_arpeggio[] = {
+  {GLOCKENSPIEL,    NOTE_C4,  1},
+  {GLOCKENSPIEL,    NOTE_E4,  1},
+  {GLOCKENSPIEL,    NOTE_G4,  16},
+  {SILENCE, END_SONG, 0}
+};
+
 const PROGMEM CLCD::SoundPlayer::sound_t js_bach_joy[] = {
   {PIANO,   NOTE_G3,  10},
   {PIANO,   NOTE_A3,  10},

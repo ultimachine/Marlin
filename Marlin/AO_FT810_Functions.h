@@ -755,9 +755,9 @@ void CLCD::DLCache::append() {
     #else
       Serial.print(F("Appending to DL from RAMG cache, bytes: "));
       Serial.print(dl_size);
-      Serial.print(" (REG_CMD_DL: ");
+      Serial.print(F(" (REG_CMD_DL: "));
       Serial.print(Mem_Read32(REG_CMD_DL));
-      Serial.println(")");
+      Serial.println(F(")"));
     #endif
   #endif
 }
@@ -880,19 +880,29 @@ void CLCD::Init (void) {
 
 /******************* SOUND HELPER CLASS ************************/
 
+/* tiny_interval() downsamples a 32-bit millis() value
+   into a 8-bit value which can record periods of
+   up to 4.096 seconds with a rougly 16 millisecond
+   resolution. This allows us to measure small
+   intervals without needing to use four-byte counters.
+ */
+inline uint8_t tiny_interval(uint32_t ms) {
+  return uint8_t(ms / 64);
+}
+
 class CLCD::SoundPlayer {
   public:
     struct sound_t {
-      effect_t effect;      // The sound effect number
-      note_t   note;        // The MIDI note value
-      uint8_t  sixteenths;  // Duration of note, in sixteeths of a second, or zero to play to completion
+      effect_t  effect;      // The sound effect number
+      note_t    note;        // The MIDI note value
+      uint16_t  sixteenths;  // Duration of note, in sixteeths of a second, or zero to play to completion
     };
 
     const uint8_t WAIT = 0;
 
   private:
     const sound_t *sequence;
-    uint32_t       next;
+    uint8_t       next;
 
   public:
     static void setVolume(uint8_t volume);
@@ -924,7 +934,7 @@ void CLCD::SoundPlayer::play(effect_t effect, note_t note) {
 
 void CLCD::SoundPlayer::play(const sound_t* seq) {
   sequence = seq;
-  next     = 0;
+  next     = tiny_interval(millis()) + 1;
 }
 
 bool CLCD::SoundPlayer::soundPlaying() {
@@ -934,12 +944,13 @@ bool CLCD::SoundPlayer::soundPlaying() {
 void CLCD::SoundPlayer::onIdle() {
   if(!sequence) return;
 
-  const bool readyForNextNote = (next == WAIT) ? !soundPlaying() : (millis() > next);
+  const uint8_t tiny_millis = tiny_interval(millis());
+  const bool readyForNextNote = (next == WAIT) ? !soundPlaying() : (tiny_millis > next);
 
   if(readyForNextNote) {
     const effect_t fx = effect_t(pgm_read_byte_near(&sequence->effect));
     const note_t   nt =   note_t(pgm_read_byte_near(&sequence->note));
-    const uint32_t ms = uint32_t(pgm_read_byte_near(&sequence->sixteenths)) * 1000 / 16;
+    const uint16_t ms = uint32_t(pgm_read_byte_near(&sequence->sixteenths)) * 1000 / 16;
 
     if(ms == 0 && fx == SILENCE && nt == 0) {
       sequence = 0;
@@ -949,7 +960,7 @@ void CLCD::SoundPlayer::onIdle() {
           SERIAL_PROTOCOLLNPAIR("Scheduling note in ", ms);
         #endif
       #endif
-      next =   (ms == WAIT) ? 0       : (millis() + ms);
+      next =   (ms == WAIT) ? 0       : (tiny_millis + tiny_interval(ms));
       play(fx, (nt == 0)    ? NOTE_C4 : nt);
       sequence++;
     }
