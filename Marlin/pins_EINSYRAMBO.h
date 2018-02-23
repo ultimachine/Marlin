@@ -38,21 +38,6 @@
   #error Must enable TMC2130 support in Configuration_adv.h for EinsyRambo
 #endif
 
-#define X_IS_TMC2130
-#define Y_IS_TMC2130
-#define Z_IS_TMC2130
-#define E0_IS_TMC2130
-
-#define R_SENSE           0.22
-
-#ifndef E0_CURRENT
-  #define E0_CURRENT        1000
-#endif
-
-#ifndef E0_MICROSTEPS
-  #define E0_MICROSTEPS       16
-#endif
-
 // TMC2130 Diag Pins (currently just for reference)
 #define X_DIAG_PIN      64
 #define Y_DIAG_PIN      69
@@ -112,15 +97,6 @@
 #define Z_MS2_PIN          -1
 #define E0_MS1_PIN         -1
 #define E0_MS2_PIN         -1
-
-#define MOTOR_CURRENT_PWM_XY_PIN 46
-#define MOTOR_CURRENT_PWM_Z_PIN  45
-#define MOTOR_CURRENT_PWM_E_PIN  44
-// Motor current PWM conversion, PWM value = MotorCurrentSetting * 255 / range
-#ifndef MOTOR_CURRENT_PWM_RANGE
-  #define MOTOR_CURRENT_PWM_RANGE 2000
-#endif
-#define DEFAULT_PWM_MOTOR_CURRENT  {1300, 1300, 1250}
 
 //
 // Temperature Sensors
