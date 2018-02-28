@@ -10686,7 +10686,13 @@ inline void gcode_M502() {
       enqueue_and_echo_commands_P(PSTR("G28 Z"));
     }
   #endif
-
+    extern TMC2130Stepper stepperX;
+    inline void gcode_M916() {
+      SERIAL_ECHOPGM("stepperX.CHOPCONF(): ");
+      SERIAL_ECHOLN(stepperX.CHOPCONF());
+      SERIAL_ECHOPGM("stepperY.CHOPCONF(): ");
+      SERIAL_ECHOLN(stepperY.CHOPCONF());
+    }
 #endif // HAS_TRINAMIC
 
 /**
@@ -11943,6 +11949,7 @@ void process_parsed_command() {
         #if ENABLED(TMC_Z_CALIBRATION)
           case 915: gcode_M915(); break;                          // M915: TMC Z axis calibration routine
         #endif
+          case 916: gcode_M916(); break;
       #endif
 
       case 999: gcode_M999(); break;                              // M999: Restart after being Stopped

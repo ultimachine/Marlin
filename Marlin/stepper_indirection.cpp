@@ -138,6 +138,7 @@
     #define _TMC2130_DEFINE(ST) TMC2130Stepper stepper##ST(ST##_ENABLE_PIN, ST##_DIR_PIN, ST##_STEP_PIN, ST##_CS_PIN)
   #endif
 
+  _TMC2130_DEFINE(X);
 
   // Stepper objects of TMC2130 steppers used
   #if ENABLED(X_IS_TMC2130)
@@ -209,6 +210,10 @@
   #define _TMC2130_INIT(ST, SPMM) tmc2130_init(stepper##ST, ST##_MICROSTEPS, ST##_HYBRID_THRESHOLD, SPMM)
 
   void tmc2130_init() {
+    stepperX.begin();
+    stepperX.rms_current(800);
+    stepperX.microsteps(16);
+
     #if ENABLED(X_IS_TMC2130)
       _TMC2130_INIT( X, planner.axis_steps_per_mm[X_AXIS]);
     #endif
