@@ -173,6 +173,7 @@
   // https://www.trinamic.com/products/integrated-circuits/details/tmc2130/
   void tmc2130_init(TMC2130Stepper &st, const uint16_t microsteps, const uint32_t thrs, const float &spmm) {
     st.begin();
+    st.CHOPCONF(0); //prevents the "diss2g - short to ground protection disable bit" getting set by the chopconf shadow register.
     st.setCurrent(st.getCurrent(), R_SENSE, HOLD_MULTIPLIER);
     st.microsteps(microsteps);
     st.blank_time(36);
