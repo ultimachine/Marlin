@@ -175,6 +175,7 @@ class CLCD {
     static void Flash_Write_RGB332_Bitmap(uint32_t Mem_Address, const unsigned char* pRGB332_Array, uint16_t Num_Bytes);
 
     static uint8_t Get_Tag() {return Mem_Read8(REG_TOUCH_TAG);}
+    static bool Is_Touching() {return (Mem_Read32(REG_TOUCH_DIRECT_XY) & 0x80000000) == 0;}
 };
 
 /********************************* FT800/810 Commands *********************************/
@@ -271,9 +272,9 @@ class CLCD::CommandFifo {
     void Cmd (void* data, uint16_t len);
     void Cmd_Str (const char * const data);
     void Cmd_Str (progmem_str data);
-    void Cmd_Clear_Color (uint32_t rgb);
+    void Cmd_Set_Clear_Color (uint32_t rgb);
     void Cmd_Clear (bool Clr, bool Stl, bool Tag);
-    void Cmd_Color (uint32_t rgb);
+    void Cmd_Set_Color (uint32_t rgb);
     void Cmd_Set_Foreground_Color (uint32_t rgb);
     void Cmd_Set_Background_Color (uint32_t rgb);
     void Cmd_Set_Tag (uint8_t Tag);
@@ -301,8 +302,11 @@ class CLCD::CommandFifo {
         Cmd(BITMAP_TRANSFORM_E | 256);
       }
     }
-    template<typename T> FORCEDINLINE void Cmd_Draw_Button_Text(int16_t x, int16_t y, int16_t w, int16_t h, T text, int16_t font) {
-      Cmd_Draw_Text(x + w/2, y + h/2, text, font, OPT_CENTER);
+    template<typename T> FORCEDINLINE void Cmd_Draw_Button_Text(int16_t x, int16_t y, int16_t w, int16_t h, T text, int16_t font, uint16_t options = OPT_CENTER) {
+      Cmd_Draw_Text(
+        x + ((options & OPT_CENTERX) ? w/2 : 0),
+        y + ((options & OPT_CENTERY) ? h/2 : h),
+        text, font, options);
     }
 
     void Cmd_Bitmap_Layout (uint8_t format, uint16_t linestride, uint16_t height);
@@ -330,7 +334,7 @@ inline uint32_t CLCD::pack_rgb(uint8_t r, uint8_t g, uint8_t b) {
   return (uint32_t(r) << 16) | (uint32_t(g) << 8) | uint32_t(b);
 }
 
-void CLCD::CommandFifo::Cmd_Clear_Color (uint32_t rgb)   // DL Command - Set Clear Screen Color
+void CLCD::CommandFifo::Cmd_Set_Clear_Color (uint32_t rgb)   // DL Command - Set Clear Screen Color
 {
   Cmd(CLEAR_COLOR_RGB | rgb);
 }
@@ -344,7 +348,7 @@ void CLCD::CommandFifo::Cmd_Clear (bool Clr, bool Stl, bool Tag)             // 
   );
 }
 
-void CLCD::CommandFifo::Cmd_Color (uint32_t rgb)         // DL Command - Set Current Color
+void CLCD::CommandFifo::Cmd_Set_Color (uint32_t rgb)         // DL Command - Set Current Color
 {
   Cmd(COLOR_RGB | rgb);
 }
@@ -878,17 +882,42 @@ void CLCD::Init (void) {
   CLCD::Mem_Write32(REG_TOUCH_TRANSFORM_F, default_transform_f);
 }
 
-/******************* SOUND HELPER CLASS ************************/
+/******************* TINY INTERVAL CLASS ***********************/
 
 /* tiny_interval() downsamples a 32-bit millis() value
    into a 8-bit value which can record periods of
    up to 4.096 seconds with a rougly 16 millisecond
    resolution. This allows us to measure small
    intervals without needing to use four-byte counters.
+
+   However, dues to wrap-arounds, this class may misfire
+   often and thus should only be used where memory savings
+   outweigh accuracy.
  */
-inline uint8_t tiny_interval(uint32_t ms) {
-  return uint8_t(ms / 64);
-}
+class tiny_interval_t {
+  private:
+    uint8_t end;
+  public:
+    static inline uint8_t tiny_interval(uint32_t ms) {
+      return uint8_t(ms / 64);
+    }
+
+    inline void wait_for(uint32_t ms) {
+      end = tiny_interval(millis() + ms);
+    }
+
+    inline bool elapsed() {
+      if(end == 0 || tiny_interval(millis()) > end) {
+        end = 0;
+        return true;
+      } else {
+        return false;
+      }
+    }
+};
+
+/******************* SOUND HELPER CLASS ************************/
+
 
 class CLCD::SoundPlayer {
   public:
@@ -934,7 +963,7 @@ void CLCD::SoundPlayer::play(effect_t effect, note_t note) {
 
 void CLCD::SoundPlayer::play(const sound_t* seq) {
   sequence = seq;
-  next     = tiny_interval(millis()) + 1;
+  next     = tiny_interval_t::tiny_interval(millis()) + 1;
 }
 
 bool CLCD::SoundPlayer::soundPlaying() {
@@ -944,7 +973,7 @@ bool CLCD::SoundPlayer::soundPlaying() {
 void CLCD::SoundPlayer::onIdle() {
   if(!sequence) return;
 
-  const uint8_t tiny_millis = tiny_interval(millis());
+  const uint8_t tiny_millis = tiny_interval_t::tiny_interval(millis());
   const bool readyForNextNote = (next == WAIT) ? !soundPlaying() : (tiny_millis > next);
 
   if(readyForNextNote) {
@@ -960,7 +989,7 @@ void CLCD::SoundPlayer::onIdle() {
           SERIAL_PROTOCOLLNPAIR("Scheduling note in ", ms);
         #endif
       #endif
-      next =   (ms == WAIT) ? 0       : (tiny_millis + tiny_interval(ms));
+      next =   (ms == WAIT) ? 0       : (tiny_millis + tiny_interval_t::tiny_interval(ms));
       play(fx, (nt == 0)    ? NOTE_C4 : nt);
       sequence++;
     }

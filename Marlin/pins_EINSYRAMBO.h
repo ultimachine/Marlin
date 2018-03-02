@@ -187,11 +187,11 @@
 //
 // LCD / Controller
 //
-#if ENABLED(ULTRA_LCD)
+#if ENABLED(ULTRA_LCD) || defined(LULZBOT_USE_TOUCH_UI)
 
   #define KILL_PIN         32
 
-  #if ENABLED(NEWPANEL)
+  #if ENABLED(NEWPANEL) || defined(LULZBOT_USE_TOUCH_UI)
 
     // Beeper on AUX-4
     #define BEEPER_PIN     84

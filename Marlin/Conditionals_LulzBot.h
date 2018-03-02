@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".10" // Change this with each update
+#define LULZBOT_FW_VERSION ".11" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -130,7 +130,7 @@
     #define LULZBOT_USE_EINSYRAMBO
     #define LULZBOT_USE_EINSY_RETRO
     #define LULZBOT_USE_TOUCH_UI
-    //#define LULZBOT_USE_HIGH_RES
+    #define LULZBOT_USE_HIGH_RES
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
@@ -195,6 +195,7 @@
 #define LULZBOT_AUTO_REPORT_TEMPERATURES
 #define LULZBOT_ADVANCED_OK
 #define LULZBOT_TX_BUFFER_SIZE 32
+#define LULZBOT_BUFSIZE 10
 #define LULZBOT_HOST_KEEPALIVE_FEATURE_DISABLED
 #define LULZBOT_CLARIFY_ERROR_MESSAGES
 
@@ -1759,7 +1760,9 @@
     #endif
     #define LCD_PORTRAIT
     #define LCD_UPSIDE_DOWN
-    //#define UI_FRAMEWORK_DEBUG
+    #define UI_FRAMEWORK_DEBUG
+    #define LULZBOT_SDSUPPORT
+    #define LULZBOT_DISABLE_SD_DETECT_INVERTED
 #endif
 
 /***************************** CUSTOM SPLASH SCREEN *****************************/

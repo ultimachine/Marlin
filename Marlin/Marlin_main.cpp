@@ -14379,7 +14379,9 @@ void kill(const char* lcd_msg) {
   thermalManager.disable_all_heaters();
   disable_all_steppers();
 
-  #if ENABLED(ULTRA_LCD) || ENABLED(LULZBOT_USE_TOUCH_UI)
+  #if ENABLED(LULZBOT_USE_TOUCH_UI)
+    Marlin_LCD_API::onPrinterKilled(lcd_msg);
+  #elif ENABLED(ULTRA_LCD)
     kill_screen(lcd_msg);
   #else
     UNUSED(lcd_msg);
