@@ -555,21 +555,21 @@ void ST7920_Lite_Status_Screen::draw_temps(uint8_t line, const int16_t temp, con
   }
 }
 
-void ST7920_Lite_Status_Screen::draw_extruder_1_temp(const int16_t temp, const int16_t target) {
+void ST7920_Lite_Status_Screen::draw_extruder_1_temp(const int16_t temp, const int16_t target, bool forceUpdate) {
   const bool show_target = target && FAR(temp, target);
 
-  draw_temps(1, temp, target, show_target, display_state.E1_show_target != show_target);
+  draw_temps(1, temp, target, show_target, display_state.E1_show_target != show_target || forceUpdate);
   display_state.E1_show_target = show_target;
 }
 
-void ST7920_Lite_Status_Screen::draw_extruder_2_temp(const int16_t temp, const int16_t target) {
+void ST7920_Lite_Status_Screen::draw_extruder_2_temp(const int16_t temp, const int16_t target, bool forceUpdate) {
   const bool show_target = target && FAR(temp, target);
 
-  draw_temps(2, temp, target, show_target, display_state.E2_show_target != show_target);
+  draw_temps(2, temp, target, show_target, display_state.E2_show_target != show_target || forceUpdate);
   display_state.E2_show_target = show_target;
 }
 
-void ST7920_Lite_Status_Screen::draw_bed_temp(const int16_t temp, const int16_t target) {
+void ST7920_Lite_Status_Screen::draw_bed_temp(const int16_t temp, const int16_t target, bool forceUpdate) {
   const bool show_target = target && FAR(temp, target);
 
   draw_temps(
@@ -578,7 +578,7 @@ void ST7920_Lite_Status_Screen::draw_bed_temp(const int16_t temp, const int16_t 
     #else
       3,
     #endif
-    temp, target, show_target, display_state.bed_show_target != show_target);
+    temp, target, show_target, display_state.bed_show_target != show_target || forceUpdate);
 
   display_state.bed_show_target = show_target;
 }
@@ -720,11 +720,11 @@ void ST7920_Lite_Status_Screen::update_indicators(const bool forceUpdate) {
     const float      bed_temp          = thermalManager.degBed();
     const float      bed_target        = thermalManager.degTargetBed();
 
-    draw_extruder_1_temp(extruder_1_temp, extruder_1_target);
+    draw_extruder_1_temp(extruder_1_temp, extruder_1_target, forceUpdate);
     #if EXTRUDERS == 2
-      draw_extruder_2_temp(extruder_2_temp, extruder_2_target);
+      draw_extruder_2_temp(extruder_2_temp, extruder_2_target, forceUpdate);
     #endif
-    draw_bed_temp(bed_temp, bed_target);
+    draw_bed_temp(bed_temp, bed_target, forceUpdate);
     draw_fan_speed(fan_speed);
     draw_print_time(seconds_elapsed);
     draw_feedrate_percentage(feedrate_perc);
