@@ -1367,14 +1367,15 @@
     /* Leaving the toolhead resting on the endstops will likely cause
      * chatter if the machine is immediately re-homed, so don't leave
      * the head sitting on the endstops after homing. */
-    #define LULZBOT_BACKOFF_DIST     5
+    #define LULZBOT_BACKOFF_DIST_XY  5
+    #define LULZBOT_BACKOFF_DIST_Z   2
     #define LULZBOT_BACKOFF_FEEDRATE 5
 
     #define LULZBOT_AFTER_Z_HOME_ACTION \
         { \
-            int x = (LULZBOT_INVERT_X_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_X_MAX_POS - LULZBOT_BACKOFF_DIST); \
-            int y = (LULZBOT_INVERT_Y_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_Y_MAX_POS - LULZBOT_BACKOFF_DIST); \
-            int z = (LULZBOT_INVERT_Z_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST : LULZBOT_STANDARD_Z_MAX_POS - LULZBOT_BACKOFF_DIST); \
+            int x = (LULZBOT_INVERT_X_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_XY : LULZBOT_STANDARD_X_MAX_POS - LULZBOT_BACKOFF_DIST_XY); \
+            int y = (LULZBOT_INVERT_Y_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_XY : LULZBOT_STANDARD_Y_MAX_POS - LULZBOT_BACKOFF_DIST_XY); \
+            int z = (LULZBOT_INVERT_Z_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_Z  : LULZBOT_STANDARD_Z_MAX_POS - LULZBOT_BACKOFF_DIST_Z); \
             do_blocking_move_to_z( \
                 (home_all || homeZ) ? z : current_position[Z_AXIS] \
             ); \
