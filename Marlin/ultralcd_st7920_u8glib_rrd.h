@@ -195,7 +195,7 @@ class U8GLIB_ST7920_128X64_RRD : public U8GLIB {
 
   // We have to include the code for the lightweight UI here
   // as it relies on macros that are only defined in this file.
-  #include "ultralcd_impl_st7920_lite_status_screen_impl_spi.h"
+  #include "status_screen_lite_ST7920_spi.h"
 #endif
 
 #pragma GCC reset_options

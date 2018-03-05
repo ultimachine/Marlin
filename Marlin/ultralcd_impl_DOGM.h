@@ -46,7 +46,7 @@
 
 #if ENABLED(LULZBOT_MODERN_UI)
   typedef const __FlashStringHelper *progmem_str;
-  #include "ultralcd_impl_st7920_lite_status_screen_impl.h"
+  #include "status_screen_lite_ST7920.h"
 #endif
 
 #if ENABLED(U8GLIB_ST7920)
