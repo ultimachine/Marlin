@@ -23,7 +23,8 @@
     !defined(LULZBOT_Hibiscus_Mini2) && \
     !defined(LULZBOT_Hibiscus_Mini2_CLCD) && \
     !defined(LULZBOT_Quiver_TAZ7) && \
-    !defined(LULZBOT_Quiver_TAZ7_CLCD) \
+    !defined(LULZBOT_Quiver_TAZ7_CLCD) && \
+    !defined(LULZBOT_Prototype_DemoCLCD) \
 ) || ( \
     !defined(TOOLHEAD_Gladiola_SingleExtruder) && \
     !defined(TOOLHEAD_Albatross_Flexystruder) && \
@@ -131,6 +132,7 @@
     #define LULZBOT_USE_EINSY_RETRO
     #define LULZBOT_USE_TOUCH_UI
     #define LULZBOT_USE_HIGH_RES
+    #define LULZBOT_USE_PORTRAIT_UI
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
@@ -170,6 +172,7 @@
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_TOUCH_UI
     #define LULZBOT_USE_HIGH_RES
+    #define LULZBOT_USE_PORTRAIT_UI
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
@@ -178,6 +181,28 @@
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "a952577d-8722-483a-999d-acdc9e772b7b"
+    #define LULZBOT_USE_EXPERIMENTAL_FEATURES
+#endif
+
+#if defined(LULZBOT_Prototype_DemoCLCD)
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot TAZ"
+    #define LULZBOT_LCD_MACHINE_NAME "TAZ"
+    #define LULZBOT_IS_MINI
+    #define LULZBOT_MINI_BED
+    #define LULZBOT_USE_EINSYRAMBO
+    #define LULZBOT_USE_EINSY_RETRO
+    #define LULZBOT_USE_TOUCH_UI
+    #define LULZBOT_USE_HIGH_RES
+    #define LULZBOT_USE_PORTRAIT_UI
+    #define LULZBOT_TWO_PIECE_BED
+    #define LULZBOT_USE_AUTOLEVELING
+    #define LULZBOT_SENSORLESS_HOMING
+    #define LULZBOT_USE_TMC_STEALTHCHOP_Z
+    #define LULZBOT_USE_Z_BELT
+    #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
+    #define LULZBOT_USE_32_MICROSTEPS_ON_Z
+    #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
     #define LULZBOT_USE_EXPERIMENTAL_FEATURES
 #endif
 
@@ -1752,15 +1777,18 @@
 #if defined(LULZBOT_USE_TOUCH_UI)
     extern void lcd_update();
     extern void lcd_buttons_update();
-    //#define LCD_IS_FT800
-    #define LCD_IS_FT810
     #if defined(LULZBOT_USE_HIGH_RES)
         #define LCD_800x480
     #else
         #define LCD_480x272
     #endif
-    #define LCD_PORTRAIT
-    #define LCD_UPSIDE_DOWN
+    #if defined(LULZBOT_USE_PORTRAIT_UI)
+      #define LCD_PORTRAIT
+      #define LCD_UPSIDE_DOWN
+      #define LCD_IS_FT810
+    #else
+      #define LCD_IS_FT800
+    #endif
     #define UI_FRAMEWORK_DEBUG
     #define LULZBOT_SDSUPPORT
     #define LULZBOT_DISABLE_SD_DETECT_INVERTED

@@ -897,9 +897,9 @@ void StatusScreen::static_interaction_buttons() {
   CLCD::CommandFifo cmd;
 
   #if defined(LCD_PORTRAIT)
-    BTN_TAG(4) BTN_ENABLED(1)  BTN( BTN_POS(3,9), BTN_SIZE(2,1), F("MENU"),  MENU_BTN_STYLE);
+    BTN_TAG(4) BTN_ENABLED(1) BTN( BTN_POS(3,9), BTN_SIZE(2,1), F("MENU"),  MENU_BTN_STYLE);
     #else
-    BTN_TAG(4) THEME(back_btn) BTN( BTN_POS(4,7), BTN_SIZE(1,2), F("MENU"),  MENU_BTN_STYLE);
+    BTN_TAG(4) BTN_ENABLED(1) BTN( BTN_POS(4,7), BTN_SIZE(1,2), F("MENU"),  MENU_BTN_STYLE);
   #endif
 }
 
@@ -1064,17 +1064,16 @@ void MenuScreen::onRefresh() {
     #else
       BTN_TAG(2) BTN_ENABLED(1)  BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("Auto Home"),          MENU_BTN_STYLE);
       BTN_TAG(3) BTN_ENABLED(1)  BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("Move Axis"),          MENU_BTN_STYLE);
-      BTN_TAG(4) BTN_ENABLED(1)  BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("Disable Steppers"),   MENU_BTN_STYLE);
-      BTN_TAG(6) BTN_ENABLED(0)  BTN( BTN_POS(1,4), BTN_SIZE(2,1), F("Change Filament"),    MENU_BTN_STYLE);
+      BTN_TAG(6) BTN_ENABLED(0)  BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("Change Filament"),    MENU_BTN_STYLE);
+      BTN_TAG(4) BTN_ENABLED(1)  BTN( BTN_POS(1,4), BTN_SIZE(1,1), F("Disable Steppers"),   MENU_BTN_STYLE);
 
       BTN_TAG(5) BTN_ENABLED(1)  BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Temperature"),        MENU_BTN_STYLE);
       BTN_TAG(7) BTN_ENABLED(1)  BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Advanced Settings"),  MENU_BTN_STYLE);
       BTN_TAG(8) BTN_ENABLED(1)  BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("About Firmware"),     MENU_BTN_STYLE);
     #endif
 
-    #define MARGIN_T 15
-
     #if defined(LCD_PORTRAIT)
+      #define MARGIN_T 15
       BTN_TAG(1) THEME(back_btn) BTN( BTN_POS(1,7), BTN_SIZE(2,1), F("Back"),               MENU_BTN_STYLE);
     #else
       BTN_TAG(1) THEME(back_btn) BTN( BTN_POS(2,4), BTN_SIZE(1,1), F("Back"),               MENU_BTN_STYLE);
@@ -1138,13 +1137,13 @@ void AdvancedSettingsScreen::onRefresh() {
       BTN_TAG(2)  BTN_ENABLED(1)  BTN( BTN_POS(1,6), BTN_SIZE(2,1), F("Save As Default"),          MENU_BTN_STYLE);
       BTN_TAG(1)  THEME(back_btn) BTN( BTN_POS(1,7), BTN_SIZE(2,1), F("Back"),                     MENU_BTN_STYLE);
     #else
-      BTN_TAG(3)  BTN_ENABLED(1)  BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("Z Offset "),                MENU_BTN_STYLE);
-      BTN_TAG(4)  BTN_ENABLED(1)  BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("Steps/mm"),                 MENU_BTN_STYLE);
+      BTN_TAG(4)  BTN_ENABLED(1)  BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("Z Offset "),                MENU_BTN_STYLE);
+      BTN_TAG(5)  BTN_ENABLED(1)  BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("Steps/mm"),                 MENU_BTN_STYLE);
 
-      BTN_TAG(5)  BTN_ENABLED(0)  BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Velocity "),                MENU_BTN_STYLE);
-      BTN_TAG(6)  BTN_ENABLED(0)  BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Acceleration"),             MENU_BTN_STYLE);
-      BTN_TAG(7)  BTN_ENABLED(0)  BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("Jerk"),                     MENU_BTN_STYLE);
-      BTN_TAG(8)  BTN_ENABLED(1)  BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("Restore Failsafe"),         MENU_BTN_STYLE);
+      BTN_TAG(6)  BTN_ENABLED(0)  BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Velocity "),                MENU_BTN_STYLE);
+      BTN_TAG(7)  BTN_ENABLED(0)  BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Acceleration"),             MENU_BTN_STYLE);
+      BTN_TAG(8)  BTN_ENABLED(0)  BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("Jerk"),                     MENU_BTN_STYLE);
+      BTN_TAG(10) BTN_ENABLED(1)  BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("Restore Failsafe"),         MENU_BTN_STYLE);
 
       BTN_TAG(2)  BTN_ENABLED(1)  BTN( BTN_POS(1,4), BTN_SIZE(1,1), F("Save"),                     MENU_BTN_STYLE);
       BTN_TAG(1)  THEME(back_btn) BTN( BTN_POS(2,4), BTN_SIZE(1,1), F("Back"),                     MENU_BTN_STYLE);

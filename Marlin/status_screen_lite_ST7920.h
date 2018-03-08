@@ -831,7 +831,7 @@ void ST7920_Lite_Status_Screen::update_status_or_position(bool forceUpdate) {
 
 void ST7920_Lite_Status_Screen::update_progress(const bool forceUpdate) {
   #if DISABLED(LCD_SET_PROGRESS_MANUALLY)
-    const uint8_t progress_bar_percent;
+    uint8_t progress_bar_percent;
   #endif
 
   // Set current percentage from SD when actively printing
