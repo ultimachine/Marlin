@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".14" // Change this with each update
+#define LULZBOT_FW_VERSION ".15" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1654,6 +1654,12 @@
     #define LULZBOT_DEFAULT_MAX_ACCELERATION      {9000,9000,10,10000}
     #define LULZBOT_Z_STEPS                       1790.08264463
     #define LULZBOT_Z_MICROSTEPS                  16
+#endif
+
+#if defined(LULZBOT_USE_Z_BELT)
+    #define LULZBOT_DEFAULT_MANUAL_FEEDRATE       {50*60, 50*60, 40*60, 60} // (mm/min)
+#else
+    #define LULZBOT_DEFAULT_MANUAL_FEEDRATE       {50*60, 50*60,  4*60, 60} // (mm/min)
 #endif
 
 #if defined(LULZBOT_USE_EINSYRAMBO)
