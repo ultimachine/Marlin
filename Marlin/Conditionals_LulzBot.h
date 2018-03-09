@@ -1657,9 +1657,9 @@
 #endif
 
 #if defined(LULZBOT_USE_Z_BELT)
-    #define LULZBOT_DEFAULT_MANUAL_FEEDRATE       {50*60, 50*60, 40*60, 60} // (mm/min)
+    #define LULZBOT_MANUAL_FEEDRATE       {50*60, 50*60, 40*60, 60} // (mm/min)
 #else
-    #define LULZBOT_DEFAULT_MANUAL_FEEDRATE       {50*60, 50*60,  4*60, 60} // (mm/min)
+    #define LULZBOT_MANUAL_FEEDRATE       {50*60, 50*60,  4*60, 60} // (mm/min)
 #endif
 
 #if defined(LULZBOT_USE_EINSYRAMBO)
