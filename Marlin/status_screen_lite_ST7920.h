@@ -360,18 +360,18 @@ const uint16_t fan2_icon[] PROGMEM = {
 const uint16_t feedrate_icon[] PROGMEM = {
   0b0000000000000000,
   0b0111111000000000,
-  0b0100000000000000,
-  0b0100000000000000,
-  0b0100000000000000,
+  0b0110000000000000,
+  0b0110000000000000,
+  0b0110000000000000,
   0b0111111011111000,
-  0b0100000010000100,
-  0b0100000010000100,
-  0b0100000010000100,
-  0b0100000011111000,
-  0b0000000010001000,
-  0b0000000010000100,
-  0b0000000010000100,
-  0b0000000010000010,
+  0b0110000011001100,
+  0b0110000011001100,
+  0b0110000011001100,
+  0b0110000011111000,
+  0b0000000011001100,
+  0b0000000011001100,
+  0b0000000011001100,
+  0b0000000011001100,
   0b0000000000000000,
   0b0000000000000000
 };
@@ -384,7 +384,7 @@ const uint16_t feedrate_icon[] PROGMEM = {
 // i.e x is [1-16], while the y position is [1-4]
 void ST7920_Lite_Status_Screen::draw_degree_symbol(uint8_t x, uint8_t y, bool draw) {
   const uint8_t *p_bytes = degree_symbol;
-    if(y > 2) {
+    if (y > 2) {
       // Handle display folding
       y -= 2;
       x += 16;
@@ -399,12 +399,12 @@ void ST7920_Lite_Status_Screen::draw_degree_symbol(uint8_t x, uint8_t y, bool dr
       uint8_t byte = pgm_read_byte_near(p_bytes++);
       set_gdram_address(x_word,i+y*16);
       begin_data();
-      if(draw) {
+      if (draw) {
         write_byte(oddChar ? 0x00 : byte);
         write_byte(oddChar ? byte : 0x00);
-      } else {
-        write_word(0x0000);
       }
+      else
+        write_word(0x0000);
     }
 }
 
@@ -442,15 +442,15 @@ void ST7920_Lite_Status_Screen::draw_static_elements() {
 void ST7920_Lite_Status_Screen::draw_progress_bar(const uint8_t value) {
   #if EXTRUDERS == 1
     // If we have only one extruder, draw a long progress bar on the third line
-    const int top        = 1;         // Top in pixels
-    const int bottom     = 13;        // Bottom in pixels
-    const int left       = 12;        // Left edge, in 16-bit words
-    const int width      = 4;         // Width of progress bar, in 16-bit words
+    const uint8_t top     = 1,         // Top in pixels
+                  bottom  = 13,        // Bottom in pixels
+                  left    = 12,        // Left edge, in 16-bit words
+                  width   = 4;         // Width of progress bar, in 16-bit words
   #else
-    const uint8_t top     = 16 + 1,    // Top in pixels
-                  bottom  = 16 + 13,   // Bottom in pixels
-                  left    = 5,         // Left edge, in 16-bit words
-                  width   = 3;         // Width of progress bar, in 16-bit words
+    const uint8_t top     = 16 + 1,
+                  bottom  = 16 + 13,
+                  left    = 5,
+                  width   = 3;
   #endif
   const uint8_t char_pcnt  = 100 / width; // How many percent does each 16-bit word represent?
 
@@ -477,7 +477,6 @@ void ST7920_Lite_Status_Screen::draw_progress_bar(const uint8_t value) {
   }
 
   // Draw the percentage as text in DDRAM
-
   #if EXTRUDERS == 1
     set_ddram_address(DDRAM_LINE_3 + 4);
     begin_data();
@@ -487,6 +486,7 @@ void ST7920_Lite_Status_Screen::draw_progress_bar(const uint8_t value) {
     begin_data();
   #endif
 
+  // Draw centered
   if (value > 9) {
     write_number(value, 4);
     write_str(F("% "));
@@ -525,11 +525,18 @@ void ST7920_Lite_Status_Screen::draw_heat_icon(const bool whichIcon, const bool 
 static struct {
   bool E1_show_target  : 1;
   bool E2_show_target  : 1;
-  bool bed_show_target : 1;
-} display_state = {true, true, true};
+  #if HAS_HEATER_BED
+    bool bed_show_target : 1;
+  #endif
+} display_state = {
+  true, true
+  #if HAS_HEATER_BED
+    , true
+  #endif
+};
 
 void ST7920_Lite_Status_Screen::draw_temps(uint8_t line, const int16_t temp, const int16_t target, bool showTarget, bool targetStateChange) {
-  switch(line) {
+  switch (line) {
     case 1: set_ddram_address(DDRAM_LINE_1 + 1); break;
     case 2: set_ddram_address(DDRAM_LINE_2 + 1); break;
     case 3: set_ddram_address(DDRAM_LINE_3 + 1); break;
@@ -543,45 +550,37 @@ void ST7920_Lite_Status_Screen::draw_temps(uint8_t line, const int16_t temp, con
     write_number(target);
   };
 
-  if(targetStateChange) {
-    if(showTarget) {
-      draw_degree_symbol(6,  line, false);
-      draw_degree_symbol(10, line, true);
-    } else {
-      write_str(F("    "));
-      draw_degree_symbol(6,  line, true);
-      draw_degree_symbol(10, line, false);
-    }
+  if (targetStateChange) {
+    if (!showTarget) write_str(F("    "));
+    draw_degree_symbol(6,  line, !showTarget);
+    draw_degree_symbol(10, line, showTarget);
   }
 }
 
 void ST7920_Lite_Status_Screen::draw_extruder_1_temp(const int16_t temp, const int16_t target, bool forceUpdate) {
   const bool show_target = target && FAR(temp, target);
-
   draw_temps(1, temp, target, show_target, display_state.E1_show_target != show_target || forceUpdate);
   display_state.E1_show_target = show_target;
 }
 
 void ST7920_Lite_Status_Screen::draw_extruder_2_temp(const int16_t temp, const int16_t target, bool forceUpdate) {
   const bool show_target = target && FAR(temp, target);
-
   draw_temps(2, temp, target, show_target, display_state.E2_show_target != show_target || forceUpdate);
   display_state.E2_show_target = show_target;
 }
 
-void ST7920_Lite_Status_Screen::draw_bed_temp(const int16_t temp, const int16_t target, bool forceUpdate) {
-  const bool show_target = target && FAR(temp, target);
-
-  draw_temps(
-    #if EXTRUDERS == 1
-      2,
-    #else
-      3,
-    #endif
-    temp, target, show_target, display_state.bed_show_target != show_target || forceUpdate);
-
-  display_state.bed_show_target = show_target;
-}
+#if HAS_HEATER_BED
+  void ST7920_Lite_Status_Screen::draw_bed_temp(const int16_t temp, const int16_t target, bool forceUpdate) {
+    const bool show_target = target && FAR(temp, target);
+    draw_temps(2
+      #if EXTRUDERS > 1
+        + 1
+      #endif
+      , temp, target, show_target, display_state.bed_show_target != show_target || forceUpdate
+    );
+    display_state.bed_show_target = show_target;
+  }
+#endif
 
 void ST7920_Lite_Status_Screen::draw_fan_speed(const uint8_t value) {
   set_ddram_address(DDRAM_LINE_1 + 6);
@@ -590,19 +589,16 @@ void ST7920_Lite_Status_Screen::draw_fan_speed(const uint8_t value) {
   write_byte('%');
 }
 
-void ST7920_Lite_Status_Screen::draw_print_time(const uint32_t elapsed) {
-  const uint8_t hrs = elapsed / 3600,
-                min = (elapsed / 60) % 60;
-  char str[7];
-  sprintf_P(str, hrs > 99 ? PSTR("%03d:%02d") : PSTR("%02d:%02d "), hrs, min);
-
+void ST7920_Lite_Status_Screen::draw_print_time(const duration_t &elapsed) {
   #if EXTRUDERS == 1
     set_ddram_address(DDRAM_LINE_3);
   #else
     set_ddram_address(DDRAM_LINE_3 + 5);
   #endif
+  char str[7];
+  str[elapsed.toDigital(str)] = ' ';
   begin_data();
-  write_str(str);
+  write_str(str, 6);
 }
 
 void ST7920_Lite_Status_Screen::draw_feedrate_percentage(const uint8_t percentage) {
@@ -680,26 +676,23 @@ bool ST7920_Lite_Status_Screen::indicators_changed() {
   const bool       blink             = lcd_blink();
   const uint8_t    feedrate_perc     = feedrate_percentage;
   const uint8_t    fan_speed         = ((fanSpeeds[0] + 1) * 100) / 256;
-  const float      extruder_1_target = thermalManager.degTargetHotend(0);
+  const int16_t    extruder_1_target = thermalManager.degTargetHotend(0);
   #if EXTRUDERS == 2
-    const float    extruder_2_target = thermalManager.degTargetHotend(1);
+    const int16_t  extruder_2_target = thermalManager.degTargetHotend(1);
   #endif
-  const float      bed_target        = thermalManager.degTargetBed();
-
-  static uint8_t last_checksum = 0;
-
-  const  uint8_t checksum =
-    uint8_t(blink) ^
-    uint8_t(feedrate_perc) ^
-    uint8_t(fan_speed) ^
-    uint8_t(extruder_1_target) ^
+  #if HAS_HEATER_BED
+    const int16_t  bed_target        = thermalManager.degTargetBed();
+  #endif
+  static uint16_t last_checksum = 0;
+  const uint16_t checksum = blink ^ feedrate_perc ^ fan_speed ^ extruder_1_target
     #if EXTRUDERS == 2
-      uint8_t(extruder_2_target) ^
+      ^ extruder_2_target
     #endif
-    uint8_t(bed_target);
-
+    #if HAS_HEATER_BED
+      ^ bed_target
+    #endif
+  ;
   if (last_checksum == checksum) return false;
-
   last_checksum = checksum;
   return true;
 }
@@ -708,33 +701,38 @@ void ST7920_Lite_Status_Screen::update_indicators(const bool forceUpdate) {
   if (forceUpdate || indicators_changed()) {
     const bool       blink             = lcd_blink();
     const duration_t elapsed           = print_job_timer.duration();
-    const uint32_t   seconds_elapsed   = elapsed.value;
     const uint8_t    feedrate_perc     = feedrate_percentage;
     const uint8_t    fan_speed         = ((fanSpeeds[0] + 1) * 100) / 256;
-    const float      extruder_1_temp   = thermalManager.degHotend(0);
-    const float      extruder_1_target = thermalManager.degTargetHotend(0);
+    const int16_t    extruder_1_temp   = thermalManager.degHotend(0),
+                     extruder_1_target = thermalManager.degTargetHotend(0);
     #if EXTRUDERS == 2
-      const float    extruder_2_temp   = thermalManager.degHotend(1);
-      const float    extruder_2_target = thermalManager.degTargetHotend(1);
+      const int16_t  extruder_2_temp   = thermalManager.degHotend(1),
+                     extruder_2_target = thermalManager.degTargetHotend(1);
     #endif
-    const float      bed_temp          = thermalManager.degBed();
-    const float      bed_target        = thermalManager.degTargetBed();
+    #if HAS_HEATER_BED
+      const int16_t  bed_temp          = thermalManager.degBed(),
+                     bed_target        = thermalManager.degTargetBed();
+    #endif
 
     draw_extruder_1_temp(extruder_1_temp, extruder_1_target, forceUpdate);
     #if EXTRUDERS == 2
       draw_extruder_2_temp(extruder_2_temp, extruder_2_target, forceUpdate);
     #endif
-    draw_bed_temp(bed_temp, bed_target, forceUpdate);
+    #if HAS_HEATER_BED
+      draw_bed_temp(bed_temp, bed_target, forceUpdate);
+    #endif
     draw_fan_speed(fan_speed);
-    draw_print_time(seconds_elapsed);
+    draw_print_time(elapsed);
     draw_feedrate_percentage(feedrate_perc);
 
     // Update the fan and bed animations
     if (fan_speed > 0) draw_fan_icon(blink);
-    if (bed_target > 0)
-      draw_heat_icon(blink, true);
-    else
-      draw_heat_icon(false, false);
+    #if HAS_HEATER_BED
+      if (bed_target > 0)
+        draw_heat_icon(blink, true);
+      else
+        draw_heat_icon(false, false);
+    #endif
   }
 }
 
@@ -753,7 +751,6 @@ bool ST7920_Lite_Status_Screen::position_changed() {
 bool ST7920_Lite_Status_Screen::status_changed() {
   uint8_t checksum = 0;
   for (const char *p = lcd_status_message; *p; p++) checksum ^= *p;
-
   static uint8_t last_checksum = 0;
   if (last_checksum == checksum) return false;
   last_checksum = checksum;
@@ -769,7 +766,12 @@ bool ST7920_Lite_Status_Screen::blink_changed() {
 }
 
 void ST7920_Lite_Status_Screen::update_status_or_position(bool forceUpdate) {
-  static uint8_t countdown = 0;
+  #ifndef STATUS_EXPIRE_SECONDS
+    #define STATUS_EXPIRE_SECONDS 20
+  #endif
+  #if STATUS_EXPIRE_SECONDS != 0
+    static uint8_t countdown = 0;
+  #endif
 
   /**
    * There is only enough room in the display for either the
@@ -782,51 +784,61 @@ void ST7920_Lite_Status_Screen::update_status_or_position(bool forceUpdate) {
    *    countdown > 1    -- Show status
    *    countdown = 1    -- Show status, until movement
    *    countdown = 0    -- Show position
+   *
+   * If STATUS_EXPIRE_SECONDS is zero, then the position
+   * display will be disabled and only the status will be
+   * shown.
    */
   if (forceUpdate || status_changed()) {
     #if ENABLED(STATUS_MESSAGE_SCROLLING)
       status_scroll_pos = 0;
     #endif
-    #ifndef STATUS_EXPIRE_SECONDS
-      #define STATUS_EXPIRE_SECONDS 20
+    #if STATUS_EXPIRE_SECONDS != 0
+      countdown = lcd_strlen(lcd_status_message) ? STATUS_EXPIRE_SECONDS : 0;
     #endif
-    countdown = lcd_strlen(lcd_status_message) ? STATUS_EXPIRE_SECONDS : 0;
     draw_status_message(lcd_status_message);
     blink_changed(); // Clear changed flag
   }
-  else if (countdown > 1 && blink_changed()) {
-    countdown--;
+  #if STATUS_EXPIRE_SECONDS == 0
     #if ENABLED(STATUS_MESSAGE_SCROLLING)
-      draw_status_message(lcd_status_message);
+      else
+        draw_status_message(lcd_status_message);
     #endif
-  }
-  else if (countdown > 0 && blink_changed()) {
-    if (position_changed()) {
+  #else
+    else if (countdown > 1 && blink_changed()) {
       countdown--;
-      forceUpdate = true;
-    }
-    #if ENABLED(STATUS_MESSAGE_SCROLLING)
-      draw_status_message(lcd_status_message);
-    #endif
-  }
-  if (countdown == 0 && (forceUpdate || position_changed() ||
-    #if DISABLED(DISABLE_REDUCED_ACCURACY_WARNING)
-      blink_changed()
-    #endif
-  )) {
-    draw_position(
-      current_position[X_AXIS],
-      current_position[Y_AXIS],
-      current_position[Z_AXIS],
-      #if ENABLED(DISABLE_REDUCED_ACCURACY_WARNING)
-        true
-      #else
-        axis_known_position[X_AXIS] &&
-        axis_known_position[Y_AXIS] &&
-        axis_known_position[Z_AXIS]
+      #if ENABLED(STATUS_MESSAGE_SCROLLING)
+        draw_status_message(lcd_status_message);
       #endif
-    );
-  }
+    }
+    else if (countdown > 0 && blink_changed()) {
+      if (position_changed()) {
+        countdown--;
+        forceUpdate = true;
+      }
+      #if ENABLED(STATUS_MESSAGE_SCROLLING)
+        draw_status_message(lcd_status_message);
+      #endif
+    }
+    if (countdown == 0 && (forceUpdate || position_changed() ||
+      #if DISABLED(DISABLE_REDUCED_ACCURACY_WARNING)
+        blink_changed()
+      #endif
+    )) {
+      draw_position(
+        current_position[X_AXIS],
+        current_position[Y_AXIS],
+        current_position[Z_AXIS],
+        #if ENABLED(DISABLE_REDUCED_ACCURACY_WARNING)
+          true
+        #else
+          axis_known_position[X_AXIS] &&
+          axis_known_position[Y_AXIS] &&
+          axis_known_position[Z_AXIS]
+        #endif
+      );
+    }
+  #endif
 }
 
 void ST7920_Lite_Status_Screen::update_progress(const bool forceUpdate) {
@@ -836,8 +848,7 @@ void ST7920_Lite_Status_Screen::update_progress(const bool forceUpdate) {
 
   // Set current percentage from SD when actively printing
   #if ENABLED(SDSUPPORT)
-    if (IS_SD_PRINTING)
-      progress_bar_percent = card.percentDone();
+    if (IS_SD_PRINTING) progress_bar_percent = card.percentDone();
   #endif
 
   // Since the progress bar involves writing

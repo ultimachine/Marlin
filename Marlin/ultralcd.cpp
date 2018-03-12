@@ -4969,7 +4969,7 @@ void lcd_update() {
       #endif
 
       #if ENABLED(DOGLCD)
-        #if defined(LULZBOT_MODERN_UI)
+        #if defined(LULZBOT_LIGHTWEIGHT_UI)
         LULZBOT_ABOUT_TO_DRAW_SCREEN(currentScreen, lcd_status_screen)
         #endif
         if (!drawing_screen) {                        // If not already drawing pages

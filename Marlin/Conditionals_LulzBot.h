@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".15" // Change this with each update
+#define LULZBOT_FW_VERSION ".16" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -119,7 +119,7 @@
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_USE_32_MICROSTEPS_ON_Z
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
-    #define LULZBOT_MODERN_UI
+    #define LULZBOT_LIGHTWEIGHT_UI
     #define LULZBOT_USE_EXPERIMENTAL_FEATURES
 #endif
 
@@ -160,7 +160,7 @@
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "a952577d-8722-483a-999d-acdc9e772b7b"
-    #define LULZBOT_MODERN_UI
+    #define LULZBOT_LIGHTWEIGHT_UI
     #define LULZBOT_USE_EXPERIMENTAL_FEATURES
 #endif
 
@@ -1761,7 +1761,7 @@
 #define LULZBOT_ENHANCED_TEMP_ERROR_MSG(msg, e) \
     ((e == -1) ? PSTR(LULZBOT_STRINGIFY(msg) " BED") : ((e == 0) ? PSTR(LULZBOT_STRINGIFY(msg) " E0") : PSTR(LULZBOT_STRINGIFY(msg) " E1")) )
 
-#if defined(LULZBOT_MODERN_UI)
+#if defined(LULZBOT_LIGHTWEIGHT_UI)
     #define LULZBOT_ABOUT_TO_DRAW_SCREEN(a,b) \
         lcd_in_status(a == b); \
         if(a == b) { \
@@ -1775,7 +1775,7 @@
     #else
         #define WELCOME_MSG _UxGT("TAZ 7 ready.")
     #endif
-    #define LULZBOT_DELAY_TO_SHOW_POSITION 20
+    #define LULZBOT_STATUS_EXPIRE_SECONDS 0
 #else
     #define LULZBOT_ABOUT_TO_DRAW_SCREEN(a)
 #endif
