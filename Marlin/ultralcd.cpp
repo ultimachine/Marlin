@@ -2963,7 +2963,11 @@ void kill_screen(const char* lcd_msg) {
    */
 
   void _lcd_move_xyz(const char* name, AxisEnum axis) {
-    if (lcd_clicked) { return lcd_goto_previous_menu(); }
+    #if defined(LULZBOT_MOVE_AXIS_LCD_TIMER_WORKAROUND)
+      if (lcd_clicked) { return lcd_goto_previous_menu_no_defer(); }
+    #else
+      if (lcd_clicked) { return lcd_goto_previous_menu(); }
+    #endif
     ENCODER_DIRECTION_NORMAL();
     if (encoderPosition && !processing_manual_move) {
       refresh_cmd_timeout();
@@ -3048,7 +3052,11 @@ void kill_screen(const char* lcd_msg) {
       int8_t eindex=-1
     #endif
   ) {
-    if (lcd_clicked) { return lcd_goto_previous_menu(); }
+    #if defined(LULZBOT_MOVE_AXIS_LCD_TIMER_WORKAROUND)
+      if (lcd_clicked) { return lcd_goto_previous_menu_no_defer(); }
+    #else
+      if (lcd_clicked) { return lcd_goto_previous_menu(); }
+    #endif
     ENCODER_DIRECTION_NORMAL();
     if (encoderPosition) {
       if (!processing_manual_move) {
@@ -4610,7 +4618,11 @@ void kill_screen(const char* lcd_msg) {
    * Menu actions
    *
    */
-  void _menu_action_back() { lcd_goto_previous_menu(); }
+  #if defined(LULZBOT_MOVE_AXIS_LCD_TIMER_WORKAROUND)
+  void _menu_action_back() {lcd_goto_previous_menu_no_defer(); }
+  #else
+  void _menu_action_back() {lcd_goto_previous_menu(); }
+  #endif
   void menu_action_submenu(screenFunc_t func) { lcd_save_previous_screen(); lcd_goto_screen(func); }
   void menu_action_gcode(const char* pgcode) { enqueue_and_echo_commands_P(pgcode); }
   void menu_action_function(screenFunc_t func) { (*func)(); }

@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".16" // Change this with each update
+#define LULZBOT_FW_VERSION ".17" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -268,6 +268,11 @@
 
 // Fix for bug where the LCD is not being properly cleared at startup
 #define LULZBOT_LCD_CLEAR_WORKAROUND
+
+// Fix for bug where going to the Move Axis screen causes the menu
+// not to timeout. This has been reported upstream:
+//    https://github.com/MarlinFirmware/Marlin/issues/10085
+#define LULZBOT_MOVE_AXIS_LCD_TIMER_WORKAROUND
 
 /************************* EXPERIMENTAL FEATURES ******************************/
 
