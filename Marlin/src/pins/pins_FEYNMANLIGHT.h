@@ -91,7 +91,7 @@
 #define HEATER_0_PIN        16
 #define HEATER_1_PIN        -1
 #define HEATER_2_PIN        -1
-#define HEATER_BED_PIN      31
+#define HEATER_BED_PIN      -1
 
 
 
