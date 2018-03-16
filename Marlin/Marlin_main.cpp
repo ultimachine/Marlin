@@ -520,7 +520,7 @@ static millis_t stepper_inactive_time = (DEFAULT_STEPPER_DEACTIVE_TIME) * 1000UL
 // Buzzer - I2C on the LCD or a BEEPER_PIN
 #if ENABLED(LCD_USE_I2C_BUZZER)
   #define BUZZ(d,f) lcd_buzz(d, f)
-#elif PIN_EXISTS(BEEPER)
+#elif PIN_EXISTS(BEEPER) || defined(LULZBOT_USE_TOUCH_UI)
   Buzzer buzzer;
   #define BUZZ(d,f) buzzer.tone(d, f)
 #else

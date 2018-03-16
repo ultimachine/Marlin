@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".17" // Change this with each update
+#define LULZBOT_FW_VERSION ".18" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -143,6 +143,7 @@
     #define LULZBOT_USE_32_MICROSTEPS_ON_Z
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
     #define LULZBOT_USE_EXPERIMENTAL_FEATURES
+    #define LULZBOT_USE_USB_STICK
 #endif
 
 #if defined(LULZBOT_Quiver_TAZ7)
@@ -204,6 +205,7 @@
     #define LULZBOT_USE_32_MICROSTEPS_ON_Z
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
     #define LULZBOT_USE_EXPERIMENTAL_FEATURES
+    #define LULZBOT_USE_USB_STICK
 #endif
 
 /****************************** DEBUGGING OPTIONS *******************************/
@@ -1800,7 +1802,7 @@
     #else
       #define LCD_IS_FT800
     #endif
-    #define UI_FRAMEWORK_DEBUG
+    //#define UI_FRAMEWORK_DEBUG
     #define LULZBOT_SDSUPPORT
     #define LULZBOT_DISABLE_SD_DETECT_INVERTED
 #endif

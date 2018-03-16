@@ -24,7 +24,7 @@
 // cache, so we reserve a large chunk of memory for the DL cache
 
 #define STATUS_SCREEN_DL_SIZE        2048
-#define CONFIRMATION_SCREEN_DL_SIZE  3072
+#define DIALOG_BOX_DL_SIZE           3072
 
 #define N_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
@@ -110,8 +110,8 @@
 // in a union. The values should be initialized in the onEntry method.
 
 static union {
-  struct {uint8_t increment;}      ValueAdjusters;
-  struct {uint8_t page, selected;} FilesScreen;
+  struct {uint8_t increment;}          ValueAdjusters;
+  struct {uint8_t page, selected_tag;} FilesScreen;
 } screen_data;
 
 /************************* MENU SCREEN DECLARATIONS *************************/
@@ -188,6 +188,12 @@ class StatusScreen : public UIScreen {
 };
 
 class MenuScreen : public UIScreen {
+  public:
+    static void onRefresh();
+    static bool onTouchStart(uint8_t tag);
+};
+
+class TuneScreen : public UIScreen {
   public:
     static void onRefresh();
     static bool onTouchStart(uint8_t tag);
@@ -272,6 +278,12 @@ class ZOffsetScreen : public ValueAdjusters {
     static bool onTouchHeld(uint8_t tag);
 };
 
+class FeedrateScreen : public ValueAdjusters {
+  public:
+    static void onRefresh();
+    static bool onTouchHeld(uint8_t tag);
+};
+
 class TemperatureScreen : public ValueAdjusters {
   public:
     static void onRefresh();
@@ -281,6 +293,8 @@ class TemperatureScreen : public ValueAdjusters {
 class FilesScreen : public UIScreen {
   private:
     static const char *getSelectedShortFilename();
+    static uint8_t getTagForIndex(uint16_t index);
+    static uint16_t getIndexForTag(uint8_t tag);
   public:
     static void onEntry();
     static void onRefresh();
@@ -298,10 +312,12 @@ SCREEN_TABLE {
   DECL_SCREEN(CalibrationScreen),
   DECL_SCREEN(StatusScreen),
   DECL_SCREEN(MenuScreen),
+  DECL_SCREEN(TuneScreen),
   DECL_SCREEN(MoveAxisScreen),
   DECL_SCREEN(AdvancedSettingsScreen),
   DECL_SCREEN(StepsScreen),
   DECL_SCREEN(ZOffsetScreen),
+  DECL_SCREEN(FeedrateScreen),
   DECL_SCREEN(TemperatureScreen),
   DECL_SCREEN(CalibrationRegistersScreen),
   DECL_SCREEN(FilesScreen),
@@ -318,12 +334,14 @@ SCREEN_TABLE_POST
 enum {
   STATUS_SCREEN_CACHE,
   MENU_SCREEN_CACHE,
-  CONFIRMATION_SCREEN_CACHE,
+  TUNE_SCREEN_CACHE,
+  DIALOG_BOX_CACHE,
   ADVANCED_SETTINGS_SCREEN_CACHE,
   MOVE_AXIS_SCREEN_CACHE,
   TEMPERATURE_SCREEN_CACHE,
   STEPS_SCREEN_CACHE,
   ZOFFSET_SCREEN_CACHE,
+  FEEDRATE_SCREEN_CACHE,
   FILES_SCREEN_CACHE
 };
 
@@ -341,6 +359,7 @@ namespace Theme {
   const uint32_t y_axis        = 0x005000;
   const uint32_t z_axis        = 0x000050;
   const uint32_t e_axis        = 0x000000;
+  const uint32_t feedrate      = 0x000000;
 
   const uint32_t toggle_on     = theme_light;
   const uint32_t toggle_off    = theme_darkest;
@@ -480,7 +499,7 @@ bool AboutScreen::onTouchStart(uint8_t tag) {
 /**************************** GENERIC DIALOG BOX SCREEN ****************************/
 
 void DialogBoxBaseClass::show(const progmem_str lines[], size_t n_lines, progmem_str btn1, progmem_str btn2 ) {
-  CLCD::DLCache dlcache(CONFIRMATION_SCREEN_CACHE);
+  CLCD::DLCache dlcache(DIALOG_BOX_CACHE);
 
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
@@ -507,7 +526,7 @@ void DialogBoxBaseClass::show(const progmem_str lines[], size_t n_lines, progmem
   cmd.Cmd(CMD_SWAP);
   cmd.Cmd_Execute();
 
-  if(!dlcache.store(CONFIRMATION_SCREEN_DL_SIZE)) {
+  if(!dlcache.store(DIALOG_BOX_DL_SIZE)) {
     #if defined (SERIAL_PROTOCOLLNPAIR)
       SERIAL_PROTOCOLLN("Unable to set the confirmation message, not enough DL cache space");
     #else
@@ -519,7 +538,7 @@ void DialogBoxBaseClass::show(const progmem_str lines[], size_t n_lines, progmem
 }
 
 void DialogBoxBaseClass::onRefresh() {
-  CLCD::DLCache dlcache(CONFIRMATION_SCREEN_CACHE);
+  CLCD::DLCache dlcache(DIALOG_BOX_CACHE);
   CLCD::CommandFifo cmd;
   cmd.Cmd(CMD_DLSTART);
 
@@ -1025,9 +1044,19 @@ bool StatusScreen::onTouchStart(uint8_t tag) {
       GOTO_SCREEN(ConfirmAbortPrint);
       break;
     case 3:  GOTO_SCREEN(FilesScreen);       break;
-    case 4:  GOTO_SCREEN(MenuScreen);        break;
+    case 4:
+      if(Marlin_LCD_API::isPrinting()) {
+        GOTO_SCREEN(TuneScreen);
+      } else {
+        GOTO_SCREEN(MenuScreen);
+      }
+      break;
     case 5:  GOTO_SCREEN(TemperatureScreen); break;
-    case 6:  GOTO_SCREEN(MoveAxisScreen);    break;
+    case 6:
+      if(!Marlin_LCD_API::isPrinting()) {
+        GOTO_SCREEN(MoveAxisScreen);
+      }
+      break;
   }
   return true;
 }
@@ -1098,6 +1127,68 @@ bool MenuScreen::onTouchStart(uint8_t tag) {
     case 5:  GOTO_SCREEN(TemperatureScreen);      break;
     case 7:  GOTO_SCREEN(AdvancedSettingsScreen); break;
     case 8:  GOTO_SCREEN(AboutScreen);            break;
+    default:
+      return false;
+  }
+  return true;
+}
+
+/************************************ TUNE SCREEN *******************************/
+
+#if defined(LCD_PORTRAIT)
+  #define GRID_ROWS 5
+  #define GRID_COLS 2
+#else
+  #define GRID_ROWS 3
+  #define GRID_COLS 2
+#endif
+
+void TuneScreen::onRefresh() {
+  CLCD::DLCache dlcache(TUNE_SCREEN_CACHE);
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
+
+  if(dlcache.hasData()) {
+    dlcache.append();
+  } else {
+    cmd.Cmd_Set_Clear_Color(Theme::background);
+    cmd.Cmd_Clear(1,1,1);
+
+    #if defined(LCD_PORTRAIT)
+      BTN_TAG(2) BTN_ENABLED(1)  BTN( BTN_POS(1,1), BTN_SIZE(2,1), F("Temperature"),        MENU_BTN_STYLE);
+      BTN_TAG(3) BTN_ENABLED(0)  BTN( BTN_POS(1,2), BTN_SIZE(2,1), F("Change Filament"),    MENU_BTN_STYLE);
+      BTN_TAG(4) BTN_ENABLED(1)  BTN( BTN_POS(1,3), BTN_SIZE(2,1), F("Z Offset"),           MENU_BTN_STYLE);
+      BTN_TAG(5) BTN_ENABLED(1)  BTN( BTN_POS(1,4), BTN_SIZE(2,1), F("Print Speed"),        MENU_BTN_STYLE);
+    #else
+      BTN_TAG(2) BTN_ENABLED(1)  BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("Temperature"),        MENU_BTN_STYLE);
+      BTN_TAG(3) BTN_ENABLED(0)  BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("Change Filament"),    MENU_BTN_STYLE);
+      BTN_TAG(4) BTN_ENABLED(1)  BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Z Offset"),           MENU_BTN_STYLE);
+      BTN_TAG(5) BTN_ENABLED(1)  BTN( BTN_POS(2,2), BTN_SIZE(2,1), F("Print Speed"),        MENU_BTN_STYLE);
+    #endif
+
+    #if defined(LCD_PORTRAIT)
+      #define MARGIN_T 15
+      BTN_TAG(1) THEME(back_btn) BTN( BTN_POS(1,5), BTN_SIZE(2,1), F("Back"),               MENU_BTN_STYLE);
+    #else
+      BTN_TAG(1) THEME(back_btn) BTN( BTN_POS(1,3), BTN_SIZE(2,1), F("Back"),               MENU_BTN_STYLE);
+    #endif
+
+    #define MARGIN_T 5
+
+    dlcache.store();
+  }
+
+  cmd.Cmd(DL_DISPLAY);
+  cmd.Cmd(CMD_SWAP);
+  cmd.Cmd_Execute();
+}
+
+bool TuneScreen::onTouchStart(uint8_t tag) {
+  switch(tag) {
+    case 1:  GOTO_PREVIOUS();                    break;
+    case 2:  GOTO_SCREEN(TemperatureScreen);     break;
+    case 4:  GOTO_SCREEN(ZOffsetScreen);         break;
+    case 5:  GOTO_SCREEN(FeedrateScreen);        break;
     default:
       return false;
   }
@@ -1487,11 +1578,17 @@ void MoveAxisScreen::onRefresh() {
   cmd.Cmd(CMD_DLSTART);
 
   /*                     Tag  Label:              Units:      Color:         Precision: */
-  const heading_t   h = {     PSTR("Move Axis")                                         };
-  const adjuster_t  x = {2,   PSTR("X:"),         PSTR("mm"), Theme::x_axis, 1          };
-  const adjuster_t  y = {4,   PSTR("Y:"),         PSTR("mm"), Theme::y_axis, 1          };
-  const adjuster_t  z = {6,   PSTR("Z:"),         PSTR("mm"), Theme::z_axis, 1          };
-  const increment_t i = {                                                    1          };
+  const heading_t   h =  {     PSTR("Move Axis")                                         };
+  const adjuster_t  x =  {2,   PSTR("X:"),         PSTR("mm"), Theme::x_axis, 1          };
+  const adjuster_t  y =  {4,   PSTR("Y:"),         PSTR("mm"), Theme::y_axis, 1          };
+  const adjuster_t  z =  {6,   PSTR("Z:"),         PSTR("mm"), Theme::z_axis, 1          };
+  #if EXTRUDERS == 1
+  const adjuster_t  e0 = {8,   PSTR("E:"),         PSTR("mm"), Theme::e_axis, 1          };
+  #else EXTRUDERS == 2
+  const adjuster_t  e0 = {8,   PSTR("E0:"),        PSTR("mm"), Theme::e_axis, 1          };
+  const adjuster_t  e1 = {10,  PSTR("E1:"),        PSTR("mm"), Theme::e_axis, 1          };
+  #endif
+  const increment_t i = {                                                     1          };
 
   stacker_t s;
   if(dlcache.hasData()) {
@@ -1502,6 +1599,10 @@ void MoveAxisScreen::onRefresh() {
     x.static_parts(s);
     y.static_parts(s);
     z.static_parts(s);
+    e0.static_parts(s);
+    #if EXTRUDERS == 2
+      e1.static_parts(s);
+    #endif
     i.static_parts(s);
     dlcache.store();
   }
@@ -1510,6 +1611,10 @@ void MoveAxisScreen::onRefresh() {
   x.dynamic_parts(s,Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::X));
   y.dynamic_parts(s,Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::Y));
   z.dynamic_parts(s,Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::Z));
+  e0.dynamic_parts(s,Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::E0));
+  #if EXTRUDERS == 2
+    e1.dynamic_parts(s,Marlin_LCD_API::getAxisPosition_mm(Marlin_LCD_API::E1));
+  #endif
   i.dynamic_parts(s);
 
   cmd.Cmd(DL_DISPLAY);
@@ -1529,12 +1634,16 @@ bool MoveAxisScreen::onTouchHeld(uint8_t tag) {
   const float feedrate_mm_s = inc * TOUCH_REPEATS_PER_SECOND;
 
   switch(tag) {
-    case 2:  axis = Marlin_LCD_API::X; inc *= -1;  break;
-    case 3:  axis = Marlin_LCD_API::X; inc *=  1;  break;
-    case 4:  axis = Marlin_LCD_API::Y; inc *= -1;  break;
-    case 5:  axis = Marlin_LCD_API::Y; inc *=  1;  break;
-    case 6:  axis = Marlin_LCD_API::Z; inc *= -1;  break;
-    case 7:  axis = Marlin_LCD_API::Z; inc *=  1;  break;
+    case  2: axis = Marlin_LCD_API::X;  inc *= -1;  break;
+    case  3: axis = Marlin_LCD_API::X;  inc *=  1;  break;
+    case  4: axis = Marlin_LCD_API::Y;  inc *= -1;  break;
+    case  5: axis = Marlin_LCD_API::Y;  inc *=  1;  break;
+    case  6: axis = Marlin_LCD_API::Z;  inc *= -1;  break;
+    case  7: axis = Marlin_LCD_API::Z;  inc *=  1;  break;
+    case  8: axis = Marlin_LCD_API::E0; inc *= -1;  break;
+    case  9: axis = Marlin_LCD_API::E0; inc *=  1;  break;
+    case 10: axis = Marlin_LCD_API::E1; inc *= -1;  break;
+    case 11: axis = Marlin_LCD_API::E1; inc *=  1;  break;
     default:
       return false;
   }
@@ -1724,6 +1833,50 @@ bool ZOffsetScreen::onTouchHeld(uint8_t tag) {
   return true;
 }
 
+/***************************** FEEDRATE SCREEN ***************************/
+
+void FeedrateScreen::onRefresh() {
+  CLCD::DLCache dlcache(FEEDRATE_SCREEN_CACHE);
+  CLCD::CommandFifo cmd;
+  cmd.Cmd(CMD_DLSTART);
+
+  /*                    Tag  Label:              Units:     Color:            Precision: */
+  const heading_t   h = {    PSTR("Print Speed")                                         };
+  const adjuster_t  f = {4,  PSTR("Speed"),      PSTR("%"), Theme::feedrate,  0          };
+  const increment_t i = {                                                     0          };
+
+  stacker_t s;
+  if(dlcache.hasData()) {
+    dlcache.append();
+  } else {
+    s.static_parts();
+    h.static_parts(s);
+    f.static_parts(s);
+    i.static_parts(s);
+    dlcache.store();
+  }
+  s.dynamic_parts();
+  h.dynamic_parts(s);
+  f.dynamic_parts(s,Marlin_LCD_API::getFeedRate_percent());
+  i.dynamic_parts(s);
+
+  cmd.Cmd(DL_DISPLAY);
+  cmd.Cmd(CMD_SWAP);
+  cmd.Cmd_Execute();
+}
+
+bool FeedrateScreen::onTouchHeld(uint8_t tag) {
+  float inc = getIncrement();
+  switch(tag) {
+    case 4:  Marlin_LCD_API::setFeedrate_percent(Marlin_LCD_API::getFeedRate_percent() - inc); break;
+    case 5:  Marlin_LCD_API::setFeedrate_percent(Marlin_LCD_API::getFeedRate_percent() + inc); break;
+    default:
+      return false;
+  }
+  onRefresh();
+  return true;
+}
+
 /***************************** FILES SCREEN ***************************/
 
 #if defined(LCD_PORTRAIT)
@@ -1737,20 +1890,22 @@ bool ZOffsetScreen::onTouchHeld(uint8_t tag) {
 const uint16_t filesPerPage = GRID_ROWS - 4;
 
 void FilesScreen::onEntry() {
-  screen_data.FilesScreen.page     = 0;
-  screen_data.FilesScreen.selected = 0xFF;
+  screen_data.FilesScreen.page            = 0;
+  screen_data.FilesScreen.selected_tag    = 0xFF;
   UIScreen::onEntry();
 }
 
 const char *FilesScreen::getSelectedShortFilename() {
-  Marlin_LCD_API::Marlin_LCD_API::Media_Iterator iterator(screen_data.FilesScreen.page * filesPerPage);
+  Marlin_LCD_API::Media_Iterator iterator(getIndexForTag(screen_data.FilesScreen.selected_tag));
+  return iterator.shortFilename();
+}
 
-  while(iterator.hasMore()) {
-    if(screen_data.FilesScreen.selected == iterator.value() + 1) {
-      return iterator.shortFilename();
-    }
-    iterator.next();
-  }
+uint8_t FilesScreen::getTagForIndex(uint16_t fileIndex) {
+  return fileIndex + 1;
+}
+
+uint16_t FilesScreen::getIndexForTag(uint8_t tag) {
+  return tag - 1;
 }
 
 void FilesScreen::onRefresh() {
@@ -1761,18 +1916,32 @@ void FilesScreen::onRefresh() {
   cmd.Cmd_Set_Clear_Color(Theme::background);
   cmd.Cmd_Clear(1,1,1);
 
-  Marlin_LCD_API::Marlin_LCD_API::Media_Iterator iterator(screen_data.FilesScreen.page * filesPerPage);
-
   #define MARGIN_T 0
   #define MARGIN_B 0
 
-  while(iterator.hasMore()) {
-    const uint16_t tag = iterator.value() + 1;
-    BTN_TAG(tag)
-    RGB(screen_data.FilesScreen.selected == tag ? Theme::files_selected : Theme::background)
-    BTN( BTN_POS(1,tag+2), BTN_SIZE(6,1), F(""),               FONT_SML, OPT_FLAT);
-    BTX( BTN_POS(1,tag+2), BTN_SIZE(6,1), iterator.filename(), FONT_LRG, OPT_CENTERY);
-    iterator.next();
+  bool dirSelected = false;
+
+  Marlin_LCD_API::Media_Iterator iterator(screen_data.FilesScreen.page * filesPerPage);
+  if(iterator.count()) {
+    do {
+      const uint16_t tag = getTagForIndex(iterator.value());
+      const bool isDir   = iterator.isDirectory();
+
+      BTN_TAG(tag)
+      if(screen_data.FilesScreen.selected_tag == tag) {
+        RGB(Theme::files_selected)
+        dirSelected = isDir;
+      } else {
+        RGB(Theme::background)
+      }
+      BTN( BTN_POS(1,tag+2), BTN_SIZE(6,1), F(""),               FONT_SML, OPT_FLAT);
+      BTX( BTN_POS(1,tag+2), BTN_SIZE(6,1), iterator.filename(), FONT_LRG, OPT_CENTERY);
+      if(isDir) {
+        BTX( BTN_POS(1,tag+2), BTN_SIZE(6,1), F("> "),            FONT_LRG, OPT_CENTERY | OPT_RIGHTX);
+      }
+
+      iterator.next();
+    } while(iterator.hasMore());
   }
 
   #define MARGIN_T 5
@@ -1781,7 +1950,8 @@ void FilesScreen::onRefresh() {
   const uint16_t pageCount = iterator.count() / filesPerPage + 1;
   const bool prevEnabled   = screen_data.FilesScreen.page > 0;
   const bool nextEnabled   = screen_data.FilesScreen.page < (pageCount - 1);
-  const bool fileSelected  = screen_data.FilesScreen.selected != 0xFF;
+  const bool itemSelected  = screen_data.FilesScreen.selected_tag != 0xFF;
+  const uint8_t backTag    = Marlin_LCD_API::isAtRootDir() ? 240 : 245;
 
   char page_str[15];
   sprintf_P(page_str, PSTR("Page %d of %d"), screen_data.FilesScreen.page + 1, pageCount);
@@ -1794,14 +1964,16 @@ void FilesScreen::onRefresh() {
     if(nextEnabled)  {BTN_TAG(242); BTN( BTN_POS(6,1),  BTN_SIZE(1,2), F(">"), MENU_BTN_STYLE);}
 
     #define MARGIN_T 15
+    BTN_TAG(backTag) THEME(back_btn) BTN( BTN_POS(5,13), BTN_SIZE(2,2), F("Back"), MENU_BTN_STYLE);
 
-    BTN_TAG(240) THEME(back_btn)
-    BTN( BTN_POS(5,13), BTN_SIZE(2,2), F("Back"), MENU_BTN_STYLE);
-
-    BTN_ENABLED(fileSelected)
-    BTN_TAG(243); BTN( BTN_POS(1,13), BTN_SIZE(4,2), F("Print"), MENU_BTN_STYLE);
+    BTN_ENABLED(itemSelected)
+    if(dirSelected) {
+      BTN_TAG(244); BTN( BTN_POS(1,13), BTN_SIZE(4,2), F("Open"),  MENU_BTN_STYLE);
+    } else {
+      BTN_TAG(243); BTN( BTN_POS(1,13), BTN_SIZE(4,2), F("Print"), MENU_BTN_STYLE);
+    }
   #else
-    BTN_TAG(240) THEME(back_btn) BTN( BTN_POS(1,4), BTN_SIZE(1,1), F("Back"),           MENU_BTN_STYLE);
+    BTN_TAG(backTag) THEME(back_btn) BTN( BTN_POS(1,4), BTN_SIZE(1,1), F("Back"), MENU_BTN_STYLE);
   #endif
 
   #define MARGIN_T 5
@@ -1818,14 +1990,20 @@ bool FilesScreen::onTouchStart(uint8_t tag) {
     case 242: screen_data.FilesScreen.page++;   break;
     case 243:
       Marlin_LCD_API::printFromSDCard(getSelectedShortFilename());
-      sound.play(start_print);
       lcd_setstatusPGM(PSTR("Print Starting"), 0);
       GOTO_SCREEN(StatusScreen);
+      sound.play(start_print);
       return true;
+    case 244:
+      Marlin_LCD_API::changeDir(getSelectedShortFilename());
+      break;
+    case 245:
+      Marlin_LCD_API::upDir();
+      break;
     default:
       if(tag < 240) {
-        if(screen_data.FilesScreen.selected != tag) {
-          screen_data.FilesScreen.selected = tag;
+        if(screen_data.FilesScreen.selected_tag != tag) {
+          screen_data.FilesScreen.selected_tag = tag;
         } else {
           // Double clicked.
         }
@@ -2003,4 +2181,8 @@ void Marlin_LCD_API::onCardInserted() {
 void Marlin_LCD_API::onCardRemoved() {
   lcd_setstatusPGM(PSTR(MSG_SD_REMOVED), 0);
   sound.play(card_removed);
+}
+
+void Marlin_LCD_API::onPlayTone(const uint16_t frequency, const uint16_t duration) {
+  sound.playTone(frequency, duration);
 }

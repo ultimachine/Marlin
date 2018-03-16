@@ -304,7 +304,7 @@ class CLCD::CommandFifo {
     }
     template<typename T> FORCEDINLINE void Cmd_Draw_Button_Text(int16_t x, int16_t y, int16_t w, int16_t h, T text, int16_t font, uint16_t options = OPT_CENTER) {
       Cmd_Draw_Text(
-        x + ((options & OPT_CENTERX) ? w/2 : 0),
+        x + ((options & OPT_CENTERX) ? w/2 : ((options & OPT_RIGHTX) ? w : 0)),
         y + ((options & OPT_CENTERY) ? h/2 : h),
         text, font, options);
     }
@@ -886,13 +886,14 @@ void CLCD::Init (void) {
 
 /* tiny_interval() downsamples a 32-bit millis() value
    into a 8-bit value which can record periods of
-   up to 4.096 seconds with a rougly 16 millisecond
+   a few seconds with a rougly 1/16th of second
    resolution. This allows us to measure small
    intervals without needing to use four-byte counters.
 
-   However, dues to wrap-arounds, this class may misfire
-   often and thus should only be used where memory savings
-   outweigh accuracy.
+   However, dues to wrap-arounds, this class may
+   have a burst of misfires every 16 seconds or so and
+   thus should only be used where this is harmless and
+   memory savings outweigh accuracy.
  */
 class tiny_interval_t {
   private:
@@ -903,12 +904,18 @@ class tiny_interval_t {
     }
 
     inline void wait_for(uint32_t ms) {
-      end = tiny_interval(millis() + ms);
+      uint32_t now = millis();
+      end = tiny_interval(now + ms);
+      if(tiny_interval(now + ms*2) < end) {
+        // Avoid special case where timer
+        // might get wedged and stop firing.
+        end = 0;
+      }
     }
 
     inline bool elapsed() {
-      if(end == 0 || tiny_interval(millis()) > end) {
-        end = 0;
+      uint8_t now = tiny_interval(millis());
+      if(now > end) {
         return true;
       } else {
         return false;
@@ -929,9 +936,13 @@ class CLCD::SoundPlayer {
 
     const uint8_t WAIT = 0;
 
+    static const PROGMEM sound_t silence[];
+
   private:
     const sound_t *sequence;
     uint8_t       next;
+
+    note_t frequencyToMidiNote(const uint16_t frequency);
 
   public:
     static void setVolume(uint8_t volume);
@@ -939,10 +950,15 @@ class CLCD::SoundPlayer {
     static bool soundPlaying();
 
     void play(const sound_t* seq);
+    void playTone(const uint16_t frequency_hz, const uint16_t duration_ms);
 
     void onIdle();
 
     bool hasMoreNotes() {return sequence != 0;};
+};
+
+const PROGMEM CLCD::SoundPlayer::sound_t CLCD::SoundPlayer::silence[] = {
+  {SILENCE, END_SONG, 0}
 };
 
 void CLCD::SoundPlayer::setVolume(uint8_t vol) {
@@ -961,9 +977,27 @@ void CLCD::SoundPlayer::play(effect_t effect, note_t note) {
   #endif
 }
 
+
+note_t CLCD::SoundPlayer::frequencyToMidiNote(const uint16_t frequency_hz) {
+  const float f0 = 440;
+  return note_t(NOTE_A4 + (log(frequency_hz)-log(f0))*12/log(2) + 0.5);
+}
+
+// Plays a tone of a given frequency and duration. Since the FTDI FT810 only
+// supports MIDI notes, we round down to the nearest note.
+
+void CLCD::SoundPlayer::playTone(const uint16_t frequency_hz, const uint16_t duration_ms) {
+  play(ORGAN, frequencyToMidiNote(frequency_hz));
+
+  // Schedule silence to squelch the note after the duration expires.
+  sequence = silence;
+  next = tiny_interval_t::tiny_interval(millis() + duration_ms);
+}
+
 void CLCD::SoundPlayer::play(const sound_t* seq) {
   sequence = seq;
-  next     = tiny_interval_t::tiny_interval(millis()) + 1;
+  // Delaying the start of the sound seems to prevent glitches. Not sure why...
+  next     = tiny_interval_t::tiny_interval(millis()+250);
 }
 
 bool CLCD::SoundPlayer::soundPlaying() {
@@ -983,13 +1017,14 @@ void CLCD::SoundPlayer::onIdle() {
 
     if(ms == 0 && fx == SILENCE && nt == 0) {
       sequence = 0;
+      play(SILENCE, REST);
     } else {
       #if defined(UI_FRAMEWORK_DEBUG)
         #if defined (SERIAL_PROTOCOLLNPAIR)
           SERIAL_PROTOCOLLNPAIR("Scheduling note in ", ms);
         #endif
       #endif
-      next =   (ms == WAIT) ? 0       : (tiny_millis + tiny_interval_t::tiny_interval(ms));
+      next =   (ms == WAIT) ? 0       : (tiny_interval_t::tiny_interval(millis() + ms));
       play(fx, (nt == 0)    ? NOTE_C4 : nt);
       sequence++;
     }

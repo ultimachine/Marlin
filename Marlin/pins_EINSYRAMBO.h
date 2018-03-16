@@ -189,7 +189,9 @@
 //
 #if ENABLED(ULTRA_LCD) || defined(LULZBOT_USE_TOUCH_UI)
 
-  #define KILL_PIN         32
+  #if not defined(LULZBOT_DISABLE_KILL_BUTTON)
+    #define KILL_PIN         32
+  #endif
 
   #if ENABLED(NEWPANEL) || defined(LULZBOT_USE_TOUCH_UI)
 
@@ -215,7 +217,9 @@
     #define BTN_EN2        72
     #define BTN_ENC         9  // the click
 
-    #define SD_DETECT_PIN  15
+    #if not defined(LULZBOT_USE_USB_STICK)
+      #define SD_DETECT_PIN  15
+    #endif
 
   #endif // NEWPANEL
 #endif // ULTRA_LCD

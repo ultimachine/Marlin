@@ -715,6 +715,7 @@ namespace FTDI {
 
   enum note_t {
     END_SONG                                        = 0x00,
+    REST                                            = 0x00,
     NOTE_C3                                         = 0x32,
     NOTE_D3                                         = 0x33,
     NOTE_D3S                                        = 0x34,
@@ -733,7 +734,8 @@ namespace FTDI {
     NOTE_F4                                         = 0x41,
     NOTE_F4S                                        = 0x42,
     NOTE_G4                                         = 0x43,
-    NOTE_G4S                                        = 0x44
+    NOTE_G4S                                        = 0x44,
+    NOTE_A4                                         = 0x45
   };
 }
 

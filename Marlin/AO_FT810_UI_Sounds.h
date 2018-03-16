@@ -61,9 +61,12 @@ const PROGMEM CLCD::SoundPlayer::sound_t c_maj_arpeggio[] = {
 
 const PROGMEM CLCD::SoundPlayer::sound_t start_print[] = {
   {TRUMPET,      NOTE_A3,  4},
+  {SILENCE,      REST,     1},
   {TRUMPET,      NOTE_A3,  2},
+  {SILENCE,      REST,     1},
   {TRUMPET,      NOTE_A3,  2},
-  {TRUMPET,      NOTE_E4,  16},
+  {SILENCE,      REST,     1},
+  {TRUMPET,      NOTE_E4,  10},
   {SILENCE,      END_SONG, 0}
 };
 

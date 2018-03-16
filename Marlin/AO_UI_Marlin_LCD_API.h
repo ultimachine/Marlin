@@ -15,6 +15,9 @@
  *   location: <http://www.gnu.org/licenses/>.                              *
  ****************************************************************************/
 
+#ifndef __MARLIN_LCD_API_H__
+#define __MARLIN_LCD_API_H__
+
 class Marlin_LCD_API {
   public:
     typedef const __FlashStringHelper *progmem_str;
@@ -38,7 +41,7 @@ class Marlin_LCD_API {
     static float getAxisSteps_per_mm(const axis_t axis);
     static uint8_t getProgress_percent();
     static uint32_t getProgress_seconds_elapsed();
-    static uint8_t getFeedRate_percent();
+    static float getFeedRate_percent();
     static float getZOffset_mm();
     static bool isAxisPositionKnown(const axis_t axis);
     static bool isMoving();
@@ -50,6 +53,7 @@ class Marlin_LCD_API {
     static void setAxisPosition_mm(const axis_t axis, float position, float _feedrate_mm_s);
     static void setAxisSteps_per_mm(const axis_t axis, float steps_per_mm);
     static void incrementZOffset_mm(const float z_offset);
+    static void setFeedrate_percent(const float percent);
 
     static void runGCode(progmem_str gcode);
 
@@ -58,6 +62,7 @@ class Marlin_LCD_API {
     static void initMedia();
     static void checkMedia();
     static bool isPrintingFromMedia();
+    static bool isPrinting();
     static bool isMediaInserted();
     static void stopPrint();
     static void pausePrint();
@@ -66,10 +71,14 @@ class Marlin_LCD_API {
     static void onCardInserted();
     static void onCardRemoved();
     static void onPrinterKilled(const char* lcd_msg);
+    static void onPlayTone(const uint16_t frequency, const uint16_t duration);
 
     static uint16_t getMediaFileCount();
 
     static void printFromSDCard(const char *filename);
+    static void changeDir(const char *dirname);
+    static void upDir();
+    static bool isAtRootDir();
 
     class Media_Iterator;
 };
@@ -79,7 +88,7 @@ class Marlin_LCD_API::Media_Iterator {
     uint16_t index;
     uint16_t num_files;
   public:
-    Media_Iterator(uint16_t start_index = 0);
+    Media_Iterator(uint16_t start_index /* = 0*/);
     bool hasMore();
     void seek(uint16_t);
     void next();
@@ -88,6 +97,7 @@ class Marlin_LCD_API::Media_Iterator {
     const char *filename();
     uint16_t value() {return index;}
     uint16_t count() {return num_files;}
+    bool isDirectory();
 };
 
 #if defined(MSG_MARLIN)
@@ -188,7 +198,7 @@ uint32_t Marlin_LCD_API::getProgress_seconds_elapsed() {
   return elapsed.value;
 }
 
-uint8_t Marlin_LCD_API::getFeedRate_percent() {
+float Marlin_LCD_API::getFeedRate_percent() {
   return feedrate_percentage;
 }
 
@@ -226,8 +236,25 @@ void Marlin_LCD_API::setFan_percent(const uint8_t fan, float percent) {
   }
 }
 
+void Marlin_LCD_API::setFeedrate_percent(const float percent) {
+  feedrate_percentage = clamp(percent, 10, 500);
+}
+
 void Marlin_LCD_API::printFromSDCard(const char *filename) {
   card.openAndPrintFile(filename);
+}
+
+void Marlin_LCD_API::changeDir(const char *dirname) {
+  card.chdir(dirname);
+}
+
+void Marlin_LCD_API::upDir() {
+  card.updir();
+}
+
+bool Marlin_LCD_API::isAtRootDir() {
+  card.getWorkDirName();
+  return card.filename[0] == '/';
 }
 
 void lcd_setstatusPGM(const char * const message, int8_t level /* = 0 */);
@@ -272,8 +299,17 @@ bool Marlin_LCD_API::isPrintingFromMedia() {
   #endif
 }
 
+bool Marlin_LCD_API::isPrinting() {
+  return (planner.movesplanned() || IS_SD_PRINTING ||
+  #if ENABLED(SDSUPPORT)
+    (card.cardOK && card.isFileOpen()));
+  #else
+    false;
+  #endif
+}
+
 bool Marlin_LCD_API::isMediaInserted() {
-  #if ENABLED(SDSUPPORT) && PIN_EXISTS(SD_DETECT)
+  #if ENABLED(SDSUPPORT)
     return IS_SD_INSERTED;
   #else
     return false;
@@ -324,7 +360,7 @@ Marlin_LCD_API::Media_Iterator::Media_Iterator(uint16_t start_index /* = 0*/) {
 }
 
 bool Marlin_LCD_API::Media_Iterator::hasMore() {
-  return index < (num_files - 1);
+  return (index < (num_files - 1)) && (num_files > 0);
 }
 
 void Marlin_LCD_API::Media_Iterator::next() {
@@ -349,7 +385,7 @@ void Marlin_LCD_API::Media_Iterator::seek(uint16_t index) {
 }
 
 const char *Marlin_LCD_API::Media_Iterator::filename() {
-  return card.longFilename[0] ? card.longFilename : card.filename;
+  return (card.longFilename && card.longFilename[0]) ? card.longFilename : card.filename;
 }
 
 const char *Marlin_LCD_API::Media_Iterator::shortFilename() {
@@ -359,4 +395,10 @@ const char *Marlin_LCD_API::Media_Iterator::shortFilename() {
 const char *Marlin_LCD_API::Media_Iterator::longFilename() {
   return card.longFilename;
 }
+
+bool Marlin_LCD_API::Media_Iterator::isDirectory() {
+  return card.filenameIsDir;
+}
 #endif
+
+#endif MARLIN_LCD_API__MARLIN_LCD_API_H__
