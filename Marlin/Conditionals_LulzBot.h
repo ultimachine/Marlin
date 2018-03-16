@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".19" // Change this with each update
+#define LULZBOT_FW_VERSION ".20" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -625,7 +625,7 @@
     }
 
 #if defined(LULZBOT_USE_Z_BELT)
-    #define LULZBOT_MENU_AXIS_LEVELING_GCODE "G28\nG0 Z5 F6000\nG91\nM211 S0\nM906 Z600\nG0 Z-15 F500\nG90\nM400\nM906 Z960\nM211 S1\nG28\nM117 Levelling done."
+    #define LULZBOT_MENU_AXIS_LEVELING_GCODE "G28\nG0 Z5 F6000\nG91\nM211 S0\nM400\nM906 Z600\nG0 Z-15 F500\nG90\nM400\nM906 Z960\nM211 S1\nG28\nM117 Leveling done."
 #endif
 
 /*************************** COMMON TOOLHEADS PARAMETERS ***********************/
