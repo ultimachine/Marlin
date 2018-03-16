@@ -1067,7 +1067,7 @@ bool StatusScreen::onTouchStart(uint8_t tag) {
   #define GRID_ROWS 7
   #define GRID_COLS 2
 #else
-  #define GRID_ROWS 4
+  #define GRID_ROWS 5
   #define GRID_COLS 2
 #endif
 
@@ -1084,28 +1084,29 @@ void MenuScreen::onRefresh() {
 
     #if defined(LCD_PORTRAIT)
       BTN_TAG(2) BTN_ENABLED(1)  BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("Auto Home"),          MENU_BTN_STYLE);
-      BTN_TAG(3) BTN_ENABLED(1)  BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Move Axis"),          MENU_BTN_STYLE);
-      BTN_TAG(5) BTN_ENABLED(1)  BTN( BTN_POS(1,2), BTN_SIZE(2,1), F("Temperature"),        MENU_BTN_STYLE);
-      BTN_TAG(6) BTN_ENABLED(0)  BTN( BTN_POS(1,3), BTN_SIZE(2,1), F("Change Filament"),    MENU_BTN_STYLE);
-      BTN_TAG(4) BTN_ENABLED(1)  BTN( BTN_POS(1,4), BTN_SIZE(2,1), F("Disable Steppers"),   MENU_BTN_STYLE);
-      BTN_TAG(7) BTN_ENABLED(1)  BTN( BTN_POS(1,5), BTN_SIZE(2,1), F("Advanced Settings"),  MENU_BTN_STYLE);
-      BTN_TAG(8) BTN_ENABLED(1)  BTN( BTN_POS(1,6), BTN_SIZE(2,1), F("About Firmware"),     MENU_BTN_STYLE);
+      BTN_TAG(3) BTN_ENABLED(1)  BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Auto Level"),         MENU_BTN_STYLE);
+      BTN_TAG(4) BTN_ENABLED(1)  BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("Move Axis"),          MENU_BTN_STYLE);
+      BTN_TAG(5) BTN_ENABLED(1)  BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Motors Off"),         MENU_BTN_STYLE);
+      BTN_TAG(6) BTN_ENABLED(1)  BTN( BTN_POS(1,3), BTN_SIZE(2,1), F("Temperature"),        MENU_BTN_STYLE);
+      BTN_TAG(7) BTN_ENABLED(0)  BTN( BTN_POS(1,4), BTN_SIZE(2,1), F("Change Filament"),    MENU_BTN_STYLE);
+      BTN_TAG(8) BTN_ENABLED(1)  BTN( BTN_POS(1,5), BTN_SIZE(2,1), F("Advanced Settings"),  MENU_BTN_STYLE);
+      BTN_TAG(9) BTN_ENABLED(1)  BTN( BTN_POS(1,6), BTN_SIZE(2,1), F("About Firmware"),     MENU_BTN_STYLE);
     #else
       BTN_TAG(2) BTN_ENABLED(1)  BTN( BTN_POS(1,1), BTN_SIZE(1,1), F("Auto Home"),          MENU_BTN_STYLE);
-      BTN_TAG(3) BTN_ENABLED(1)  BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("Move Axis"),          MENU_BTN_STYLE);
-      BTN_TAG(6) BTN_ENABLED(0)  BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("Change Filament"),    MENU_BTN_STYLE);
-      BTN_TAG(4) BTN_ENABLED(1)  BTN( BTN_POS(1,4), BTN_SIZE(1,1), F("Disable Steppers"),   MENU_BTN_STYLE);
-
-      BTN_TAG(5) BTN_ENABLED(1)  BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Temperature"),        MENU_BTN_STYLE);
-      BTN_TAG(7) BTN_ENABLED(1)  BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Advanced Settings"),  MENU_BTN_STYLE);
-      BTN_TAG(8) BTN_ENABLED(1)  BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("About Firmware"),     MENU_BTN_STYLE);
+      BTN_TAG(3) BTN_ENABLED(1)  BTN( BTN_POS(2,1), BTN_SIZE(1,1), F("Auto Level"),         MENU_BTN_STYLE);
+      BTN_TAG(4) BTN_ENABLED(1)  BTN( BTN_POS(1,2), BTN_SIZE(1,1), F("Move Axis"),          MENU_BTN_STYLE);
+      BTN_TAG(5) BTN_ENABLED(1)  BTN( BTN_POS(2,2), BTN_SIZE(1,1), F("Motors Off"),         MENU_BTN_STYLE);
+      BTN_TAG(6) BTN_ENABLED(1)  BTN( BTN_POS(1,3), BTN_SIZE(1,1), F("Temperature"),        MENU_BTN_STYLE);
+      BTN_TAG(7) BTN_ENABLED(0)  BTN( BTN_POS(2,3), BTN_SIZE(1,1), F("Change Filament"),    MENU_BTN_STYLE);
+      BTN_TAG(8) BTN_ENABLED(1)  BTN( BTN_POS(1,4), BTN_SIZE(1,1), F("Advanced Settings"),  MENU_BTN_STYLE);
+      BTN_TAG(9) BTN_ENABLED(1)  BTN( BTN_POS(2,4), BTN_SIZE(1,1), F("About Firmware"),     MENU_BTN_STYLE);
     #endif
 
     #if defined(LCD_PORTRAIT)
       #define MARGIN_T 15
       BTN_TAG(1) THEME(back_btn) BTN( BTN_POS(1,7), BTN_SIZE(2,1), F("Back"),               MENU_BTN_STYLE);
     #else
-      BTN_TAG(1) THEME(back_btn) BTN( BTN_POS(2,4), BTN_SIZE(1,1), F("Back"),               MENU_BTN_STYLE);
+      BTN_TAG(1) THEME(back_btn) BTN( BTN_POS(1,5), BTN_SIZE(2,1), F("Back"),               MENU_BTN_STYLE);
     #endif
 
     #define MARGIN_T 5
@@ -1120,13 +1121,14 @@ void MenuScreen::onRefresh() {
 
 bool MenuScreen::onTouchStart(uint8_t tag) {
   switch(tag) {
-    case 1:  GOTO_PREVIOUS();                     break;
-    case 2:  EXEC_GCODE(F("G28"));                break;
-    case 3:  GOTO_SCREEN(MoveAxisScreen);         break;
-    case 4:  EXEC_GCODE(F("M84"));                break;
-    case 5:  GOTO_SCREEN(TemperatureScreen);      break;
-    case 7:  GOTO_SCREEN(AdvancedSettingsScreen); break;
-    case 8:  GOTO_SCREEN(AboutScreen);            break;
+    case 1:  GOTO_PREVIOUS();                                 break;
+    case 2:  EXEC_GCODE(F("G28"));                            break;
+    case 3:  EXEC_GCODE(F(LULZBOT_MENU_AXIS_LEVELING_GCODE)); break;
+    case 4:  GOTO_SCREEN(MoveAxisScreen);                     break;
+    case 5:  EXEC_GCODE(F("M84"));                            break;
+    case 6:  GOTO_SCREEN(TemperatureScreen);                  break;
+    case 8:  GOTO_SCREEN(AdvancedSettingsScreen);             break;
+    case 9:  GOTO_SCREEN(AboutScreen);                        break;
     default:
       return false;
   }

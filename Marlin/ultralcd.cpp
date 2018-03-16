@@ -1040,6 +1040,9 @@ void kill_screen(const char* lcd_msg) {
     START_MENU();
     MENU_BACK(MSG_MAIN);
     MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
+    #if defined(LULZBOT_MENU_AXIS_LEVELING_GCODE)
+      MENU_ITEM(gcode, _UxGT("Auto-level"), PSTR(LULZBOT_MENU_AXIS_LEVELING_GCODE));
+    #endif
     #if defined(LULZBOT_MENU_BED_LEVELING_GCODE)
     if (!thermalManager.tooColdToExtrude(active_extruder)) {
       MENU_ITEM(gcode, MSG_BED_LEVELING, PSTR(LULZBOT_MENU_BED_LEVELING_GCODE));

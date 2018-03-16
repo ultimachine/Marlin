@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".18" // Change this with each update
+#define LULZBOT_FW_VERSION ".19" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -623,6 +623,10 @@
       LULZBOT_ENABLE_PROBE_PINS(pin_status); \
       return; \
     }
+
+#if defined(LULZBOT_USE_Z_BELT)
+    #define LULZBOT_MENU_AXIS_LEVELING_GCODE "G28\nG0 Z5 F6000\nG91\nM211 S0\nM906 Z600\nG0 Z-15 F500\nG90\nM400\nM906 Z960\nM211 S1\nG28\nM117 Levelling done."
+#endif
 
 /*************************** COMMON TOOLHEADS PARAMETERS ***********************/
 
@@ -1456,6 +1460,8 @@
 
 #if defined(LULZBOT_USE_LCD_DISPLAY)
     #define LULZBOT_ADVANCED_PAUSE_FEATURE
+    #define LULZBOT_ADVANCED_PAUSE_EXTRUDE_LENGTH    10
+    #define LULZBOT_ADVANCED_PAUSE_EXTRUDE_FEEDRATE  1
     #define LULZBOT_HOME_BEFORE_FILAMENT_CHANGE
     #define LULZBOT_PARK_HEAD_ON_PAUSE
     #define LULZBOT_PAUSE_PARK_X_POS                 10
