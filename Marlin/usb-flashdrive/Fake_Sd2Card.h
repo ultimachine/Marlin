@@ -67,19 +67,21 @@ uint8_t const SPI_FULL_SPEED = 0,         // Set SCK to max rate of F_CPU/2. See
  * \brief Raw access to SD and SDHC flash memory cards.
  */
 class Sd2Card {
+  private:
+    static bool usbHostReady();
+
   public:
+    static bool isInserted();
 
-  Sd2Card();
-
-  /**
-   * Initialize an SD flash memory card with default clock rate and chip
-   * select pin.  See sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin).
-   *
-   * \return true for success or false for failure.
-   */
-  bool init(uint8_t sckRateID = 0, uint8_t chipSelectPin = SD_CHIP_SELECT_PIN);
-  bool readBlock(uint32_t block, uint8_t* dst);
-  bool writeBlock(uint32_t blockNumber, const uint8_t* src);
+    /**
+     * Initialize an SD flash memory card with default clock rate and chip
+     * select pin.  See sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin).
+     *
+     * \return true for success or false for failure.
+     */
+    bool init(uint8_t sckRateID = 0, uint8_t chipSelectPin = SD_CHIP_SELECT_PIN);
+    bool readBlock(uint32_t block, uint8_t* dst);
+    bool writeBlock(uint32_t blockNumber, const uint8_t* src);
 };
 
 #endif  // _FAKE_SD2CARD_H_

@@ -222,9 +222,6 @@ public:
                 return USB_ERROR_UNABLE_TO_REGISTER_DEVICE_CLASS;
         };
 
-        void ForEachUsbDevice(UsbDeviceHandleFunc pfunc) {
-                addrPool.ForEachUsbDevice(pfunc);
-        };
         uint8_t getUsbTaskState(void);
         void setUsbTaskState(uint8_t state);
 

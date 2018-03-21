@@ -87,8 +87,6 @@ public:
         virtual void FreeAddress(uint8_t addr) = 0;
 };
 
-typedef void (*UsbDeviceHandleFunc)(UsbDevice *pdev);
-
 #define ADDR_ERROR_INVALID_INDEX		0xFF
 #define ADDR_ERROR_INVALID_ADDRESS		0xFF
 
@@ -186,17 +184,6 @@ public:
                 return (!index) ? NULL : thePool + index;
         };
 
-        // Performs an operation specified by pfunc for each addressed device
-
-        void ForEachUsbDevice(UsbDeviceHandleFunc pfunc) {
-                if(!pfunc)
-                        return;
-
-                for(uint8_t i = 1; i < MAX_DEVICES_ALLOWED; i++)
-                        if(thePool[i].address.devAddress)
-                                pfunc(thePool + i);
-        };
-
         // Allocates new address
 
         virtual uint8_t AllocAddress(uint8_t parent, bool is_hub = false, uint8_t port = 0) {
@@ -260,23 +247,6 @@ public:
                 uint8_t index = FindAddressIndex(addr);
                 FreeAddressByIndex(index);
         };
-
-        // Returns number of hubs attached
-        // It can be rather helpfull to find out if there are hubs attached than getting the exact number of hubs.
-        //uint8_t GetNumHubs()
-        //{
-        //	return hubCounter;
-        //};
-        //uint8_t GetNumDevices()
-        //{
-        //	uint8_t counter = 0;
-
-        //	for (uint8_t i=1; i<MAX_DEVICES_ALLOWED; i++)
-        //		if (thePool[i].address != 0);
-        //			counter ++;
-
-        //	return counter;
-        //};
 };
 
 #endif // __ADDRESS_H__

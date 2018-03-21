@@ -21,11 +21,6 @@
  */
 
 /********************************************************************************************
- * This program/sketch is used to run a USB Thumb Drive.                                    *
- *                                                                                          *
- * NOTE - This Arduino Sketch has been modified to initialize a MAX3421E USB Host Interface *
- * chip, write 3 test files, print out the directory of the thumb drive and print out the   *
- * contents of a short .txt file.                                                           *
  *                                                                                          *
  * The code is leveraged from the following:                                                *
  *                                                                                          *
@@ -53,73 +48,61 @@
 
 #include <SPI.h>
 
-//#define _usb_h_
-
 #include "Marlin.h"
-#include "../watchdog.h"
-
-#undef MACROS_H
 
 #define USB_HOST_SERIAL customizedSerial
 
-#include "lib/masstorage.h"
-#include "lib/masstorage.cpp"
-#include "lib/message.cpp"
-#include "lib/parsetools.cpp"
-#include "lib/Usb.cpp"
-
+#if defined(MACROS_H)
+  #undef MACROS_H // The USB host library wants to redefine this.
+  #include "lib/masstorage.cpp"
+  #include "lib/message.cpp"
+  #include "lib/Usb.cpp"
+#else
+  #include "lib/masstorage.cpp"
+  #include "lib/message.cpp"
+  #include "lib/Usb.cpp"
+  #undef MACROS_H
+#endif
 
 #include "Fake_Sd2Card.h"
 
-#define MAX_USB_RST 7
-
-// USB host objects.v
 USB usb;
 BulkOnly bulk(&usb);
 
-#define error(msg) {Serial.print("Error: "); Serial.println(msg);}
+bool Sd2Card::usbHostReady() {
+  static enum {
+    USB_HOST_UNINITIALIZED,
+    USB_HOST_FAILED_INIT,
+    USB_HOST_INITIALIZED
+  } state = USB_HOST_UNINITIALIZED;
 
-#define TIMEOUT_MILLIS 4000
-
-//------------------------------------------------------------------------------
-bool initUSB(USB* usb) {
-  uint8_t current_state = 0;
-  uint32_t m = millis();
-
-  for (uint8_t i = 0; usb->Init(1000) == -1; i++)
-  {
-    SERIAL_ECHOLNPGM("No USB HOST Shield?");
-    watchdog_reset();
-    if (i > 10) {
-      return false;
-    }
+  if(state == USB_HOST_UNINITIALIZED) {
+     if(usb.Init(1000) == -1) {
+       SERIAL_ECHOLNPGM("USB host failed to initialize");
+       state = USB_HOST_FAILED_INIT;
+     } else {
+       usb.vbusPower(vbus_on);
+       SERIAL_ECHOLNPGM("USB host initialized");
+       state = USB_HOST_INITIALIZED;
+     }
   }
 
-  usb->vbusPower(vbus_on);
-
-  while ((millis() - m) < TIMEOUT_MILLIS) {
-    usb->Task();
-    current_state = usb->getUsbTaskState();
-    if(current_state == USB_STATE_RUNNING) {
-      return true;
-    }
-    watchdog_reset();
-  }
-  return false;
+  return state == USB_HOST_INITIALIZED;
 }
 
-Sd2Card::Sd2Card() {
-};
+// Marlin will call this to learn whether an SD card is inserted.
+bool Sd2Card::isInserted() {
+   if(usbHostReady()) {
+    usb.Task();
+    return usb.getUsbTaskState() == USB_STATE_RUNNING;
+   }
+}
 
+// Marlin calls this whenever an SD card is detected, so this method
+// should not be used to initialize the USB host library
 bool Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
-  if (!initUSB(&usb))
-  {
-    SERIAL_ECHOLNPGM("initUSB failed");
-  }
-  else
-  {
-    SERIAL_ECHOLNPGM("USB Initialized\n");
-  }
+  if(!usbHostReady())
+    return false;
 
   if(!bulk.LUNIsGood(0)) {
     SERIAL_ECHOLNPGM("LUN zero is not good\n");
@@ -144,4 +127,3 @@ bool Sd2Card::readBlock(uint32_t block, uint8_t* dst) {
 bool Sd2Card::writeBlock(uint32_t blockNumber, const uint8_t* src) {
   return bulk.Write(0, blockNumber, 512, 1, src) == 0;
 }
-

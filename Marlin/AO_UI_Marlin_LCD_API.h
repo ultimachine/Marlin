@@ -269,8 +269,8 @@ void Marlin_LCD_API::initMedia() {
 }
 
 void Marlin_LCD_API::checkMedia() {
-  #if ENABLED(SDSUPPORT) && PIN_EXISTS(SD_DETECT)
-    const bool sd_status = IS_SD_INSERTED;
+  #if (ENABLED(SDSUPPORT) && PIN_EXISTS(SD_DETECT)) || defined(LULZBOT_USE_USB_STICK)
+    const bool sd_status = isMediaInserted();
     if (sd_status != lcd_sd_status) {
 
       SERIAL_PROTOCOLLNPAIR("SD Status: ", sd_status);
@@ -309,8 +309,12 @@ bool Marlin_LCD_API::isPrinting() {
 }
 
 bool Marlin_LCD_API::isMediaInserted() {
-  #if ENABLED(SDSUPPORT)
-    return IS_SD_INSERTED;
+  #if (ENABLED(SDSUPPORT) && PIN_EXISTS(SD_DETECT)) || defined(LULZBOT_USE_USB_STICK)
+    #if defined(LULZBOT_USE_USB_STICK)
+      return Sd2Card::isInserted();
+    #else
+      return IS_SD_INSERTED;
+    #endif
   #else
     return false;
   #endif
