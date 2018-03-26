@@ -91,7 +91,7 @@
 #define HEATER_0_PIN        16
 #define HEATER_1_PIN        -1
 #define HEATER_2_PIN        -1
-#define HEATER_BED_PIN      -1
+#define HEATER_BED_PIN      38 //PB6 SWDIO, Used as a dummy pin to prevent compile error if BED thermistor is used. It will not actually output unless reconfigured in CCFG_SYSIO.
 
 
 
