@@ -93,8 +93,15 @@ bool Sd2Card::usbHostReady() {
 // Marlin will call this to learn whether an SD card is inserted.
 bool Sd2Card::isInserted() {
    if(usbHostReady()) {
+    const uint8_t lastUsbTaskState = usb.getUsbTaskState();
     usb.Task();
-    return usb.getUsbTaskState() == USB_STATE_RUNNING;
+    const uint8_t newUsbTaskState  = usb.getUsbTaskState();
+    if(lastUsbTaskState == USB_STATE_RUNNING && newUsbTaskState != USB_STATE_RUNNING) {
+      // the user pulled the flash drive. Make sure the bulk storage driver releases the address
+      SERIAL_ECHOLNPGM("Drive removed\n");
+      bulk.Release();
+    }
+    return newUsbTaskState == USB_STATE_RUNNING;
    }
 }
 

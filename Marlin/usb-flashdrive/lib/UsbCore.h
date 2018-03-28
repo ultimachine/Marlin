@@ -94,7 +94,7 @@ typedef MAX3421e<P10, P9> MAX3421E; // Official Arduinos (UNO, Duemilanove, Mega
 #define USB_RETRY_LIMIT		3       // 3 retry limit for a transfer
 #define USB_SETTLE_DELAY	200     //settle delay in milliseconds
 
-#define USB_NUMDEVICES		16	//number of USB devices
+#define USB_NUMDEVICES		2	//number of USB devices (changed by marcio@alephobjects.com)
 //#define HUB_MAX_HUBS		7	// maximum number of hubs that can be attached to the host controller
 #define HUB_PORT_RESET_DELAY	20	// hub port reset delay 10 ms recomended, can be up to 20 ms
 
