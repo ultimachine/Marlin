@@ -14675,15 +14675,6 @@ void setup() {
     #endif
   #endif
 
-  #if defined(LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT_WORKAROUND)
-    endstops.enable_globally(
-    #if ENABLED(ENDSTOPS_ALWAYS_ON_DEFAULT)
-      true
-    #else
-      false
-    #endif
-    );
-  #endif
   #if ENABLED(MKS_12864OLED) || ENABLED(MKS_12864OLED_SSD1306)
     SET_OUTPUT(LCD_PINS_DC);
     OUT_WRITE(LCD_PINS_RS, LOW);

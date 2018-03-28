@@ -259,10 +259,6 @@
     #define LULZBOT_G28_DISABLES_LEVELING_WORKAROUND
 #endif
 
-// Marlin 1.1.5 does not respect ENDSTOPS_ALWAYS_ON_DEFAULT at startup,
-// as described in T1393
-#define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT_WORKAROUND
-
 // Fix for OctoPrint serial buffer overflow when using auto temperature
 // report.
 //      Back port of upstream https://github.com/MarlinFirmware/Marlin/commit/6ed284061580ffc6eef40df391afb30d2f8b45f5
@@ -1464,8 +1460,13 @@
     #define LULZBOT_ADVANCED_PAUSE_EXTRUDE_FEEDRATE  1
     #define LULZBOT_HOME_BEFORE_FILAMENT_CHANGE
     #define LULZBOT_PARK_HEAD_ON_PAUSE
-    #define LULZBOT_PAUSE_PARK_X_POS                 10
-    #define LULZBOT_PAUSE_PARK_Y_POS                 LULZBOT_Y_MAX_POS - 10
+#endif
+
+#if defined(LULZBOT_IS_MINI)
+    #define LULZBOT_NOZZLE_PARK_POINT {  10, (LULZBOT_Y_MAX_POS - 10), 20 }
+#else
+    // Match the purge location of the v3 dual so a single tray can be used.
+    #define LULZBOT_NOZZLE_PARK_POINT { 100, 300, 20 }
 #endif
 
 /*********************************** WIPER PAD **********************************/
