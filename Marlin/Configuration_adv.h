@@ -1488,8 +1488,10 @@
  * Will be sent in the form '//action:ACTION_ON_PAUSE', e.g. '//action:pause'.
  * The host must be configured to handle the action command.
  */
-//#define ACTION_ON_PAUSE "pause"
-//#define ACTION_ON_RESUME "resume"
+#if defined(LULZBOT_ACTION_ON_PAUSE_AND_RESUME)
+#define ACTION_ON_PAUSE "pause"
+#define ACTION_ON_RESUME "resume"
+#endif
 
 //===========================================================================
 //====================== I2C Position Encoder Settings ======================

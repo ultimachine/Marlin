@@ -1469,6 +1469,8 @@
     #define LULZBOT_NOZZLE_PARK_POINT { 100, 300, 20 }
 #endif
 
+#define LULZBOT_ACTION_ON_PAUSE_AND_RESUME
+
 /*********************************** WIPER PAD **********************************/
 
 // Nozzle wiping points (varies by toolhead, as the nozzle position varies)
