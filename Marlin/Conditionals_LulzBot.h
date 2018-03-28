@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".20" // Change this with each update
+#define LULZBOT_FW_VERSION ".21" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1615,7 +1615,7 @@
     #define LULZBOT_DEFAULT_YJERK                 12.0
     #define LULZBOT_DEFAULT_ZJERK                  0.4
 
-    #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.377
+    #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.375
 
 #elif defined(LULZBOT_IS_TAZ)
     #define LULZBOT_DEFAULT_XJERK                 8.0
