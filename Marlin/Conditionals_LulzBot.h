@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".21" // Change this with each update
+#define LULZBOT_FW_VERSION ".22" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -453,7 +453,7 @@
     #define LULZBOT_LEFT_PROBE_BED_POSITION        -6
     #define LULZBOT_RIGHT_PROBE_BED_POSITION      162
     #define LULZBOT_BACK_PROBE_BED_POSITION       166
-    #define LULZBOT_FRONT_PROBE_BED_POSITION       -7
+    #define LULZBOT_FRONT_PROBE_BED_POSITION       -6
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     // In order to work with the Gladiola printers, we need to
