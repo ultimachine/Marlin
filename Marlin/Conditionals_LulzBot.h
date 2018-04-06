@@ -541,7 +541,7 @@
 #define LULZBOT_XY_PROBE_SPEED                6000
 #define LULZBOT_Z_PROBE_SPEED_SLOW           (1*60)
 #if defined(LULZBOT_USE_Z_BELT)
-    #define LULZBOT_Z_PROBE_SPEED_FAST       (50*60)
+    #define LULZBOT_Z_PROBE_SPEED_FAST       (20*60)
 #else
     #define LULZBOT_Z_PROBE_SPEED_FAST       (8*60)
 #endif
