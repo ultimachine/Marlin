@@ -1768,6 +1768,7 @@
     #define LULZBOT_BABYSTEP_ZPROBE_GFX_OVERLAY
     #define LULZBOT_THIN_OVERLAY_ARROWS
     #define LULZBOT_DISABLE_KILL_BUTTON
+    #define LULZBOT_ZOFFSET_PRECISION ftostr32
 #endif
 
 /* Marlin requires static PSTRs to display on the LCD display, because of this */

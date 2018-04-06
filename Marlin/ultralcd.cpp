@@ -1273,7 +1273,7 @@ void kill_screen(const char* lcd_msg) {
           }
         }
         if (lcdDrawUpdate) {
-          lcd_implementation_drawedit(PSTR(MSG_ZPROBE_ZOFFSET), ftostr43sign(zprobe_zoffset));
+          lcd_implementation_drawedit(PSTR(MSG_ZPROBE_ZOFFSET), LULZBOT_ZOFFSET_PRECISION(zprobe_zoffset));
           #if ENABLED(BABYSTEP_ZPROBE_GFX_OVERLAY)
             _lcd_zoffset_overlay_gfx(zprobe_zoffset);
           #endif
