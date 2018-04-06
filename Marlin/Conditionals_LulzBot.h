@@ -103,8 +103,8 @@
 #endif
 
 #if defined(LULZBOT_Hibiscus_Mini2)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
-    #define LULZBOT_LCD_MACHINE_NAME "Mini 2"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Hibiscus"
+    #define LULZBOT_LCD_MACHINE_NAME "Hibiscus"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_EINSYRAMBO
@@ -124,8 +124,8 @@
 #endif
 
 #if defined(LULZBOT_Hibiscus_Mini2_CLCD)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini 2"
-    #define LULZBOT_LCD_MACHINE_NAME "Mini 2"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Hibiscus"
+    #define LULZBOT_LCD_MACHINE_NAME "Hibiscus"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_EINSYRAMBO
