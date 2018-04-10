@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".23" // Change this with each update
+#define LULZBOT_FW_VERSION ".24" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -442,9 +442,11 @@
 #if defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_DISABLE_INACTIVE_Z false
     #define LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP enable_Z();
+    #define LULZBOT_SD_FINISHED_RELEASECOMMAND "M84 X Y E"
 #else
     #define LULZBOT_DISABLE_INACTIVE_Z true
     #define LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP
+    #define LULZBOT_SD_FINISHED_RELEASECOMMAND "M84 X Y Z E"
 #endif
 
 /*********************** AUTOLEVELING / BED PROBE *******************************/
