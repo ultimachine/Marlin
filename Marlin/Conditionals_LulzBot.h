@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".25" // Change this with each update
+#define LULZBOT_FW_VERSION ".26" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -104,7 +104,7 @@
 
 #if defined(LULZBOT_Hibiscus_Mini2)
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Hibiscus"
-    #define LULZBOT_LCD_MACHINE_NAME "Hibiscus"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini 2"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_EINSYRAMBO
@@ -125,7 +125,7 @@
 
 #if defined(LULZBOT_Hibiscus_Mini2_CLCD)
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Hibiscus"
-    #define LULZBOT_LCD_MACHINE_NAME "Hibiscus"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini 2 CLCD"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_EINSYRAMBO
@@ -147,7 +147,7 @@
 #endif
 
 #if defined(LULZBOT_Quiver_TAZ7)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot TAZ 7"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Quiver"
     #define LULZBOT_LCD_MACHINE_NAME "TAZ 7"
     #define LULZBOT_IS_TAZ
     #define LULZBOT_TAZ_BED
@@ -166,7 +166,7 @@
 #endif
 
 #if defined(LULZBOT_Quiver_TAZ7_CLCD)
-    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot TAZ 7"
+    #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Quiver"
     #define LULZBOT_LCD_MACHINE_NAME "TAZ 7"
     #define LULZBOT_IS_TAZ
     #define LULZBOT_TAZ_BED
@@ -453,9 +453,9 @@
 
 #if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_LEFT_PROBE_BED_POSITION        -3
-    #define LULZBOT_RIGHT_PROBE_BED_POSITION      161
-    #define LULZBOT_BACK_PROBE_BED_POSITION       167
-    #define LULZBOT_FRONT_PROBE_BED_POSITION       -5
+    #define LULZBOT_RIGHT_PROBE_BED_POSITION      163
+    #define LULZBOT_BACK_PROBE_BED_POSITION       168
+    #define LULZBOT_FRONT_PROBE_BED_POSITION       -4
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     // In order to work with the Gladiola printers, we need to
@@ -1052,10 +1052,10 @@
     #define LULZBOT_Y_BED_SIZE                 155
 
 #elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
-    #define LULZBOT_STANDARD_X_MAX_POS         161
+    #define LULZBOT_STANDARD_X_MAX_POS         163
     #define LULZBOT_STANDARD_X_MIN_POS          -3
-    #define LULZBOT_STANDARD_Y_MAX_POS         191
-    #define LULZBOT_STANDARD_Y_MIN_POS          -6
+    #define LULZBOT_STANDARD_Y_MAX_POS         192
+    #define LULZBOT_STANDARD_Y_MIN_POS          -5
 
     #define LULZBOT_X_BED_SIZE                 157
     #define LULZBOT_Y_BED_SIZE                 157
@@ -1480,8 +1480,8 @@
     // Mini has a horizontal wiping pad on the back of the bed
     #define LULZBOT_STANDARD_WIPE_X1                       45
     #define LULZBOT_STANDARD_WIPE_X2                       115
-    #define LULZBOT_STANDARD_WIPE_Y1                       173
-    #define LULZBOT_STANDARD_WIPE_Y2                       173
+    #define LULZBOT_STANDARD_WIPE_Y1                       174
+    #define LULZBOT_STANDARD_WIPE_Y2                       174
     #define LULZBOT_STANDARD_WIPE_Z                        1
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_SCREW)
@@ -1789,11 +1789,7 @@
             NOLESS(max_display_update_time, millis() - ms); \
             return; \
         }
-    #if defined(LULZBOT_IS_MINI)
-        #define WELCOME_MSG _UxGT("Mini 2 ready.")
-    #else
-        #define WELCOME_MSG _UxGT("TAZ 7 ready.")
-    #endif
+    #define WELCOME_MSG _UxGT(LULZBOT_LCD_MACHINE_NAME " ready.")
     #define LULZBOT_STATUS_EXPIRE_SECONDS 0
 #else
     #define LULZBOT_ABOUT_TO_DRAW_SCREEN(a)
