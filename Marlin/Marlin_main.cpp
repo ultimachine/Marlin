@@ -360,6 +360,8 @@
   #include "AO_FT810_UI_Screens.h"
 #endif
 
+LULZBOT_PROBE_RETRY_COUNTER_DECL
+
 bool Running = true;
 
 uint8_t marlin_debug_flags = DEBUG_NONE;
@@ -2232,11 +2234,7 @@ static void clean_up_after_endstop_or_probe_move() {
     // Double-probing does a fast probe followed by a slow probe
     #if MULTIPLE_PROBING == 2
       // Do a first probe at the fast speed
-      #if defined(LULZBOT_PROBE_Z_WITH_REWIPE)
-      LULZBOT_PROBE_Z_WITH_REWIPE(Z_PROBE_SPEED_FAST);
-      #else
-      if (do_probe_move(-10, Z_PROBE_SPEED_FAST)) return NAN;
-      #endif
+      if (do_probe_move(LULZBOT_BED_PROBE_MIN, Z_PROBE_SPEED_FAST)) return NAN;
 
       float first_probe_z = current_position[Z_AXIS];
 
@@ -11812,9 +11810,11 @@ void process_parsed_command() {
       #if HAS_LEVELING
         case 29: // G29 Detailed Z probe, probes the bed at 3 or more points,
                  // or provides access to the UBL System if enabled.
-          LULZBOT_ENABLE_PROBE_PINS(true);
-          gcode_G29();
-          LULZBOT_ENABLE_PROBE_PINS(false);
+          #if defined(LULZBOT_G29_WITH_RETRY)
+            LULZBOT_G29_WITH_RETRY
+          #else
+            gcode_G29();
+          #endif
           break;
       #endif // HAS_LEVELING
 
