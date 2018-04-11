@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".24" // Change this with each update
+#define LULZBOT_FW_VERSION ".25" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -452,8 +452,8 @@
 /*********************** AUTOLEVELING / BED PROBE *******************************/
 
 #if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_BELT)
-    #define LULZBOT_LEFT_PROBE_BED_POSITION        -5
-    #define LULZBOT_RIGHT_PROBE_BED_POSITION      163
+    #define LULZBOT_LEFT_PROBE_BED_POSITION        -3
+    #define LULZBOT_RIGHT_PROBE_BED_POSITION      161
     #define LULZBOT_BACK_PROBE_BED_POSITION       167
     #define LULZBOT_FRONT_PROBE_BED_POSITION       -5
 
@@ -1052,8 +1052,8 @@
     #define LULZBOT_Y_BED_SIZE                 155
 
 #elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
-    #define LULZBOT_STANDARD_X_MAX_POS         163
-    #define LULZBOT_STANDARD_X_MIN_POS          -5
+    #define LULZBOT_STANDARD_X_MAX_POS         161
+    #define LULZBOT_STANDARD_X_MIN_POS          -3
     #define LULZBOT_STANDARD_Y_MAX_POS         191
     #define LULZBOT_STANDARD_Y_MIN_POS          -6
 
@@ -1478,8 +1478,8 @@
 // Nozzle wiping points (varies by toolhead, as the nozzle position varies)
 #if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_BELT)
     // Mini has a horizontal wiping pad on the back of the bed
-    #define LULZBOT_STANDARD_WIPE_X1                       43
-    #define LULZBOT_STANDARD_WIPE_X2                       113
+    #define LULZBOT_STANDARD_WIPE_X1                       45
+    #define LULZBOT_STANDARD_WIPE_X2                       115
     #define LULZBOT_STANDARD_WIPE_Y1                       173
     #define LULZBOT_STANDARD_WIPE_Y2                       173
     #define LULZBOT_STANDARD_WIPE_Z                        1
