@@ -58,7 +58,7 @@ void GcodeSuite::M472() { //M472 S<times> Read average
 
 void GcodeSuite::M473() { //M473 Tare
 	scale.tare();
-	SERIAL_ECHOPGM("scale.tare done.");
+	SERIAL_ECHOLNPGM("scale.tare done.");
 }
 
 void GcodeSuite::M474() { //M474 S<value> Set scale
