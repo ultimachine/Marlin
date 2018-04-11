@@ -48,10 +48,19 @@ void safe_delay(millis_t ms);
 #if ENABLED(ULTRA_LCD) || ENABLED(DEBUG_LEVELING_FEATURE)
 
   // Convert uint8_t to string with 123 format
-  char* i8tostr3(const uint8_t x);
+  char* ui8tostr3(const uint8_t x);
 
-  // Convert signed int to rj string with 123 or -12 format
-  char* itostr3(const int x);
+  // Convert int8_t to string with 123 format
+  char* i8tostr3(const int8_t x);
+
+  // Convert uint16_t to string with 1234 format
+  char* uitostr3(const uint16_t x);
+
+  // Convert uint16_t to string with 1234 format
+  char* uitostr4(const uint16_t x);
+
+  // Convert int16_t to string with 123 format
+  char* itostr3(const int16_t x);
 
   // Convert unsigned int to lj string with 123 format
   char* itostr3left(const int xx);

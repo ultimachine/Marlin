@@ -805,6 +805,10 @@
 
 #endif // TMC_DEBUG
 
+#if ENABLED(ULTIPANEL)
+  #include "../module/stepper.h"
+#endif
+
 #if ENABLED(SENSORLESS_HOMING)
 
   void tmc_sensorless_homing(TMC2130Stepper &st, const bool enable/*=true*/) {
@@ -920,5 +924,228 @@ void test_tmc_connection() {
     test_connection(stepperE5);
   #endif
 }
+
+#if ENABLED(ULTIPANEL)
+  #if HAS_DRIVER(TMC2130)
+    bool get_stealthChop(TMC2130Stepper &st) { return st.en_pwm_mode(); }
+  #endif
+  #if HAS_DRIVER(TMC2208)
+    bool get_stealthChop(TMC2208Stepper &st) { return !st.en_spreadCycle(); }
+  #endif
+
+  void init_tmc_section() {
+    #if AXIS_IS_TMC(X)
+      stepperX.stored.I_rms = stepperX.getMilliamps();
+    #endif
+    #if AXIS_IS_TMC(Y)
+      stepperY.stored.I_rms = stepperY.getMilliamps();
+    #endif
+    #if AXIS_IS_TMC(Z)
+      stepperZ.stored.I_rms = stepperZ.getMilliamps();
+    #endif
+    #if AXIS_IS_TMC(X2)
+      stepperX2.stored.I_rms = stepperX2.getMilliamps();
+    #endif
+    #if AXIS_IS_TMC(Y2)
+      stepperY2.stored.I_rms = stepperY2.getMilliamps();
+    #endif
+    #if AXIS_IS_TMC(Z2)
+      stepperZ2.stored.I_rms = stepperZ2.getMilliamps();
+    #endif
+    #if AXIS_IS_TMC(Z3)
+      stepperZ3.stored.I_rms = stepperZ3.getMilliamps();
+    #endif
+    #if AXIS_IS_TMC(E0)
+      stepperE0.stored.I_rms = stepperE0.getMilliamps();
+    #endif
+    #if AXIS_IS_TMC(E1)
+      stepperE1.stored.I_rms = stepperE1.getMilliamps();
+    #endif
+    #if AXIS_IS_TMC(E2)
+      stepperE2.stored.I_rms = stepperE2.getMilliamps();
+    #endif
+    #if AXIS_IS_TMC(E3)
+      stepperE3.stored.I_rms = stepperE3.getMilliamps();
+    #endif
+    #if AXIS_IS_TMC(E4)
+      stepperE4.stored.I_rms = stepperE4.getMilliamps();
+    #endif
+    #if AXIS_IS_TMC(E5)
+      stepperE5.stored.I_rms = stepperE5.getMilliamps();
+    #endif
+
+    #if ENABLED(HYBRID_THRESHOLD)
+      #define GET_HYBRID_THRS(ST, AX) _tmc_thrs(stepper##ST.microsteps(), stepper##ST.TPWMTHRS(), planner.axis_steps_per_mm[AX##_AXIS])
+      #if AXIS_HAS_STEALTHCHOP(X)
+        stepperX.stored.hybrid_thrs = GET_HYBRID_THRS(X, X);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Y)
+        stepperY.stored.hybrid_thrs = GET_HYBRID_THRS(Y, Y);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Z)
+        stepperZ.stored.hybrid_thrs = GET_HYBRID_THRS(Z, Z);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(X2)
+        stepperX2.stored.hybrid_thrs = GET_HYBRID_THRS(X2, X);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Y2)
+        stepperY2.stored.hybrid_thrs = GET_HYBRID_THRS(Y2, Y);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Z2)
+        stepperZ2.stored.hybrid_thrs = GET_HYBRID_THRS(Z2, Z);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Z3)
+        stepperZ3.stored.hybrid_thrs = GET_HYBRID_THRS(Z3, Z);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(E0)
+        { const uint8_t extruder = 0; stepperE0.stored.hybrid_thrs = _tmc_thrs(stepperE0.microsteps(), stepperE0.TPWMTHRS(), planner.axis_steps_per_mm[E_AXIS_N]); }
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(E1)
+        { const uint8_t extruder = 1; stepperE1.stored.hybrid_thrs = _tmc_thrs(stepperE1.microsteps(), stepperE1.TPWMTHRS(), planner.axis_steps_per_mm[E_AXIS_N]); }
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(E2)
+        { const uint8_t extruder = 2; stepperE2.stored.hybrid_thrs = _tmc_thrs(stepperE2.microsteps(), stepperE2.TPWMTHRS(), planner.axis_steps_per_mm[E_AXIS_N]); }
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(E3)
+        { const uint8_t extruder = 3; stepperE3.stored.hybrid_thrs = _tmc_thrs(stepperE3.microsteps(), stepperE3.TPWMTHRS(), planner.axis_steps_per_mm[E_AXIS_N]); }
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(E4)
+        { const uint8_t extruder = 4; stepperE4.stored.hybrid_thrs = _tmc_thrs(stepperE4.microsteps(), stepperE4.TPWMTHRS(), planner.axis_steps_per_mm[E_AXIS_N]); }
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(E5)
+        { const uint8_t extruder = 5; stepperE5.stored.hybrid_thrs = _tmc_thrs(stepperE5.microsteps(), stepperE5.TPWMTHRS(), planner.axis_steps_per_mm[E_AXIS_N]); }
+      #endif
+    #endif
+
+    #if ENABLED(SENSORLESS_HOMING)
+      #if X_SENSORLESS
+        stepperX.stored.homing_thrs = stepperX.sgt();
+      #endif
+      #if Y_SENSORLESS
+        stepperY.stored.homing_thrs = stepperY.sgt();
+      #endif
+      #if Z_SENSORLESS
+        stepperZ.stored.homing_thrs = stepperZ.sgt();
+      #endif
+    #endif
+
+    #if ENABLED(STEALTHCHOP)
+      #if AXIS_HAS_STEALTHCHOP(X)
+        stepperX.stored.stealthChop_enabled = get_stealthChop(stepperX);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Y)
+        stepperY.stored.stealthChop_enabled = get_stealthChop(stepperY);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Z)
+        stepperZ.stored.stealthChop_enabled = get_stealthChop(stepperZ);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(X2)
+        stepperX2.stored.stealthChop_enabled = get_stealthChop(stepperX2);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Y2)
+        stepperY2.stored.stealthChop_enabled = get_stealthChop(stepperY2);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Z2)
+        stepperZ2.stored.stealthChop_enabled = get_stealthChop(stepperZ2);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Z3)
+        stepperZ3.stored.stealthChop_enabled = get_stealthChop(stepperZ3);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(E0)
+        stepperE0.stored.stealthChop_enabled = get_stealthChop(stepperE0);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(E1)
+        stepperE1.stored.stealthChop_enabled = get_stealthChop(stepperE1);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(E2)
+        stepperE2.stored.stealthChop_enabled = get_stealthChop(stepperE2);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(E3)
+        stepperE3.stored.stealthChop_enabled = get_stealthChop(stepperE3);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(E4)
+        stepperE4.stored.stealthChop_enabled = get_stealthChop(stepperE4);
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(E5)
+        stepperE5.stored.stealthChop_enabled = get_stealthChop(stepperE5);
+      #endif
+    #endif
+  }
+  void refresh_tmc_driver_current() {
+    #if AXIS_IS_TMC(X)
+      stepperX.rms_current(stepperX.stored.I_rms);
+    #endif
+    #if AXIS_IS_TMC(Y)
+      stepperY.rms_current(stepperY.stored.I_rms);
+    #endif
+    #if AXIS_IS_TMC(Z)
+      stepperZ.rms_current(stepperZ.stored.I_rms);
+    #endif
+    #if AXIS_IS_TMC(X2)
+      stepperX2.rms_current(stepperX2.stored.I_rms);
+    #endif
+    #if AXIS_IS_TMC(Y2)
+      stepperY2.rms_current(stepperY2.stored.I_rms);
+    #endif
+    #if AXIS_IS_TMC(Z2)
+      stepperZ2.rms_current(stepperZ2.stored.I_rms);
+    #endif
+    #if AXIS_IS_TMC(Z3)
+      stepperZ3.rms_current(stepperZ3.stored.I_rms);
+    #endif
+    #if AXIS_IS_TMC(E0)
+      stepperE0.rms_current(stepperE0.stored.I_rms);
+    #endif
+    #if AXIS_IS_TMC(E1)
+      stepperE1.rms_current(stepperE1.stored.I_rms);
+    #endif
+    #if AXIS_IS_TMC(E2)
+      stepperE2.rms_current(stepperE2.stored.I_rms);
+    #endif
+    #if AXIS_IS_TMC(E3)
+      stepperE3.rms_current(stepperE3.stored.I_rms);
+    #endif
+    #if AXIS_IS_TMC(E4)
+      stepperE4.rms_current(stepperE4.stored.I_rms);
+    #endif
+    #if AXIS_IS_TMC(E5)
+      stepperE5.rms_current(stepperE5.stored.I_rms);
+    #endif
+  }
+  #if HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC5160)
+    void _set_tmc_stepping_mode(TMC2130Stepper &st, bool enable_stealthChop) {
+      st.en_pwm_mode(enable_stealthChop);
+    }
+  #endif
+  #if HAS_DRIVER(TMC2208)
+    void _set_tmc_stepping_mode(TMC2208Stepper &st, bool enable_stealthChop) {
+      st.en_spreadCycle(!enable_stealthChop);
+    }
+  #endif
+  #if ENABLED(STEALTHCHOP)
+    void set_tmc_stepping_mode() {
+      SERIAL_ECHOPGM("set_tmc_stepping_mode=");
+      SERIAL_ECHO_F(stepperX.stored.stealthChop_enabled, DEC);
+      SERIAL_EOL();
+      _set_tmc_stepping_mode(stepperX, stepperX.stored.stealthChop_enabled);
+    }
+  #endif
+  #if ENABLED(HYBRID_THRESHOLD)
+    void refresh_tmc_hybrid_thrs() {
+      SERIAL_ECHOPGM("refresh_tmc_hybrid_thrs=");
+      SERIAL_ECHO_F(stepperX.stored.hybrid_thrs, DEC);
+      SERIAL_EOL();
+      tmc_set_pwmthrs(stepperX, stepperX.stored.hybrid_thrs, planner.axis_steps_per_mm[X_AXIS]);
+    }
+  #endif
+  #if ENABLED(SENSORLESS_HOMING)
+    void refresh_tmc_homing_thrs() {
+      SERIAL_ECHOPGM("refresh_tmc_homing_thrs=");
+      SERIAL_ECHO_F(stepperX.stored.homing_thrs, DEC);
+      SERIAL_EOL();
+      tmc_set_sgt(stepperX, stepperX.stored.homing_thrs);
+    }
+  #endif
+#endif
 
 #endif // HAS_TRINAMIC

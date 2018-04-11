@@ -82,6 +82,18 @@ class TMCStorage {
     void clear_otpw() { flag_otpw = 0; }
     uint16_t getMilliamps() { return val_mA; }
     void printLabel() { serialprintPGM(label); }
+
+    #if ENABLED(ULTRA_LCD)
+      // Stored variables for an LCD
+      struct {
+        uint16_t I_rms = 0;
+        bool stealthChop_enabled = false;
+        uint8_t hybrid_thrs = 0;
+        int8_t homing_thrs = 0;
+        uint8_t cs_actual = 0;
+        uint16_t sg_result = 0;
+      } stored;
+    #endif
 };
 
 template <class TMC>
@@ -182,6 +194,18 @@ void test_tmc_connection();
   void tmc_set_report_status(const bool status);
   void tmc_report_all();
   void tmc_get_registers();
+#endif
+
+#if ENABLED(ULTIPANEL)
+  void init_tmc_section();
+  void refresh_tmc_driver_current();
+  void set_tmc_stepping_mode();
+  #if ENABLED(HYBRID_THRESHOLD)
+    void refresh_tmc_hybrid_thrs();
+  #endif
+  #if ENABLED(SENSORLESS_HOMING)
+    void refresh_tmc_homing_thrs();
+  #endif
 #endif
 
 /**

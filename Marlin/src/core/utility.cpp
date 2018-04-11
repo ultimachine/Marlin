@@ -58,7 +58,7 @@ void safe_delay(millis_t ms) {
   #define MINUSOR(n, alt) (n >= 0 ? (alt) : (n = -n, '-'))
 
   // Convert unsigned int to string 123 format
-  char* i8tostr3(const uint8_t i) {
+  char* ui8tostr3(const uint8_t i) {
     conv[4] = RJDIGIT(i, 100);
     conv[5] = RJDIGIT(i, 10);
     conv[6] = DIGIMOD(i, 1);
@@ -66,10 +66,37 @@ void safe_delay(millis_t ms) {
   }
 
   // Convert signed int to rj string with 123 or -12 format
-  char* itostr3(int i) {
-    conv[4] = MINUSOR(i, RJDIGIT(i, 100));
-    conv[5] = RJDIGIT(i, 10);
-    conv[6] = DIGIMOD(i, 1);
+  char* i8tostr3(const int8_t x) {
+    int xx = x;
+    conv[4] = MINUSOR(xx, RJDIGIT(xx, 100));
+    conv[5] = RJDIGIT(xx, 10);
+    conv[6] = DIGIMOD(xx, 1);
+    return &conv[4];
+  }
+
+  // Convert unsigned 16bit int to string 123 format
+  char* uitostr3(const uint16_t xx) {
+    conv[4] = RJDIGIT(xx, 100);
+    conv[5] = RJDIGIT(xx, 10);
+    conv[6] = DIGIMOD(xx, 1);
+    return &conv[4];
+  }
+
+  // Convert unsigned 16bit int to string 1234 format
+  char* uitostr4(const uint16_t xx) {
+    conv[3] = RJDIGIT(xx, 1000);
+    conv[4] = RJDIGIT(xx, 100);
+    conv[5] = RJDIGIT(xx, 10);
+    conv[6] = DIGIMOD(xx, 1);
+    return &conv[3];
+  }
+
+  // Convert signed int to rj string with 123 or -12 format
+  char* itostr3(const int16_t x) {
+    int xx = x;
+    conv[4] = MINUSOR(xx, RJDIGIT(xx, 100));
+    conv[5] = RJDIGIT(xx, 10);
+    conv[6] = DIGIMOD(xx, 1);
     return &conv[4];
   }
 
