@@ -1234,6 +1234,22 @@
    */
   #define CHOPPER_TIMING { 4, -2, 1}
 
+  /*
+   * Use Trinamic's coolStep and stallGuard technologies to monitor
+   * motor load and scale current accordingly.
+   *
+   * The load measurement is inverse to the physical motor load.
+   * Current is reduced if the measurement is higher than REDUCE_CURRENT_THRS
+   * and increased if the measurement is lower then INCREASE_CURRENT_THRS.
+   * Current will never be increased over the configured values nor reduced below 50%.
+   */
+  //#define ADAPTIVE_CURRENT
+
+  #if ENABLED(ADAPTIVE_CURRENT)
+    #define REDUCE_CURRENT_THRS     3
+    #define INCREASE_CURRENT_THRS   5
+  #endif
+
   /**
    * Monitor Trinamic TMC2130 and TMC2208 drivers for error conditions,
    * like overtemperature and short to ground. TMC2208 requires hardware serial.

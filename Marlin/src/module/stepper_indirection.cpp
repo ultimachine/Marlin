@@ -260,6 +260,13 @@
     st.iholddelay(10);
     st.TPOWERDOWN(128); // ~2s until driver lowers to hold current
 
+    #if ENABLED(ADAPTIVE_CURRENT)
+      COOLCONF_t coolconf{0};
+      coolconf.semin = INCREASE_CURRENT_THRS;
+      coolconf.semax = REDUCE_CURRENT_THRS;
+      st.COOLCONF(coolconf.sr);
+    #endif
+
     #if ENABLED(STEALTHCHOP)
       st.en_pwm_mode(true);
 
@@ -590,6 +597,13 @@
     st.microsteps(microsteps);
     st.intpol(INTERPOLATE);
     st.diss2g(true); // Disable short to ground protection. Too many false readings?
+
+    #if ENABLED(ADAPTIVE_CURRENT)
+      SMARTEN_t smarten{0};
+      smarten.semin = INCREASE_CURRENT_THRS;
+      smarten.semax = REDUCE_CURRENT_THRS;
+      st.SMARTEN(smarten.sr);
+    #endif
   }
 #endif // TMC2660
 
@@ -663,6 +677,13 @@
     st.microsteps(microsteps);
     st.iholddelay(10);
     st.TPOWERDOWN(128); // ~2s until driver lowers to hold current
+
+    #if ENABLED(ADAPTIVE_CURRENT)
+      COOLCONF_t coolconf{0};
+      coolconf.semin = INCREASE_CURRENT_THRS;
+      coolconf.semax = REDUCE_CURRENT_THRS;
+      st.COOLCONF(coolconf.sr);
+    #endif
 
     #if ENABLED(STEALTHCHOP)
       st.en_pwm_mode(true);
