@@ -2266,11 +2266,7 @@ static void clean_up_after_endstop_or_probe_move() {
     #endif
 
         // move down slowly to find bed
-        #if defined(LULZBOT_PROBE_Z_WITH_REWIPE)
-        LULZBOT_PROBE_Z_WITH_REWIPE(Z_PROBE_SPEED_SLOW);
-        #else
-        if (do_probe_move(-10, Z_PROBE_SPEED_SLOW)) return NAN;
-        #endif
+        if (do_probe_move(LULZBOT_BED_PROBE_MIN, Z_PROBE_SPEED_SLOW)) return NAN;
 
     #if MULTIPLE_PROBING > 2
         probes_total += current_position[Z_AXIS];

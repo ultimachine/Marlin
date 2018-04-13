@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".27" // Change this with each update
+#define LULZBOT_FW_VERSION ".28" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -222,7 +222,7 @@
 #define LULZBOT_AUTO_REPORT_TEMPERATURES
 #define LULZBOT_ADVANCED_OK
 #define LULZBOT_TX_BUFFER_SIZE 32
-#define LULZBOT_BUFSIZE 10
+#define LULZBOT_BUFSIZE 5
 #define LULZBOT_HOST_KEEPALIVE_FEATURE_DISABLED
 #define LULZBOT_CLARIFY_ERROR_MESSAGES
 
@@ -1523,8 +1523,6 @@
 #else defined(LULZBOT_IS_MINI)
     #define LULZBOT_BED_PROBE_MIN   -4 // Limit on pushing into the bed
 #endif
-
-#define LULZBOT_PROBE_Z_WITH_REWIPE(speed) if (do_probe_move(LULZBOT_BED_PROBE_MIN, Z_PROBE_SPEED_FAST)) return NAN;
 
 #if defined(LULZBOT_USE_PRE_GLADIOLA_G29_WORKAROUND)
     // workaround for older minis where G29 shifts the coordinate system
