@@ -28,7 +28,7 @@
 #define X_DIR_PIN           42 //PB10 S2_DIR
 #define X_ENABLE_PIN        -1
 #define X_MIN_PIN           -1
-#define X_MAX_PIN           -1
+#define X_MAX_PIN           25   //J12 PA25
 #define X_TMC2130_CS        30 //PA30 S2_nCS
 #define X_CS_PIN            30 //PA30 S2_nCS
 
