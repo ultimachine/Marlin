@@ -2234,7 +2234,8 @@ static void clean_up_after_endstop_or_probe_move() {
     // Double-probing does a fast probe followed by a slow probe
     #if MULTIPLE_PROBING == 2
       // Do a first probe at the fast speed
-      if (do_probe_move(LULZBOT_BED_PROBE_MIN, Z_PROBE_SPEED_FAST)) return NAN;
+      //if (do_probe_move(LULZBOT_BED_PROBE_MIN, Z_PROBE_SPEED_FAST)) return NAN;
+      LULZBOT_DO_PROBE_MOVE(Z_PROBE_SPEED_FAST);
 
       float first_probe_z = current_position[Z_AXIS];
 
@@ -2266,7 +2267,8 @@ static void clean_up_after_endstop_or_probe_move() {
     #endif
 
         // move down slowly to find bed
-        if (do_probe_move(LULZBOT_BED_PROBE_MIN, Z_PROBE_SPEED_SLOW)) return NAN;
+        //if (do_probe_move(-10, Z_PROBE_SPEED_SLOW)) return NAN;
+        LULZBOT_DO_PROBE_MOVE(Z_PROBE_SPEED_SLOW);
 
     #if MULTIPLE_PROBING > 2
         probes_total += current_position[Z_AXIS];
