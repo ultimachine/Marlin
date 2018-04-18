@@ -360,7 +360,8 @@
   #include "AO_FT810_UI_Screens.h"
 #endif
 
-LULZBOT_PROBE_RETRY_COUNTER_DECL
+LULZBOT_EXECUTE_IMMEDIATE_DECL
+LULZBOT_G29_WITH_RETRY_DECL
 
 bool Running = true;
 
@@ -737,7 +738,11 @@ void stop();
 
 void get_available_commands();
 void process_next_command();
+#if defined(LULZBOT_EXECUTE_IMMEDIATE_IMPL)
+void process_parsed_command(bool printok = true);
+#else
 void process_parsed_command();
+#endif
 
 void get_cartesian_from_steppers();
 void set_current_from_steppers_for_axis(const AxisEnum axis);
@@ -2384,11 +2389,13 @@ static void clean_up_after_endstop_or_probe_move() {
 
     feedrate_mm_s = old_feedrate_mm_s;
 
-    if (isnan(measured_z)) {
-      LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);
-      SERIAL_ERROR_START();
-      SERIAL_ERRORLNPGM(MSG_ERR_PROBING_FAILED);
-    }
+    #if !defined(LULZBOT_G29_WITH_RETRY)
+      if (isnan(measured_z)) {
+        LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);
+        SERIAL_ERROR_START();
+        SERIAL_ERRORLNPGM(MSG_ERR_PROBING_FAILED);
+      }
+    #endif
 
     return measured_z;
   }
@@ -11712,7 +11719,11 @@ inline void gcode_T(const uint8_t tmp_extruder) {
 /**
  * Process the parsed command and dispatch it to its handler
  */
-void process_parsed_command() {
+void process_parsed_command(
+#if defined(LULZBOT_EXECUTE_IMMEDIATE_IMPL)
+  bool printok
+#endif
+) {
   KEEPALIVE_STATE(IN_HANDLER);
 
   // Handle a known G, M, or T
@@ -11808,8 +11819,8 @@ void process_parsed_command() {
       #if HAS_LEVELING
         case 29: // G29 Detailed Z probe, probes the bed at 3 or more points,
                  // or provides access to the UBL System if enabled.
-          #if defined(LULZBOT_G29_WITH_RETRY)
-            LULZBOT_G29_WITH_RETRY
+          #if defined(LULZBOT_G29_COMMAND)
+            LULZBOT_G29_COMMAND
           #else
             gcode_G29();
           #endif
@@ -12576,6 +12587,9 @@ void process_parsed_command() {
 
   KEEPALIVE_STATE(NOT_BUSY);
 
+  #if defined(LULZBOT_EXECUTE_IMMEDIATE_IMPL)
+  if(printok)
+  #endif
   ok_to_send();
 }
 
@@ -14748,3 +14762,6 @@ void loop() {
   endstops.report_state();
   idle();
 }
+
+LULZBOT_G29_WITH_RETRY_IMPL
+LULZBOT_EXECUTE_IMMEDIATE_IMPL

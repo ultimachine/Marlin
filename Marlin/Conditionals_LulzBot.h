@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".29" // Change this with each update
+#define LULZBOT_FW_VERSION ".30" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -625,7 +625,7 @@
     }
 
 #if defined(LULZBOT_USE_Z_BELT)
-    #define LULZBOT_MENU_AXIS_LEVELING_GCODE "G28\nG0 Z5 F6000\nG91\nM211 S0\nM400\nM906 Z600\nG0 Z-15 F500\nG90\nM400\nM906 Z960\nM211 S1\nG28\nM117 Leveling done."
+    #define LULZBOT_MENU_AXIS_LEVELING_GCODE "M117 Leveling X Axis\nG28\nG0 Z5 F6000\nG91\nM211 S0\nM400\nM906 Z600\nG0 Z-15 F500\nG90\nM400\nM906 Z960\nM211 S1\nG28\nM117 Leveling done."
 #endif
 
 /*************************** COMMON TOOLHEADS PARAMETERS ***********************/
@@ -1542,45 +1542,56 @@
        complex recovery sequence */
 
     #if defined(LULZBOT_USE_Z_BELT)
-        #define LULZBOT_REWIPE_GCODE LULZBOT_MENU_AXIS_LEVELING_GCODE "\nG12 P0 S12 T0"
+        #define LULZBOT_REWIPE_GCODE LULZBOT_MENU_AXIS_LEVELING_GCODE "\nM117 Rewiping nozzle\nG12 P0 S12 T0\nM117 Probing bed"
     #else
         #define LULZBOT_REWIPE_GCODE "G0 Z10\nG12 P0 S12 T0"
     #endif
 
     #define LULZBOT_DO_PROBE_MOVE(speed) if (do_probe_move(LULZBOT_BED_PROBE_MIN, speed)) return NAN;
 
-    #define LULZBOT_PROBE_RETRY_COUNTER_DECL int reprobe_retries_left = LULZBOT_NUM_REWIPES;
+    #define LULZBOT_EXECUTE_IMMEDIATE_DECL \
+        void execute_commands_immediate_P(const char *pgcode);
 
-    #define LULZBOT_G29_WITH_RETRY \
-        { \
-            LULZBOT_ENABLE_PROBE_PINS(true); \
+    #define LULZBOT_EXECUTE_IMMEDIATE_IMPL \
+        void execute_commands_immediate_P(const char *pgcode) { \
+            char   cmd[30]; \
+            while(pgm_read_byte_near(pgcode) != '\0') { \
+                const char *delim = strchr_P(pgcode, '\n'); \
+                size_t len = delim ? delim - pgcode : strlen_P(pgcode); \
+                strncpy_P(cmd, pgcode, len); \
+                cmd[len] = '\0'; \
+                pgcode += len; \
+                if(delim) { \
+                    pgcode++; \
+                } \
+                parser.parse(cmd); \
+                process_parsed_command(false); \
+                } \
+            }
+
+    #define LULZBOT_G29_WITH_RETRY_DECL \
+        void gcode_G29_with_retry();
+
+    #define LULZBOT_G29_WITH_RETRY_IMPL \
+        void gcode_G29_with_retry() { \
             set_bed_leveling_enabled(false); \
-            gcode_G29(); \
-            if(planner.leveling_active) { \
-                /* Probe succeeded */ \
-                reprobe_retries_left = LULZBOT_NUM_REWIPES; \
-            } else if(reprobe_retries_left > 0) { \
-                /* Probe failed, but we still have retries left */ \
-                reprobe_retries_left--; \
-                SERIAL_ERRORLNPGM(MSG_REWIPE); \
-                LCD_MESSAGEPGM(MSG_REWIPE); \
-                enqueue_and_echo_commands_P(PSTR(LULZBOT_REWIPE_GCODE "\nG29")); \
-            } else { \
-                /* Probe failed; no retries left */ \
-                SERIAL_ERRORLNPGM("PROBE FAIL CLEAN NOZZLE"); /* cura listens for this message specifically */ \
-                LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);       /* use a more friendly message on the LCD */ \
-                BUZZ(25, 880); BUZZ(50, 0);                   /* play tone */ \
-                BUZZ(25, 880); BUZZ(50, 0); \
-                BUZZ(25, 880); BUZZ(50, 0); \
-                do_blocking_move_to_z(100, MMM_TO_MMS(Z_PROBE_SPEED_FAST)); /* raise head */ \
-                current_position[E_AXIS] = 0;                 /* prime nozzle at 75 mm/sec */ \
-                planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], 75./60, active_extruder); \
-                sync_plan_position_e(); \
-                stepper.synchronize(); \
-                kill(PSTR(MSG_ERR_PROBING_FAILED));           /* stop print job */ \
+            for(uint8_t i = 0; i < LULZBOT_NUM_REWIPES; i++) { \
+                LULZBOT_ENABLE_PROBE_PINS(true); \
+                gcode_G29(); \
+                LULZBOT_ENABLE_PROBE_PINS(false); \
+                if(planner.leveling_active) break; \
+                execute_commands_immediate_P(PSTR(LULZBOT_REWIPE_GCODE)); \
             } \
-            LULZBOT_ENABLE_PROBE_PINS(false); \
+            if(planner.leveling_active) { \
+                execute_commands_immediate_P(PSTR("M117 Probe successful")); \
+            } else { \
+                SERIAL_ERRORLNPGM("PROBE FAIL CLEAN NOZZLE"); \
+                execute_commands_immediate_P(PSTR("M117 Bed leveling failed.\nG0 Z10\nG0 E0\nM300 P25 S880\nM300 P50 S0\nM300 P25 S880\nM300 P50 S0\nM300 P25 S880\nM300 P50 S0\nG4 S1")); \
+                kill(PSTR(MSG_ERR_PROBING_FAILED)); \
+            } \
         }
+
+    #define LULZBOT_G29_COMMAND gcode_G29_with_retry();
 
 #else
     /* Old style rewipe recovery that repeats only the failed probe
@@ -1611,16 +1622,18 @@
             Nozzle::clean(0, 12, 0, 0);                   /* wipe nozzle */ \
         }
 
-    #define LULZBOT_G29_WITH_RETRY \
+    #define LULZBOT_G29_COMMAND \
         { \
             LULZBOT_ENABLE_PROBE_PINS(true); \
             gcode_G29(); \
             LULZBOT_ENABLE_PROBE_PINS(false); \
         }
 
-    #define LULZBOT_PROBE_RETRY_COUNTER_DECL
+    #define LULZBOT_EXECUTE_IMMEDIATE_DECL
+    #define LULZBOT_EXECUTE_IMMEDIATE_IMPL
+    #define LULZBOT_G29_WITH_RETRY_DECL
+    #define LULZBOT_G29_WITH_RETRY_IMPL
 #endif
-
 
 /******************************** MOTOR CURRENTS *******************************/
 
