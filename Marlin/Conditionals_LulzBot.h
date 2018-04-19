@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".30" // Change this with each update
+#define LULZBOT_FW_VERSION ".31" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -625,7 +625,24 @@
     }
 
 #if defined(LULZBOT_USE_Z_BELT)
-    #define LULZBOT_MENU_AXIS_LEVELING_GCODE "M117 Leveling X Axis\nG28\nG0 Z5 F6000\nG91\nM211 S0\nM400\nM906 Z600\nG0 Z-15 F500\nG90\nM400\nM906 Z960\nM211 S1\nG28\nM117 Leveling done."
+    #define LULZBOT_MENU_AXIS_LEVELING_GCODE \
+        "M117 Leveling X Axis\n" /* Set LCD status */ \
+        "G28\n"                  /* Home Axis */ \
+        "G0 X160 F9999\n"        /* Move toolhead to the right */ \
+        "G0 Z5 F6000\n"          /* Move to bottom of printer */ \
+        "G91\n"                  /* Set relative motion mode */ \
+        "M211 S0\n"              /* Turn off soft endstops */ \
+        "M400\n"                 /* Finish moves */ \
+        "M906 Z600\n"            /* Lower current to 600mA */ \
+        "G0 Z-15 F500\n"         /* Skip steppers against lower Z mounts */ \
+        "G0 Z5 F500\n"           /* Move Z-Axis up a bit */ \
+        "G90\n"                  /* Return to absolute mode */ \
+        "M400\n"                 /* Finish moves */ \
+        "M906 Z960\n"            /* Restore default current */ \
+        "M211 S1\n"              /* Turn soft endstops back on */ \
+        "M400\n"                 /* Finish moves */ \
+        "G28\n"                  /* Rehome */ \
+        "M117 Leveling done."    /* Set LCD status */
 #endif
 
 /*************************** COMMON TOOLHEADS PARAMETERS ***********************/
@@ -1542,10 +1559,32 @@
        complex recovery sequence */
 
     #if defined(LULZBOT_USE_Z_BELT)
-        #define LULZBOT_REWIPE_GCODE LULZBOT_MENU_AXIS_LEVELING_GCODE "\nM117 Rewiping nozzle\nG12 P0 S12 T0\nM117 Probing bed"
+        #define LULZBOT_REWIPE_RECOVER_GCODE \
+            LULZBOT_MENU_AXIS_LEVELING_GCODE "\n" /* Level X axis */ \
+            "M117 Rewiping nozzle\n"              /* Status message */ \
+            "G12 P0 S12 T0\n"                     /* Wipe nozzle */ \
+            "M117 Probing bed"                    /* Status message */
     #else
-        #define LULZBOT_REWIPE_GCODE "G0 Z10\nG12 P0 S12 T0"
+        #define LULZBOT_REWIPE_RECOVER_GCODE \
+            "M117 Rewiping nozzle\n"              /* Status message */ \
+            "G0 Z10\n"                            /* Raise nozzle */ \
+            "G12 P0 S12 T0\n"                     /* Wipe nozzle */ \
+            "M117 Probing bed"                    /* Status message */
     #endif
+
+    #define LULZBOT_REWIPE_FAILED_GCODE \
+        "M117 Bed leveling failed.\n"             /* Status message */ \
+        "G0 Z10\n"                                /* Raise head */ \
+        "G0 E0\n"                                 /* Prime filament */ \
+        "M300 P25 S880\n"                         /* Play tone */ \
+        "M300 P50 S0\n"                           /* Silence */ \
+        "M300 P25 S880\n"                         /* Play tone */ \
+        "M300 P50 S0\n"                           /* Silence */ \
+        "M300 P25 S880\n"                         /* Play tone */ \
+        "G4 S1"                                   /* Dwell to allow sound to end */
+
+    #define LULZBOT_REWIPE_SUCCESS_GCODE \
+        "M117 Probe successful\n"                 /* Status message */
 
     #define LULZBOT_DO_PROBE_MOVE(speed) if (do_probe_move(LULZBOT_BED_PROBE_MIN, speed)) return NAN;
 
@@ -1554,20 +1593,26 @@
 
     #define LULZBOT_EXECUTE_IMMEDIATE_IMPL \
         void execute_commands_immediate_P(const char *pgcode) { \
-            char   cmd[30]; \
+            /* Save the parser state */ \
+            char saved_cmd[strlen(parser.command_ptr) + 1]; \
+            strcpy(saved_cmd, parser.command_ptr); \
+            /* Process individual commands in string */ \
             while(pgm_read_byte_near(pgcode) != '\0') { \
+                /* Break up string at '\n' delimiters */ \
                 const char *delim = strchr_P(pgcode, '\n'); \
                 size_t len = delim ? delim - pgcode : strlen_P(pgcode); \
+                char cmd[len+1]; \
                 strncpy_P(cmd, pgcode, len); \
                 cmd[len] = '\0'; \
                 pgcode += len; \
-                if(delim) { \
-                    pgcode++; \
-                } \
+                if(delim) pgcode++; \
+                /* Parse the next command in the string */ \
                 parser.parse(cmd); \
                 process_parsed_command(false); \
-                } \
-            }
+            } \
+            /* Restore the parser state */ \
+            parser.parse(saved_cmd); \
+        }
 
     #define LULZBOT_G29_WITH_RETRY_DECL \
         void gcode_G29_with_retry();
@@ -1580,13 +1625,13 @@
                 gcode_G29(); \
                 LULZBOT_ENABLE_PROBE_PINS(false); \
                 if(planner.leveling_active) break; \
-                execute_commands_immediate_P(PSTR(LULZBOT_REWIPE_GCODE)); \
+                execute_commands_immediate_P(PSTR(LULZBOT_REWIPE_RECOVER_GCODE)); \
             } \
             if(planner.leveling_active) { \
-                execute_commands_immediate_P(PSTR("M117 Probe successful")); \
+                execute_commands_immediate_P(PSTR(LULZBOT_REWIPE_SUCCESS_GCODE)); \
             } else { \
                 SERIAL_ERRORLNPGM("PROBE FAIL CLEAN NOZZLE"); \
-                execute_commands_immediate_P(PSTR("M117 Bed leveling failed.\nG0 Z10\nG0 E0\nM300 P25 S880\nM300 P50 S0\nM300 P25 S880\nM300 P50 S0\nM300 P25 S880\nM300 P50 S0\nG4 S1")); \
+                execute_commands_immediate_P(PSTR(LULZBOT_REWIPE_FAILED_GCODE)); \
                 kill(PSTR(MSG_ERR_PROBING_FAILED)); \
             } \
         }
