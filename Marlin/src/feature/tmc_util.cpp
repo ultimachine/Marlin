@@ -35,9 +35,9 @@
 #if ENABLED(TMC_DEBUG)
   #include "../module/planner.h"
   #include "../libs/hex_print_routines.h"
-#endif
 
-bool report_tmc_status = false;
+  bool report_tmc_status = false;
+#endif
 
 /**
  * Check for over temperature or short to ground error flags.
@@ -49,28 +49,34 @@ bool report_tmc_status = false;
 #if ENABLED(MONITOR_DRIVER_STATUS)
   struct TMC_driver_data {
     uint32_t drv_status;
-    bool is_otpw;
-    bool is_ot;
+    bool is_otpw,
+         is_ot,
+         is_s2ga,
+         is_s2gb,
+         is_error;
   };
   #if HAS_DRIVER(TMC2130)
     static uint32_t get_pwm_scale(TMC2130Stepper &st) { return st.PWM_SCALE(); }
-    static uint8_t get_status_response(TMC2130Stepper &st) { return st.status_response & 0xF; }
+    static uint8_t get_status_response(TMC2130Stepper &st, uint32_t) { return st.status_response & 0xF; }
     static TMC_driver_data get_driver_data(TMC2130Stepper &st) {
       constexpr uint32_t OTPW_bm = 0x4000000UL;
       constexpr uint8_t OTPW_bp = 26;
       constexpr uint32_t OT_bm = 0x2000000UL;
       constexpr uint8_t OT_bp = 25;
+      constexpr uint8_t S2GA_bp = 27;
+      constexpr uint8_t S2GB_bp = 28;
       TMC_driver_data data;
       data.drv_status = st.DRV_STATUS();
       data.is_otpw = (data.drv_status & OTPW_bm) >> OTPW_bp;
       data.is_ot = (data.drv_status & OT_bm) >> OT_bp;
+      data.is_s2ga = (data.drv_status >> S2GA_bp) & 0b1;
+      data.is_s2gb = (data.drv_status >> S2GB_bp) & 0b1;
       return data;
     }
   #endif
   #if HAS_DRIVER(TMC2208)
     static uint32_t get_pwm_scale(TMC2208Stepper &st) { return st.pwm_scale_sum(); }
-    static uint8_t get_status_response(TMC2208Stepper &st) {
-      uint32_t drv_status = st.DRV_STATUS();
+    static uint8_t get_status_response(TMC2208Stepper &st, uint32_t drv_status) {
       uint8_t gstat = st.GSTAT();
       uint8_t response = 0;
       response |= (drv_status >> (31-3)) & 0b1000;
@@ -82,10 +88,14 @@ bool report_tmc_status = false;
       constexpr uint8_t OTPW_bp = 0;
       constexpr uint32_t OT_bm = 0b10ul;
       constexpr uint8_t OT_bp = 1;
+      constexpr uint8_t S2GA_bp = 2;
+      constexpr uint8_t S2GB_bp = 3;
       TMC_driver_data data;
       data.drv_status = st.DRV_STATUS();
       data.is_otpw = (data.drv_status & OTPW_bm) >> OTPW_bp;
       data.is_ot = (data.drv_status & OT_bm) >> OT_bp;
+      data.is_s2ga = (data.drv_status >> S2GA_bp) & 0b1;
+      data.is_s2gb = (data.drv_status >> S2GB_bp) & 0b1;
       return data;
     }
   #endif
@@ -105,9 +115,54 @@ bool report_tmc_status = false;
     }
   #endif
 
+  #if ENABLED(STOP_ON_ERROR)
+    void report_driver_error(const TMC_driver_data &data, const TMC_AxisEnum axis) {
+      SERIAL_ECHOPGM(" driver error detected: 0x");
+      SERIAL_PRINTLN(data.drv_status, HEX);
+      if (data.is_ot) SERIAL_ECHOLNPGM("overtemperature");
+      if (data.is_s2ga) SERIAL_ECHOLNPGM("short to ground (coil A)");
+      if (data.is_s2gb) SERIAL_ECHOLNPGM("short to ground (coil B)");
+      #if ENABLED(TMC_DEBUG)
+        tmc_report_all();
+      #endif
+      kill(PSTR("Driver error"));
+    }
+  #endif
+
+  template<typename TMC>
+  void report_driver_otpw(TMC &st) {
+    char timestamp[10];
+    duration_t elapsed = print_job_timer.duration();
+    const bool has_days = (elapsed.value > 60*60*24L);
+    (void)elapsed.toDigital(timestamp, has_days);
+    SERIAL_EOL();
+    SERIAL_ECHO(timestamp);
+    SERIAL_ECHOPGM(": ");
+    st.printLabel();
+    SERIAL_ECHOPGM(" driver overtemperature warning! (");
+    SERIAL_ECHO(st.getMilliamps());
+    SERIAL_ECHOLNPGM("mA)");
+  }
+
+  template<typename TMC>
+  void report_polled_driver_data(TMC &st, const TMC_driver_data &data) {
+    const uint32_t pwm_scale = get_pwm_scale(st);
+    st.printLabel();
+    SERIAL_ECHOPAIR(":", pwm_scale);
+    SERIAL_ECHOPGM(" |0b"); SERIAL_PRINT(get_status_response(st, data.drv_status), BIN);
+    SERIAL_ECHOPGM("| ");
+    if (st.error_count) SERIAL_CHAR('E');
+    else if (data.is_ot) SERIAL_CHAR('O');
+    else if (data.is_otpw) SERIAL_CHAR('W');
+    else if (st.otpw_count > 0) SERIAL_PRINT(st.otpw_count, DEC);
+    else if (st.flag_otpw) SERIAL_CHAR('F');
+    SERIAL_CHAR('\t');
+  }
+
   template<typename TMC>
   void monitor_tmc_driver(TMC &st) {
     TMC_driver_data data = get_driver_data(st);
+    if ((data.drv_status == 0xFFFFFFFF) || (data.drv_status == 0x0)) return;
 
     if (data.is_ot /* | data.s2ga | data.s2gb*/) st.error_count++;
     else if (st.error_count > 0) st.error_count--;
@@ -116,40 +171,25 @@ bool report_tmc_status = false;
       if (st.error_count >= 10) {
         SERIAL_EOL();
         st.printLabel();
-        SERIAL_ECHOPGM(" driver error detected: 0x");
-        SERIAL_PRINTLN(data.drv_status, HEX);
-        if (data.is_ot) SERIAL_ECHOLNPGM("overtemperature");
-        if (st.s2ga()) SERIAL_ECHOLNPGM("short to ground (coil A)");
-        if (st.s2gb()) SERIAL_ECHOLNPGM("short to ground (coil B)");
-        #if ENABLED(TMC_DEBUG)
-          tmc_report_all();
-        #endif
-        kill(PSTR("Driver error"));
+        report_driver_error(data, axis);
       }
     #endif
 
     // Report if a warning was triggered
     if (data.is_otpw && st.otpw_count == 0) {
-      char timestamp[10];
-      duration_t elapsed = print_job_timer.duration();
-      const bool has_days = (elapsed.value > 60*60*24L);
-      (void)elapsed.toDigital(timestamp, has_days);
-      SERIAL_EOL();
-      SERIAL_ECHO(timestamp);
-      SERIAL_ECHOPGM(": ");
-      st.printLabel();
-      SERIAL_ECHOPGM(" driver overtemperature warning! (");
-      SERIAL_ECHO(st.getMilliamps());
-      SERIAL_ECHOLNPGM("mA)");
+      report_driver_otpw(st);
     }
     #if CURRENT_STEP_DOWN > 0
       // Decrease current if is_otpw is true and driver is enabled and there's been more than 4 warnings
-      if (data.is_otpw && st.isEnabled() && st.otpw_count > 4) {
-        st.rms_current(st.getMilliamps() - (CURRENT_STEP_DOWN));
-        #if ENABLED(REPORT_CURRENT_CHANGE)
-          st.printLabel();
-          SERIAL_ECHOLNPAIR(" current decreased to ", st.getMilliamps());
-        #endif
+      if (data.is_otpw && st.otpw_count > 4) {
+        uint16_t I_rms = st.getMilliamps();
+        if (st.isEnabled() && I_rms > 100) {
+          st.rms_current(I_rms - (CURRENT_STEP_DOWN));
+          #if ENABLED(REPORT_CURRENT_CHANGE)
+            st.printLabel();
+            SERIAL_ECHOLNPAIR(" current decreased to ", st.getMilliamps());
+          #endif
+        }
       }
     #endif
 
@@ -159,27 +199,19 @@ bool report_tmc_status = false;
     }
     else if (st.otpw_count > 0) st.otpw_count = 0;
 
-    if (report_tmc_status) {
-      const uint32_t pwm_scale = get_pwm_scale(st);
-      st.printLabel();
-      SERIAL_ECHOPAIR(":", pwm_scale);
-      SERIAL_ECHOPGM(" |0b"); SERIAL_PRINT(get_status_response(st), BIN);
-      SERIAL_ECHOPGM("| ");
-      if (st.error_count) SERIAL_CHAR('E');
-      else if (data.is_ot) SERIAL_CHAR('O');
-      else if (data.is_otpw) SERIAL_CHAR('W');
-      else if (st.otpw_count > 0) SERIAL_PRINT(st.otpw_count, DEC);
-      else if (st.flag_otpw) SERIAL_CHAR('F');
-      SERIAL_CHAR('\t');
-    }
+    #if ENABLED(TMC_DEBUG)
+      if (report_tmc_status) {
+        report_polled_driver_data(st, data);
+      }
+    #endif
   }
 
   #define HAS_HW_COMMS(ST) AXIS_DRIVER_TYPE(ST, TMC2130) || AXIS_DRIVER_TYPE(ST, TMC2660) || (AXIS_DRIVER_TYPE(ST, TMC2208) && defined(ST##_HARDWARE_SERIAL))
 
   void monitor_tmc_driver() {
-    static millis_t next_cOT = 0;
-    if (ELAPSED(millis(), next_cOT)) {
-      next_cOT = millis() + 500;
+    static millis_t next_poll = 0;
+    if (ELAPSED(millis(), next_poll)) {
+      next_poll = millis() + 500;
       #if HAS_HW_COMMS(X)
         monitor_tmc_driver(stepperX);
       #endif
@@ -220,7 +252,9 @@ bool report_tmc_status = false;
         monitor_tmc_driver(stepperE5);
       #endif
 
-      if (report_tmc_status) SERIAL_EOL();
+      #if ENABLED(TMC_DEBUG)
+        if (report_tmc_status) SERIAL_EOL();
+      #endif
     }
   }
 
