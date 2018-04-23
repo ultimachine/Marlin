@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".31" // Change this with each update
+#define LULZBOT_FW_VERSION ".32" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1798,9 +1798,15 @@
 #endif
 
 #if defined(LULZBOT_USE_Z_BELT)
-    #define LULZBOT_MANUAL_FEEDRATE       {50*60, 50*60, 40*60, 60} // (mm/min)
+    #define LULZBOT_MANUAL_FEEDRATE_Z 40*60
 #else
-    #define LULZBOT_MANUAL_FEEDRATE       {50*60, 50*60,  4*60, 60} // (mm/min)
+    #define LULZBOT_MANUAL_FEEDRATE_Z  4*60
+#endif
+
+#if LULZBOT_EXTRUDERS == 2
+    #define LULZBOT_MANUAL_FEEDRATE       {50*60, 50*60, LULZBOT_MANUAL_FEEDRATE_Z, 60, 60} // (mm/min)
+#else
+    #define LULZBOT_MANUAL_FEEDRATE       {50*60, 50*60, LULZBOT_MANUAL_FEEDRATE_Z, 60} // (mm/min)
 #endif
 
 #if defined(LULZBOT_USE_EINSYRAMBO)
