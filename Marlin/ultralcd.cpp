@@ -586,8 +586,10 @@ uint16_t max_display_update_time = 0;
     if (screen_history_depth > 0) {
       --screen_history_depth;
       lcd_goto_screen(
-        screen_history[screen_history_depth].menu_function,
-        screen_history[screen_history_depth].encoder_position
+        screen_history[screen_history_depth].menu_function
+        #if !defined(LULZBOT_RESET_SELECTION_TO_FIRST_ON_MENU_BACK)
+        ,screen_history[screen_history_depth].encoder_position
+        #endif
       );
     }
     else

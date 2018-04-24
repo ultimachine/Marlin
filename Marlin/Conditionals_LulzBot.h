@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".33" // Change this with each update
+#define LULZBOT_FW_VERSION ".34" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1595,8 +1595,7 @@
     #define LULZBOT_EXECUTE_IMMEDIATE_IMPL \
         void execute_commands_immediate_P(const char *pgcode) { \
             /* Save the parser state */ \
-            char saved_cmd[strlen(parser.command_ptr) + 1]; \
-            strcpy(saved_cmd, parser.command_ptr); \
+            char *saved_cmd = parser.command_ptr; \
             /* Process individual commands in string */ \
             while(pgm_read_byte_near(pgcode) != '\0') { \
                 /* Break up string at '\n' delimiters */ \
@@ -1744,7 +1743,11 @@
     #define LULZBOT_DEFAULT_YJERK                 12.0
     #define LULZBOT_DEFAULT_ZJERK                  0.4
 
-    #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.375
+    #if defined(LULZBOT_USE_Z_BELT)
+        #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.1
+    #else
+        #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.375
+    #endif
 
 #elif defined(LULZBOT_IS_TAZ)
     #define LULZBOT_DEFAULT_XJERK                 8.0
@@ -1901,6 +1904,7 @@
     #define LULZBOT_THIN_OVERLAY_ARROWS
     #define LULZBOT_DISABLE_KILL_BUTTON
     #define LULZBOT_ZOFFSET_PRECISION ftostr32
+    #define LULZBOT_RESET_SELECTION_TO_FIRST_ON_MENU_BACK
 #endif
 
 /* Marlin requires static PSTRs to display on the LCD display, because of this */
