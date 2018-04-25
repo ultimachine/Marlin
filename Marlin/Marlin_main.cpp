@@ -362,6 +362,7 @@
 
 LULZBOT_EXECUTE_IMMEDIATE_DECL
 LULZBOT_G29_WITH_RETRY_DECL
+LULZBOT_BED_LEVELING_DECL
 
 bool Running = true;
 
@@ -5078,6 +5079,8 @@ void home_all_axes() { gcode_G28(true); }
 
               incremental_LSF(&lsf_results, xProbe, yProbe, measured_z);
 
+              LULZBOT_BED_LEVELING_POINT(abl_probe_index, xProbe, yProbe, measured_z)
+
             #elif ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
               z_values[xCount][yCount] = measured_z + zoffset;
@@ -5183,6 +5186,8 @@ void home_all_axes() { gcode_G28(true); }
         plane_equation_coefficients[2] = -lsf_results.D;
 
         mean /= abl2;
+
+        LULZBOT_BED_LEVELING_SUMMARY
 
         if (verbose_level) {
           SERIAL_PROTOCOLPGM("Eqn coefficients: a: ");
