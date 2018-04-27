@@ -5187,9 +5187,9 @@ void home_all_axes() { gcode_G28(true); }
 
         mean /= abl2;
 
-        LULZBOT_BED_LEVELING_SUMMARY
-
         if (verbose_level) {
+          LULZBOT_BED_LEVELING_SUMMARY
+
           SERIAL_PROTOCOLPGM("Eqn coefficients: a: ");
           SERIAL_PROTOCOL_F(plane_equation_coefficients[0], 8);
           SERIAL_PROTOCOLPGM(" b: ");

@@ -122,7 +122,6 @@
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
     #define LULZBOT_LIGHTWEIGHT_UI
     #define LULZBOT_USE_EXPERIMENTAL_FEATURES
-    #define LULZBOT_BED_LEVELING_DEBUG
 #endif
 
 #if defined(LULZBOT_Hibiscus_Mini2_CLCD)
@@ -1549,8 +1548,8 @@
     // Mini has a horizontal wiping pad on the back of the bed
     #define LULZBOT_STANDARD_WIPE_X1                       45
     #define LULZBOT_STANDARD_WIPE_X2                       115
-    #define LULZBOT_STANDARD_WIPE_Y1                       174
-    #define LULZBOT_STANDARD_WIPE_Y2                       174
+    #define LULZBOT_STANDARD_WIPE_Y1                       176
+    #define LULZBOT_STANDARD_WIPE_Y2                       176
     #define LULZBOT_STANDARD_WIPE_Z                        1
 
 #elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED) && defined(LULZBOT_USE_Z_SCREW)
@@ -1731,7 +1730,7 @@
 
 /******************************** PROBE QUALITY CHECK *************************/
 
-#if defined(LULZBOT_BED_LEVELING_DEBUG)
+#if defined(LULZBOT_USE_AUTOLEVELING)
     #define LULZBOT_BED_LEVELING_DECL vector_3 bp[4];
     #define LULZBOT_BED_LEVELING_POINT(i,x,y,z) bp[i] = vector_3(x,y,z);
     #define LULZBOT_BED_LEVELING_SUMMARY \
@@ -1740,6 +1739,7 @@
             float a = norm.x, b = norm.y, c = norm.z, d = -bp[0].x*a -bp[0].y*b -bp[0].z*c; \
             float dist = abs(a * bp[3].x + b * bp[3].y + c * bp[3].z + d)/sqrt( a*a + b*b + c*c ); \
             SERIAL_PROTOCOLLNPAIR("4th probe point, distance from plane: ", dist); \
+            SERIAL_EOL(); \
         }
 #else
     #define LULZBOT_BED_LEVELING_DECL
@@ -1972,6 +1972,7 @@
     #define LULZBOT_DISABLE_KILL_BUTTON
     #define LULZBOT_ZOFFSET_PRECISION ftostr32
     #define LULZBOT_RESET_SELECTION_TO_FIRST_ON_MENU_BACK
+    #define LULZBOT_HIDE_LCD_BED_LEVELING
 #endif
 
 /* Marlin requires static PSTRs to display on the LCD display, because of this */

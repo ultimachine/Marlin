@@ -2712,6 +2712,7 @@ void kill_screen(const char* lcd_msg) {
       #if ENABLED(PROBE_MANUALLY)
         if (!g29_in_progress)
       #endif
+      #if !defined(LULZBOT_HIDE_LCD_BED_LEVELING)
           MENU_ITEM(submenu, MSG_BED_LEVELING,
             #if ENABLED(ENABLE_LEVELING_FADE_HEIGHT)
               _lcd_goto_bed_leveling
@@ -2719,6 +2720,7 @@ void kill_screen(const char* lcd_msg) {
               lcd_bed_leveling
             #endif
           );
+      #endif
     #elif PLANNER_LEVELING && DISABLED(PROBE_MANUALLY)
       MENU_ITEM(gcode, MSG_BED_LEVELING, LULZBOT_MENU_BED_LEVELING_GCODE);
     #endif
