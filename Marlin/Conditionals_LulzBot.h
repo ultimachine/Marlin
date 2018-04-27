@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".36" // Change this with each update
+#define LULZBOT_FW_VERSION ".37" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -645,6 +645,54 @@
         "M400\n"                 /* Finish moves */ \
         "G28\n"                  /* Rehome */ \
         "M117 Leveling done."    /* Set LCD status */
+#endif
+
+
+/****************************** BACKLASH COMPENSATION **************************/
+
+#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
+    //#define LULZBOT_AXIS_BACKLASH {0.00, 0.00, 0.35, 0}
+#endif
+
+#if defined(LULZBOT_AXIS_BACKLASH)
+    #define SIGN(v) ((v < 0) ? -1.0 : 1.0)
+    #define LULZBOT_AXIS_BACKLASH_CORRECTION \
+        { \
+            static const float backlash[NUM_AXIS] = LULZBOT_AXIS_BACKLASH; \
+            static uint8_t last_direction_bits; \
+            static bool is_correction = false; \
+            if(!is_correction && planner.leveling_active) { \
+                uint8_t changed_dir = last_direction_bits ^ dm; \
+                /* Ignore direction change if no steps are taken in that direction */ \
+                if(da == 0) CBI(changed_dir, X_AXIS); \
+                if(db == 0) CBI(changed_dir, Y_AXIS); \
+                if(dc == 0) CBI(changed_dir, Z_AXIS); \
+                if(de == 0) CBI(changed_dir, E_AXIS); \
+                /* Update the direction bits */ \
+                last_direction_bits ^= changed_dir; \
+                /* When there is motion in an opposing direction, apply the backlash correction */ \
+                if(changed_dir) { \
+                    long saved_position[NUM_AXIS] = { 0 }; \
+                    COPY(saved_position, position); \
+                    const long x_backlash = TEST(changed_dir, X_AXIS) ? backlash[X_AXIS] * axis_steps_per_mm[X_AXIS] * SIGN(da) : 0; \
+                    const long y_backlash = TEST(changed_dir, Y_AXIS) ? backlash[Y_AXIS] * axis_steps_per_mm[Y_AXIS] * SIGN(db) : 0; \
+                    const long z_backlash = TEST(changed_dir, Z_AXIS) ? backlash[Z_AXIS] * axis_steps_per_mm[Z_AXIS] * SIGN(dc) : 0; \
+                    const long e_backlash = TEST(changed_dir, E_AXIS) ? backlash[E_AXIS] * axis_steps_per_mm[E_AXIS] * SIGN(de) : 0; \
+                    is_correction = true; /* Avoid infinite recursion */ \
+                    buffer_segment( \
+                        (position[X_AXIS] + x_backlash)/axis_steps_per_mm[X_AXIS], \
+                        (position[Y_AXIS] + y_backlash)/axis_steps_per_mm[Y_AXIS], \
+                        (position[Z_AXIS] + z_backlash)/axis_steps_per_mm[Z_AXIS], \
+                        (position[E_AXIS] + e_backlash)/axis_steps_per_mm[E_AXIS_N], \
+                        fr_mm_s, extruder \
+                    ); \
+                    is_correction = false; \
+                    COPY(position, saved_position); \
+                } \
+            } \
+        }
+#else
+    #define LULZBOT_AXIS_BACKLASH_CORRECTION
 #endif
 
 /*************************** COMMON TOOLHEADS PARAMETERS ***********************/
