@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".40" // Change this with each update
+#define LULZBOT_FW_VERSION ".42" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1704,8 +1704,8 @@
 /****************************** BACKLASH COMPENSATION **************************/
 
 #if defined(LULZBOT_USE_Z_BACKLASH_COMPENSATION)
-    #define LULZBOT_BACKLASH_AUTOPROBE_RESOLUTION 0.005
-    #define LULZBOT_BACKLASH_AUTOPROBE_LIMIT      0.5
+    #define LULZBOT_BACKLASH_MEASUREMENT_RESOLUTION 0.005
+    #define LULZBOT_BACKLASH_MEASUREMENT_LIMIT      0.5
 
     #if ENABLED(LULZBOT_Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
         #if defined(LULZBOT_Z_MIN_ENDSTOP_INVERTING)
@@ -1721,27 +1721,29 @@
         #endif
     #endif
 
-    #define LULZBOT_BACKLASH_AUTOPROBE_DECL   int32_t z_backlash_steps = 0;
-    #define LULZBOT_BACKLASH_AUTOPROBE_EXTERN extern int32_t z_backlash_steps;
-    #define LULZBOT_BACKLASH_AUTOPROBE_RESET  z_backlash_steps = LULZBOT_BACKLASH_AUTOPROBE_LIMIT * planner.axis_steps_per_mm[Z_AXIS];
+    #define LULZBOT_BACKLASH_MEASUREMENT_DECL   int32_t z_backlash_steps = 0;
+    #define LULZBOT_BACKLASH_MEASUREMENT_EXTERN extern int32_t z_backlash_steps;
+    #define LULZBOT_BACKLASH_MEASUREMENT_START  z_backlash_steps = LULZBOT_BACKLASH_MEASUREMENT_LIMIT * planner.axis_steps_per_mm[Z_AXIS];
 
-    #define LULZBOT_BACKLASH_AUTOPROBE \
+    #define LULZBOT_BACKLASH_MEASUREMENT \
         { \
+            /* Measure Z backlash by raising nozzle in increments until probe breaks contact with washer */ \
             float start_height = current_position[Z_AXIS]; \
-            while(current_position[Z_AXIS] < (start_height + LULZBOT_BACKLASH_AUTOPROBE_LIMIT) && LULZBOT_TEST_PROBE_PIN) { \
-                do_blocking_move_to_z(current_position[Z_AXIS] + LULZBOT_BACKLASH_AUTOPROBE_RESOLUTION, MMM_TO_MMS(Z_PROBE_SPEED_SLOW)); \
+            while(current_position[Z_AXIS] < (start_height + LULZBOT_BACKLASH_MEASUREMENT_LIMIT) && LULZBOT_TEST_PROBE_PIN) { \
+                do_blocking_move_to_z(current_position[Z_AXIS] + LULZBOT_BACKLASH_MEASUREMENT_RESOLUTION, MMM_TO_MMS(Z_PROBE_SPEED_SLOW)); \
             } \
             const float measured_backlash_mm = current_position[Z_AXIS] - start_height; \
+            /* Take the minimum backlash from all four corners, as we can only compensate for the shared amount */ \
             z_backlash_steps = min(z_backlash_steps, measured_backlash_mm * planner.axis_steps_per_mm[Z_AXIS]); \
         }
 
-    #define LULZBOT_BACKLASH_CORRECTION \
+    #define LULZBOT_BACKLASH_COMPENSATION \
         { \
             static bool last_z_direction; \
             static bool is_correction = false; \
             if(!is_correction && planner.leveling_active) { \
                 const bool new_z_direction = TEST(dm, Z_AXIS); \
-                /* When there is motion in an opposing Z direction, apply the backlash correction */ \
+                /* When Z changes direction, insert backlash correction */ \
                 if((last_z_direction != new_z_direction) && (dc != 0)) { \
                     last_z_direction = new_z_direction; \
                     int32_t saved_position[NUM_AXIS], tweaked_position[XYZE]; \
@@ -1756,15 +1758,15 @@
             } \
         }
 
-    #define LULZBOT_BACKLASH_AUTOPROBE_SUMMARY \
+    #define LULZBOT_BACKLASH_MEASUREMENT_SUMMARY \
         SERIAL_ECHOLNPAIR("Measured Z-axis backlash: ", float(z_backlash_steps) / planner.axis_steps_per_mm[Z_AXIS]);
 #else
-    #define LULZBOT_BACKLASH_AUTOPROBE
-    #define LULZBOT_BACKLASH_AUTOPROBE_DECL
-    #define LULZBOT_BACKLASH_AUTOPROBE_EXTERN
-    #define LULZBOT_BACKLASH_AUTOPROBE_RESET
-    #define LULZBOT_BACKLASH_CORRECTION
-    #define LULZBOT_BACKLASH_AUTOPROBE_SUMMARY
+    #define LULZBOT_BACKLASH_MEASUREMENT
+    #define LULZBOT_BACKLASH_MEASUREMENT_DECL
+    #define LULZBOT_BACKLASH_MEASUREMENT_EXTERN
+    #define LULZBOT_BACKLASH_MEASUREMENT_START
+    #define LULZBOT_BACKLASH_MEASUREMENT_SUMMARY
+    #define LULZBOT_BACKLASH_COMPENSATION
 #endif
 
 /******************************** MOTOR CURRENTS *******************************/

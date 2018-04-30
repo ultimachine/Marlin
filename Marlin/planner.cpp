@@ -73,7 +73,7 @@
   #include "mesh_bed_leveling.h"
 #endif
 
-LULZBOT_BACKLASH_AUTOPROBE_EXTERN
+LULZBOT_BACKLASH_MEASUREMENT_EXTERN
 
 Planner planner;
 
@@ -789,7 +789,7 @@ void Planner::_buffer_steps(const int32_t (&target)[XYZE], float fr_mm_s, const 
   #endif
   if (de < 0) SBI(dm, E_AXIS);
 
-  LULZBOT_BACKLASH_CORRECTION
+  LULZBOT_BACKLASH_COMPENSATION
 
   const float esteps_float = de * e_factor[extruder];
   const int32_t esteps = abs(esteps_float) + 0.5;
