@@ -363,6 +363,7 @@
 LULZBOT_EXECUTE_IMMEDIATE_DECL
 LULZBOT_G29_WITH_RETRY_DECL
 LULZBOT_BED_LEVELING_DECL
+LULZBOT_BACKLASH_AUTOPROBE_DECL
 
 bool Running = true;
 
@@ -2275,6 +2276,7 @@ static void clean_up_after_endstop_or_probe_move() {
         // move down slowly to find bed
         //if (do_probe_move(-10, Z_PROBE_SPEED_SLOW)) return NAN;
         LULZBOT_DO_PROBE_MOVE(Z_PROBE_SPEED_SLOW);
+        LULZBOT_BACKLASH_AUTOPROBE
 
     #if MULTIPLE_PROBING > 2
         probes_total += current_position[Z_AXIS];
@@ -5189,6 +5191,7 @@ void home_all_axes() { gcode_G28(true); }
 
         if (verbose_level) {
           LULZBOT_BED_LEVELING_SUMMARY
+          LULZBOT_BACKLASH_AUTOPROBE_SUMMARY
 
           SERIAL_PROTOCOLPGM("Eqn coefficients: a: ");
           SERIAL_PROTOCOL_F(plane_equation_coefficients[0], 8);
@@ -11824,6 +11827,7 @@ void process_parsed_command(
       #if HAS_LEVELING
         case 29: // G29 Detailed Z probe, probes the bed at 3 or more points,
                  // or provides access to the UBL System if enabled.
+          LULZBOT_BACKLASH_AUTOPROBE_RESET
           #if defined(LULZBOT_G29_COMMAND)
             LULZBOT_G29_COMMAND
           #else
