@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".42" // Change this with each update
+#define LULZBOT_FW_VERSION ".47" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1622,6 +1622,7 @@
         void gcode_G29_with_retry() { \
             set_bed_leveling_enabled(false); \
             for(uint8_t i = 0; i < LULZBOT_NUM_REWIPES; i++) { \
+                LULZBOT_BACKLASH_MEASUREMENT_START \
                 LULZBOT_ENABLE_PROBE_PINS(true); \
                 gcode_G29(); \
                 LULZBOT_ENABLE_PROBE_PINS(false); \
@@ -1704,8 +1705,10 @@
 /****************************** BACKLASH COMPENSATION **************************/
 
 #if defined(LULZBOT_USE_Z_BACKLASH_COMPENSATION)
+
     #define LULZBOT_BACKLASH_MEASUREMENT_RESOLUTION 0.005
     #define LULZBOT_BACKLASH_MEASUREMENT_LIMIT      0.5
+    #define LULZBOT_BACKLASH_SMOOTHING_DISTANCE     1500
 
     #if ENABLED(LULZBOT_Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
         #if defined(LULZBOT_Z_MIN_ENDSTOP_INVERTING)
@@ -1721,9 +1724,9 @@
         #endif
     #endif
 
-    #define LULZBOT_BACKLASH_MEASUREMENT_DECL   int32_t z_backlash_steps = 0;
+    #define LULZBOT_BACKLASH_MEASUREMENT_DECL   int32_t z_backlash_steps;
     #define LULZBOT_BACKLASH_MEASUREMENT_EXTERN extern int32_t z_backlash_steps;
-    #define LULZBOT_BACKLASH_MEASUREMENT_START  z_backlash_steps = LULZBOT_BACKLASH_MEASUREMENT_LIMIT * planner.axis_steps_per_mm[Z_AXIS];
+    #define LULZBOT_BACKLASH_MEASUREMENT_START  z_backlash_steps = 0;
 
     #define LULZBOT_BACKLASH_MEASUREMENT \
         { \
@@ -1733,27 +1736,36 @@
                 do_blocking_move_to_z(current_position[Z_AXIS] + LULZBOT_BACKLASH_MEASUREMENT_RESOLUTION, MMM_TO_MMS(Z_PROBE_SPEED_SLOW)); \
             } \
             const float measured_backlash_mm = current_position[Z_AXIS] - start_height; \
-            /* Take the minimum backlash from all four corners, as we can only compensate for the shared amount */ \
-            z_backlash_steps = min(z_backlash_steps, measured_backlash_mm * planner.axis_steps_per_mm[Z_AXIS]); \
+            /* Average the backlash from all four corners */ \
+            z_backlash_steps += 0.25 * measured_backlash_mm * planner.axis_steps_per_mm[Z_AXIS]; \
         }
 
     #define LULZBOT_BACKLASH_COMPENSATION \
         { \
-            static bool last_z_direction; \
-            static bool is_correction = false; \
-            if(!is_correction && planner.leveling_active) { \
-                const bool new_z_direction = TEST(dm, Z_AXIS); \
-                /* When Z changes direction, insert backlash correction */ \
-                if((last_z_direction != new_z_direction) && (dc != 0)) { \
-                    last_z_direction = new_z_direction; \
-                    int32_t saved_position[NUM_AXIS], tweaked_position[XYZE]; \
-                    COPY(  saved_position, position); \
-                    COPY(tweaked_position, position); \
-                    tweaked_position[Z_AXIS] += dc < 0 ? -z_backlash_steps : z_backlash_steps; \
-                    is_correction = true; /* Avoid infinite recursion */ \
-                    _buffer_steps(tweaked_position, fr_mm_s, extruder); \
-                    is_correction = false; \
-                    COPY(position, saved_position); \
+            static bool    last_z_direction; \
+            static int32_t residual_z_error = 0; \
+            if(planner.leveling_active) { \
+                if(dc != 0) { \
+                    const bool new_z_direction = TEST(dm, Z_AXIS); \
+                    /* When Z changes direction, add backlash correction to residual_z_error, \
+                     * to be compensated over one or more subsequent segments */ \
+                    if(last_z_direction != new_z_direction) { \
+                        last_z_direction = new_z_direction; \
+                        if(dc < 0) { \
+                            residual_z_error -= z_backlash_steps; \
+                        } else { \
+                            residual_z_error += z_backlash_steps; \
+                        } \
+                    } \
+                    /* Take up a portion of the residual_z_error in this segment, but \
+                     * only when the current segment travels along Z in the same \
+                     * direction as the residual error */ \
+                    if((dc > 0 && residual_z_error > 0) || (dc < 0 && residual_z_error < 0)) { \
+                        const float segment_len = sqrt(da*da+db*db); \
+                        const int32_t z_adj = residual_z_error * min(1.0, segment_len / LULZBOT_BACKLASH_SMOOTHING_DISTANCE); \
+                        dc               += z_adj; \
+                        residual_z_error -= z_adj; \
+                    } \
                 } \
             } \
         }

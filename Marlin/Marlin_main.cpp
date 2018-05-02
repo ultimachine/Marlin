@@ -11827,7 +11827,6 @@ void process_parsed_command(
       #if HAS_LEVELING
         case 29: // G29 Detailed Z probe, probes the bed at 3 or more points,
                  // or provides access to the UBL System if enabled.
-          LULZBOT_BACKLASH_MEASUREMENT_START
           #if defined(LULZBOT_G29_COMMAND)
             LULZBOT_G29_COMMAND
           #else
