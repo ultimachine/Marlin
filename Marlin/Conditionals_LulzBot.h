@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".49" // Change this with each update
+#define LULZBOT_FW_VERSION ".50" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1708,7 +1708,7 @@
 
     #define LULZBOT_BACKLASH_MEASUREMENT_RESOLUTION 0.005
     #define LULZBOT_BACKLASH_MEASUREMENT_LIMIT      0.5
-    #define LULZBOT_BACKLASH_SMOOTHING_DISTANCE     150
+    #define LULZBOT_BACKLASH_SMOOTHING_DISTANCE     300
 
     #if ENABLED(LULZBOT_Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
         #if defined(LULZBOT_Z_MIN_ENDSTOP_INVERTING)
