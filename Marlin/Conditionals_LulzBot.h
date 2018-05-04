@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".48" // Change this with each update
+#define LULZBOT_FW_VERSION ".49" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1706,10 +1706,9 @@
 
 #if defined(LULZBOT_USE_Z_BACKLASH_COMPENSATION)
 
-    #define LULZBOT_BACKLASH_CORRECTION_AMOUNT      0.75
     #define LULZBOT_BACKLASH_MEASUREMENT_RESOLUTION 0.005
     #define LULZBOT_BACKLASH_MEASUREMENT_LIMIT      0.5
-    #define LULZBOT_BACKLASH_SMOOTHING_DISTANCE     1000
+    #define LULZBOT_BACKLASH_SMOOTHING_DISTANCE     150
 
     #if ENABLED(LULZBOT_Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
         #if defined(LULZBOT_Z_MIN_ENDSTOP_INVERTING)
@@ -1738,7 +1737,7 @@
             } \
             const float measured_backlash_mm = current_position[Z_AXIS] - start_height; \
             /* Average the backlash from all four corners */ \
-            z_backlash_steps += LULZBOT_BACKLASH_CORRECTION_AMOUNT * 0.25 * measured_backlash_mm * planner.axis_steps_per_mm[Z_AXIS]; \
+            z_backlash_steps += 0.25 * measured_backlash_mm * planner.axis_steps_per_mm[Z_AXIS]; \
         }
 
     #define LULZBOT_BACKLASH_COMPENSATION \
