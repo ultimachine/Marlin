@@ -2721,7 +2721,7 @@ void kill_screen(const char* lcd_msg) {
             #endif
           );
       #endif
-    #elif PLANNER_LEVELING && DISABLED(PROBE_MANUALLY)
+    #elif PLANNER_LEVELING && DISABLED(PROBE_MANUALLY) && defined(LULZBOT_MENU_BED_LEVELING_GCODE)
       MENU_ITEM(gcode, MSG_BED_LEVELING, LULZBOT_MENU_BED_LEVELING_GCODE);
     #endif
 
