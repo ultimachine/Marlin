@@ -720,15 +720,9 @@ void Planner::check_axes_activity() {
  */
 void Planner::_buffer_steps(const int32_t (&target)[XYZE], float fr_mm_s, const uint8_t extruder) {
 
-  #if defined(LULZBOT_USE_Z_BACKLASH_COMPENSATION)
-        int32_t da = target[X_AXIS] - position[X_AXIS],
-                db = target[Y_AXIS] - position[Y_AXIS],
-                dc = target[Z_AXIS] - position[Z_AXIS];
-  #else
   const int32_t da = target[X_AXIS] - position[X_AXIS],
                 db = target[Y_AXIS] - position[Y_AXIS],
                 dc = target[Z_AXIS] - position[Z_AXIS];
-  #endif
 
   int32_t de = target[E_AXIS] - position[E_AXIS];
 
@@ -794,8 +788,6 @@ void Planner::_buffer_steps(const int32_t (&target)[XYZE], float fr_mm_s, const 
     if (dc < 0) SBI(dm, Z_AXIS);
   #endif
   if (de < 0) SBI(dm, E_AXIS);
-
-  LULZBOT_BACKLASH_COMPENSATION
 
   const float esteps_float = de * e_factor[extruder];
   const int32_t esteps = abs(esteps_float) + 0.5;
@@ -1043,6 +1035,8 @@ void Planner::_buffer_steps(const int32_t (&target)[XYZE], float fr_mm_s, const 
     );
   }
   const float inverse_millimeters = 1.0 / block->millimeters;  // Inverse millimeters to remove multiple divides
+
+  LULZBOT_BACKLASH_COMPENSATION
 
   // Calculate inverse time for this move. No divide by zero due to previous checks.
   // Example: At 120mm/s a 60mm move takes 0.5s. So this will give 2.0.

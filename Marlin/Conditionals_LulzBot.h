@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".50" // Change this with each update
+#define LULZBOT_FW_VERSION ".51" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1708,7 +1708,7 @@
 
     #define LULZBOT_BACKLASH_MEASUREMENT_RESOLUTION 0.005
     #define LULZBOT_BACKLASH_MEASUREMENT_LIMIT      0.5
-    #define LULZBOT_BACKLASH_SMOOTHING_DISTANCE     300
+    #define LULZBOT_BACKLASH_SMOOTHING_DISTANCE     3
 
     #if ENABLED(LULZBOT_Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
         #if defined(LULZBOT_Z_MIN_ENDSTOP_INVERTING)
@@ -1761,10 +1761,9 @@
                      * only when the current segment travels along Z in the same \
                      * direction as the residual error */ \
                     if((dc > 0 && residual_z_error > 0) || (dc < 0 && residual_z_error < 0)) { \
-                        const float segment_len = sqrt(da*da+db*db); \
-                        const int32_t z_adj = residual_z_error * min(1.0, segment_len / LULZBOT_BACKLASH_SMOOTHING_DISTANCE); \
-                        dc               += z_adj; \
-                        residual_z_error -= z_adj; \
+                        const int32_t z_adj = residual_z_error * min(1.0, block->millimeters / LULZBOT_BACKLASH_SMOOTHING_DISTANCE); \
+                        block->steps[Z_AXIS] += labs(z_adj); \
+                        residual_z_error     -= z_adj; \
                     } \
                 } \
             } \
@@ -1972,7 +1971,7 @@
     #if defined(LULZBOT_USE_AUTOLEVELING)
         #define LULZBOT_BABYSTEPPING
         #define LULZBOT_BABYSTEP_ZPROBE_OFFSET
-        #define LULZBOT_MENU_BED_LEVELING_GCODE "G28 XY\nM109 S175\nG28 Z\nM109 R145\nG12\nG29\nM104 S0"
+        //#define LULZBOT_MENU_BED_LEVELING_GCODE "G28 XY\nM109 S175\nG28 Z\nM109 R145\nG12\nG29\nM104 S0"
     #endif
     #define LULZBOT_SHOW_CUSTOM_BOOTSCREEN
     #define LULZBOT_ENCODER_PULSES_PER_STEP 2
