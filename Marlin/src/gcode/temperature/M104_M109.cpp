@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+#include "Arduino.h"
 #include "../gcode.h"
 #include "../../module/temperature.h"
 #include "../../module/motion.h"
@@ -31,7 +31,7 @@
   #include "../../module/printcounter.h"
 #endif
 
-#if ENABLED(PRINTER_EVENT_LEDS)
+#if ENABLED(PRINTER_EVENT_LEDS) || ENABLED(NEOPIXEL_LED)
   #include "../../feature/leds/leds.h"
 #endif
 
@@ -230,7 +230,7 @@ void GcodeSuite::M109() {
         set_led_color(LED_WHITE);
       #endif
       #if ENABLED(NEOPIXEL_LED)
-        set_neopixel_color(pixels.Color(NEO_WHITE));
+        //set_neopixel_color(pixels.Color(NEO_WHITE));
       #endif
     #endif
   }

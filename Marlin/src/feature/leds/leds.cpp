@@ -36,7 +36,7 @@ void set_led_color(
 
   #if ENABLED(NEOPIXEL_LED)
     if (w == 255 || (r == 255 && g == 255 && b == 255))
-      neopixel_set_led_color(NEO_WHITE, p);
+      neopixel_set_led_color(NEO_WHITE, 255, p);
     else
       neopixel_set_led_color(r, g, b, w, p);
     return;
