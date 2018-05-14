@@ -908,6 +908,11 @@ void setup() {
   #endif
 }
 
+
+volatile byte canPrintOK = 0;
+void printOK() canPrintOK = 1;
+attachInterrupt(2, printOK, FALLING);
+
 /**
  * The main Marlin program loop
  *
@@ -919,6 +924,10 @@ void setup() {
  *  - Call LCD update
  */
 void loop() {
+  if(canPrintOK==1) {
+    canPrintOK=0;
+    SerialUSB.println("\nok");
+  }
   if (commands_in_queue < BUFSIZE) get_available_commands();
 
   #if ENABLED(SDSUPPORT)
