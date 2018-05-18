@@ -871,8 +871,7 @@ void Planner::_buffer_steps(const int32_t (&target)[XYZE], float fr_mm_s, const 
 
     if (block->steps[X_AXIS] < MIN_STEPS_PER_SEGMENT && block->steps[Y_AXIS] < MIN_STEPS_PER_SEGMENT && block->steps[Z_AXIS] < MIN_STEPS_PER_SEGMENT) {
       block->millimeters = FABS(delta_mm[E_AXIS]);
-    }
-    else {
+    } else {
       block->millimeters = SQRT(
         #if CORE_IS_XY
           sq(delta_mm[X_HEAD]) + sq(delta_mm[Y_HEAD]) + sq(delta_mm[Z_AXIS])
@@ -884,11 +883,14 @@ void Planner::_buffer_steps(const int32_t (&target)[XYZE], float fr_mm_s, const 
           sq(delta_mm[X_AXIS]) + sq(delta_mm[Y_AXIS]) + sq(delta_mm[Z_AXIS])
         #endif
       );
-    }
-    const float inverse_millimeters = 1.0 / block->millimeters;  // Inverse millimeters to remove multiple divides
 
+      // If we make it here, at least one of the axes has more steps than
+      // MIN_STEPS_PER_SEGMENT, so the segment won't get dropped by Marlin
+      // and it is safe to apply the backlash compensation.
+
+      LULZBOT_BACKLASH_COMPENSATION
+    }
     /* NOTE: <<<< The following code was repositioned from below, so that we can use the values it computes */
-    LULZBOT_BACKLASH_COMPENSATION
   #endif
 
   block->steps[E_AXIS] = esteps;
@@ -1097,8 +1099,8 @@ void Planner::_buffer_steps(const int32_t (&target)[XYZE], float fr_mm_s, const 
         #endif
       );
     }
-    const float inverse_millimeters = 1.0 / block->millimeters;  // Inverse millimeters to remove multiple divides
   #endif
+  const float inverse_millimeters = 1.0 / block->millimeters;  // Inverse millimeters to remove multiple divides
 
   // Calculate inverse time for this move. No divide by zero due to previous checks.
   // Example: At 120mm/s a 60mm move takes 0.5s. So this will give 2.0.
