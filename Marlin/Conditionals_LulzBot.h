@@ -1790,9 +1790,10 @@
                     SERIAL_ECHOLNPGM("Backlash correction is active:"); \
                 else \
                     SERIAL_ECHOLNPGM("Backlash correction is inactive:"); \
-                SERIAL_ECHOLNPAIR("  Distance (mm):    Z", z_backlash_distance_mm); \
-                SERIAL_ECHOLNPAIR("  Smoothing (mm):   S", z_backlash_smoothing_mm); \
-                SERIAL_ECHOLNPAIR("  Fade (0-1):       F", z_backlash_fade); \
+                SERIAL_ECHOLNPAIR("  Distance (mm):        Z", z_backlash_distance_mm); \
+                SERIAL_ECHOLNPAIR("  Smoothing (mm):       S", z_backlash_smoothing_mm); \
+                SERIAL_ECHOLNPAIR("  Fade:                 F", z_backlash_fade); \
+                SERIAL_ECHOLNPGM("     (F1.0 = full correction, F0.0 = no correction)"); \
             } \
         }
 
@@ -1804,6 +1805,9 @@
     #define LULZBOT_BACKLASH_MEASUREMENT_START
     #define LULZBOT_BACKLASH_MEASUREMENT_SUMMARY
     #define LULZBOT_BACKLASH_COMPENSATION
+    #define LULZBOT_BACKLASH_COMPENSATION_DECL
+    #define LULZBOT_BACKLASH_COMPENSATION_IMPL
+    #define LULZBOT_BACKLASH_COMPENSATION_GCODE
 #endif
 
 /******************************** MOTOR CURRENTS *******************************/
