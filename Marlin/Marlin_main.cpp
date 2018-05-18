@@ -5191,7 +5191,6 @@ void home_all_axes() { gcode_G28(true); }
 
         if (verbose_level) {
           LULZBOT_BED_LEVELING_SUMMARY
-          LULZBOT_BACKLASH_MEASUREMENT_SUMMARY
 
           SERIAL_PROTOCOLPGM("Eqn coefficients: a: ");
           SERIAL_PROTOCOL_F(plane_equation_coefficients[0], 8);
@@ -9718,6 +9717,10 @@ void quickstop_stepper() {
   SYNC_PLAN_POSITION_KINEMATIC();
 }
 
+#if defined(LULZBOT_BACKLASH_COMPENSATION_GCODE)
+  LULZBOT_BACKLASH_COMPENSATION_GCODE
+#endif
+
 #if HAS_LEVELING
   /**
    * M420: Enable/Disable Bed Leveling and/or set the Z fade height.
@@ -12379,6 +12382,12 @@ void process_parsed_command(
       #if HAS_LEVELING
         case 420: // M420: Enable/Disable Bed Leveling
           gcode_M420();
+          break;
+      #endif
+
+      #if defined(LULZBOT_BACKLASH_COMPENSATION_GCODE)
+        case 425: // M420: Enable/Disable Backlash Compensation
+          gcode_M425();
           break;
       #endif
 

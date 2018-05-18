@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".55" // Change this with each update
+#define LULZBOT_FW_VERSION ".56" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1724,9 +1724,13 @@
         #endif
     #endif
 
-    #define LULZBOT_BACKLASH_MEASUREMENT_DECL   int32_t z_backlash_steps;
-    #define LULZBOT_BACKLASH_MEASUREMENT_EXTERN extern int32_t z_backlash_steps;
-    #define LULZBOT_BACKLASH_MEASUREMENT_START  z_backlash_steps = 0;
+    #define LULZBOT_BACKLASH_MEASUREMENT_DECL \
+        float z_backlash_measured_mm; \
+        float z_backlash_distance_mm = 0; \
+        float z_backlash_smoothing_mm  = LULZBOT_BACKLASH_SMOOTHING_DISTANCE; \
+        float z_backlash_fade  = 0;
+    #define LULZBOT_BACKLASH_MEASUREMENT_EXTERN extern float z_backlash_fade, z_backlash_measured_mm, z_backlash_distance_mm , z_backlash_smoothing_mm;
+    #define LULZBOT_BACKLASH_MEASUREMENT_START  z_backlash_measured_mm = 0;
 
     #define LULZBOT_BACKLASH_MEASUREMENT \
         { \
@@ -1735,45 +1739,67 @@
             while(current_position[Z_AXIS] < (start_height + LULZBOT_BACKLASH_MEASUREMENT_LIMIT) && LULZBOT_TEST_PROBE_PIN) { \
                 do_blocking_move_to_z(current_position[Z_AXIS] + LULZBOT_BACKLASH_MEASUREMENT_RESOLUTION, MMM_TO_MMS(Z_PROBE_SPEED_SLOW)); \
             } \
-            const float measured_backlash_mm = current_position[Z_AXIS] - start_height; \
             /* Average the backlash from all four corners */ \
-            z_backlash_steps += 0.25 * measured_backlash_mm * planner.axis_steps_per_mm[Z_AXIS]; \
+            z_backlash_measured_mm += 0.25 * (current_position[Z_AXIS] - start_height); \
         }
 
-    #define LULZBOT_BACKLASH_COMPENSATION \
-        { \
+    #define LULZBOT_BACKLASH_COMPENSATION_DECL \
+        void backlash_compensation(const int32_t dm, const int32_t dc, block_t*block, float delta_mm[]);
+
+    #define LULZBOT_BACKLASH_COMPENSATION_IMPL \
+        void Planner::backlash_compensation(const int32_t dm, const int32_t dc, block_t*block, float delta_mm[]) { \
             static bool    last_z_direction; \
             static int32_t residual_z_error = 0; \
-            if(planner.leveling_active) { \
-                if(dc != 0) { \
-                    const bool new_z_direction = TEST(dm, Z_AXIS); \
-                    /* When Z changes direction, add backlash correction to residual_z_error, \
-                     * to be compensated over one or more subsequent segments */ \
-                    if(last_z_direction != new_z_direction) { \
-                        last_z_direction = new_z_direction; \
-                        if(dc < 0) { \
-                            residual_z_error -= z_backlash_steps; \
-                        } else { \
-                            residual_z_error += z_backlash_steps; \
-                        } \
-                    } \
-                    /* Take up a portion of the residual_z_error in this segment, but \
-                     * only when the current segment travels along Z in the same \
-                     * direction as the residual error */ \
-                    if((dc > 0 && residual_z_error > 0) || (dc < 0 && residual_z_error < 0)) { \
-                        const int32_t z_adj = residual_z_error * min(1.0, block->millimeters / LULZBOT_BACKLASH_SMOOTHING_DISTANCE); \
-                        block->steps[Z_AXIS] += labs(z_adj); \
-                        residual_z_error     -= z_adj; \
-                    } \
+            if(!planner.leveling_active || z_backlash_fade == 0 || z_backlash_distance_mm == 0) \
+                return; \
+            if(dc != 0) { \
+                const float sign = dc < 0 ? -1 : 1; \
+                const bool new_z_direction = TEST(dm, Z_AXIS); \
+                /* When Z changes direction, add backlash correction to residual_z_error, \
+                 * to be compensated over one or more subsequent segments */ \
+                if(last_z_direction != new_z_direction) { \
+                    last_z_direction = new_z_direction; \
+                    residual_z_error += sign * z_backlash_distance_mm * z_backlash_fade * planner.axis_steps_per_mm[Z_AXIS]; \
+                } \
+                /* Take up a portion of the residual_z_error in this segment, but \
+                 * only when the current segment travels along Z in the same \
+                 * direction as the residual error */ \
+                if((dc > 0 && residual_z_error > 0) || (dc < 0 && residual_z_error < 0)) { \
+                    const int32_t z_adj = residual_z_error * min(1.0, block->millimeters / z_backlash_smoothing_mm); \
+                    block->steps[Z_AXIS] += labs(z_adj); \
+                    residual_z_error     -= z_adj; \
+                    /* Update derived values */ \
+                    delta_mm[Z_AXIS] = sign * block->steps[Z_AXIS] * steps_to_mm[Z_AXIS]; \
+                    block->millimeters = SQRT(sq(delta_mm[X_AXIS]) + sq(delta_mm[Y_AXIS]) + sq(delta_mm[Z_AXIS])); \
                 } \
             } \
         }
 
-    #define LULZBOT_BACKLASH_MEASUREMENT_SUMMARY \
-        SERIAL_ECHOLNPAIR("Measured Z-axis backlash: ", float(z_backlash_steps) / planner.axis_steps_per_mm[Z_AXIS]);
+    #define LULZBOT_BACKLASH_COMPENSATION_GCODE \
+        inline void gcode_M425() { \
+            if (parser.seen('Z')) { \
+                z_backlash_distance_mm = parser.has_value() ? parser.value_float() : z_backlash_measured_mm; \
+                z_backlash_fade  = 1.0; \
+            } \
+            if (parser.seen('F')) z_backlash_fade = max(0, min(1.0, parser.value_float())); \
+            if (parser.seen('S')) z_backlash_smoothing_mm = parser.value_float(); \
+            if (!parser.seen('Z') && !parser.seen('F') && !parser.seen('S')) { \
+                SERIAL_ECHOLNPAIR("Backlash measurement (mm):  ", z_backlash_measured_mm); \
+                SERIAL_EOL(); \
+                if(z_backlash_distance_mm > 0 && z_backlash_fade > 0) \
+                    SERIAL_ECHOLNPGM("Backlash correction is active:"); \
+                else \
+                    SERIAL_ECHOLNPGM("Backlash correction is inactive:"); \
+                SERIAL_ECHOLNPAIR("  Distance (mm):    Z", z_backlash_distance_mm); \
+                SERIAL_ECHOLNPAIR("  Smoothing (mm):   S", z_backlash_smoothing_mm); \
+                SERIAL_ECHOLNPAIR("  Fade (0-1):       F", z_backlash_fade); \
+            } \
+        }
+
 #else
     #define LULZBOT_BACKLASH_MEASUREMENT
     #define LULZBOT_BACKLASH_MEASUREMENT_DECL
+    #define LULZBOT_BACKLASH_MEASUREMENT_IMPL
     #define LULZBOT_BACKLASH_MEASUREMENT_EXTERN
     #define LULZBOT_BACKLASH_MEASUREMENT_START
     #define LULZBOT_BACKLASH_MEASUREMENT_SUMMARY

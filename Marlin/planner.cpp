@@ -709,6 +709,8 @@ void Planner::check_axes_activity() {
 
 #endif // PLANNER_LEVELING
 
+LULZBOT_BACKLASH_COMPENSATION_DECL
+
 /**
  * Planner::_buffer_steps
  *
@@ -853,14 +855,7 @@ void Planner::_buffer_steps(const int32_t (&target)[XYZE], float fr_mm_s, const 
       // If we make it here, at least one of the axes has more steps than
       // MIN_STEPS_PER_SEGMENT, so the segment won't get dropped by Marlin
       // and it is safe to apply the backlash compensation.
-
-      LULZBOT_BACKLASH_COMPENSATION
-
-      // Since backlash compensation may have changed block->steps[Z_AXIS], we
-      // need to recompute delta_mm[Z_AXIS] and block->millimeters
-
-      delta_mm[Z_AXIS]   = ((dc < 0) ? -1.0 : 1.0) * block->steps[Z_AXIS] * steps_to_mm[Z_AXIS];
-      block->millimeters = SQRT(sq(delta_mm[X_AXIS]) + sq(delta_mm[Y_AXIS]) + sq(delta_mm[Z_AXIS]));
+      backlash_compensation(dm, dc, block, delta_mm);
     }
     /* NOTE: <<<< The following code was repositioned from below, so that we can use the values it computes */
   #endif
