@@ -709,7 +709,7 @@ void Planner::check_axes_activity() {
 
 #endif // PLANNER_LEVELING
 
-LULZBOT_BACKLASH_COMPENSATION_DECL
+LULZBOT_BACKLASH_COMPENSATION_IMPL
 
 /**
  * Planner::_buffer_steps
@@ -831,7 +831,7 @@ void Planner::_buffer_steps(const int32_t (&target)[XYZE], float fr_mm_s, const 
     block->steps[Z_AXIS] = labs(dc);
   #endif
 
-  #if defined(LULZBOT_BACKLASH_COMPENSATION)
+  #if defined(LULZBOT_USE_Z_BACKLASH_COMPENSATION)
     #if IS_CORE
       #error Backlash compensation not supported on CORE printers
     #endif
@@ -1012,7 +1012,7 @@ void Planner::_buffer_steps(const int32_t (&target)[XYZE], float fr_mm_s, const 
   else
     NOLESS(fr_mm_s, min_travel_feedrate_mm_s);
 
-  #if !defined(LULZBOT_BACKLASH_COMPENSATION)
+  #if !defined(LULZBOT_USE_Z_BACKLASH_COMPENSATION)
     /**
      * This part of the code calculates the total length of the movement.
      * For cartesian bots, the X_AXIS is the real X movement and same for Y_AXIS.

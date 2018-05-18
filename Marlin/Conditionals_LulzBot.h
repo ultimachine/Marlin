@@ -1744,7 +1744,7 @@
         }
 
     #define LULZBOT_BACKLASH_COMPENSATION_DECL \
-        void backlash_compensation(const int32_t dm, const int32_t dc, block_t*block, float delta_mm[]);
+        static void backlash_compensation(const int32_t dm, const int32_t dc, block_t*block, float delta_mm[]);
 
     #define LULZBOT_BACKLASH_COMPENSATION_IMPL \
         void Planner::backlash_compensation(const int32_t dm, const int32_t dc, block_t*block, float delta_mm[]) { \
@@ -1804,10 +1804,8 @@
     #define LULZBOT_BACKLASH_MEASUREMENT_EXTERN
     #define LULZBOT_BACKLASH_MEASUREMENT_START
     #define LULZBOT_BACKLASH_MEASUREMENT_SUMMARY
-    #define LULZBOT_BACKLASH_COMPENSATION
     #define LULZBOT_BACKLASH_COMPENSATION_DECL
     #define LULZBOT_BACKLASH_COMPENSATION_IMPL
-    #define LULZBOT_BACKLASH_COMPENSATION_GCODE
 #endif
 
 /******************************** MOTOR CURRENTS *******************************/
