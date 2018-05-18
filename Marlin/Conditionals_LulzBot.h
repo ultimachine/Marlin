@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".54" // Change this with each update
+#define LULZBOT_FW_VERSION ".55" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -116,7 +116,7 @@
     #define LULZBOT_REPROBE_EXTENDED_RECOVERY
     #define LULZBOT_USE_TMC_STEALTHCHOP_Z
     #define LULZBOT_USE_Z_BELT
-    //#define LULZBOT_USE_Z_BACKLASH_COMPENSATION
+    #define LULZBOT_USE_Z_BACKLASH_COMPENSATION
     #define LULZBOT_BAUDRATE 250000
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_USE_32_MICROSTEPS_ON_Z
