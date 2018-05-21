@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".56" // Change this with each update
+#define LULZBOT_FW_VERSION ".57" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -122,7 +122,7 @@
     #define LULZBOT_USE_32_MICROSTEPS_ON_Z
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
     #define LULZBOT_LIGHTWEIGHT_UI
-    #define LULZBOT_USE_EXPERIMENTAL_FEATURES
+    //#define LULZBOT_USE_EXPERIMENTAL_FEATURES
 #endif
 
 #if defined(LULZBOT_Hibiscus_Mini2_CLCD)
@@ -145,7 +145,7 @@
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_USE_32_MICROSTEPS_ON_Z
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
-    #define LULZBOT_USE_EXPERIMENTAL_FEATURES
+    //#define LULZBOT_USE_EXPERIMENTAL_FEATURES
     #define LULZBOT_USE_USB_STICK
 #endif
 
