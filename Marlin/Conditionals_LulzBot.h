@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".58" // Change this with each update
+#define LULZBOT_FW_VERSION ".59" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -115,7 +115,6 @@
     #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_REPROBE_EXTENDED_RECOVERY
     #define LULZBOT_USE_TMC_STEALTHCHOP_Z
-    //#define LULZBOT_USE_TMC_COOLSTEP
     #define LULZBOT_USE_Z_BELT
     #define LULZBOT_USE_Z_BACKLASH_COMPENSATION
     #define LULZBOT_BAUDRATE 250000
@@ -123,7 +122,7 @@
     #define LULZBOT_USE_32_MICROSTEPS_ON_Z
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
     #define LULZBOT_LIGHTWEIGHT_UI
-    //#define LULZBOT_USE_EXPERIMENTAL_FEATURES
+    #define LULZBOT_USE_EXPERIMENTAL_FEATURES
 #endif
 
 #if defined(LULZBOT_Hibiscus_Mini2_CLCD)
@@ -146,7 +145,7 @@
     #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_USE_32_MICROSTEPS_ON_Z
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
-    //#define LULZBOT_USE_EXPERIMENTAL_FEATURES
+    #define LULZBOT_USE_EXPERIMENTAL_FEATURES
     #define LULZBOT_USE_USB_STICK
 #endif
 
@@ -1314,14 +1313,6 @@
 
     #define TMC_CS_TO_mA(cs,vsense) (float(cs)+1)/32 * (vsense?0.180:0.325)/(LULZBOT_R_SENSE+0.02) * 1/sqrt(2) * 1000
 
-    #define LULZBOT_ENABLE_STALLGUARD(st) \
-        /* Disable steathchop */ \
-        st.stealthChop(0); \
-        /* Disable coolstep */ \
-        st.coolstep_min_speed(0); \
-        st.sg_min(0); \
-        st.sg_max(0);
-
     #define LULZBOT_ENABLE_COOLSTEP_WITH_STALLGUARD(st) \
         /* Disable steathchop */ \
         st.stealthChop(0); \
@@ -1367,10 +1358,8 @@
     /* Either stealthchop or coolstep, as previously configured */
     #if defined(LULZBOT_USE_TMC_STEALTHCHOP_Z)
         #define LULZBOT_DEFAULT_OPERATING_MODE_Z(st) LULZBOT_ENABLE_STEALTHCHOP(st)
-    #elif defined(LULZBOT_USE_TMC_COOLSTEP)
-        #define LULZBOT_DEFAULT_OPERATING_MODE_Z(st) LULZBOT_ENABLE_COOLSTEP_WITH_STALLGUARD(st)
     #else
-        #define LULZBOT_DEFAULT_OPERATING_MODE_Z(st) LULZBOT_ENABLE_STALLGUARD(st)
+        #define LULZBOT_DEFAULT_OPERATING_MODE_Z(st) LULZBOT_ENABLE_COOLSTEP_WITH_STALLGUARD(st)
     #endif
 
     #define LULZBOT_Z_TOFF           1
@@ -1388,12 +1377,6 @@
         stepperZ.sg_stall_value(LULZBOT_Z_HOMING_SENSITIVITY); \
         LULZBOT_DEFAULT_OPERATING_MODE_Z(stepperZ);
 
-    #if defined(LULZBOT_USE_TMC_COOLSTEP)
-        #define LULZBOT_DEFAULT_OPERATING_MODE_E(st) LULZBOT_ENABLE_COOLSTEP_WITH_STALLGUARD(st)
-    #else
-        #define LULZBOT_DEFAULT_OPERATING_MODE_E(st) LULZBOT_ENABLE_STALLGUARD(st)
-    #endif
-
     #define LULZBOT_E_TOFF           1
     #define LULZBOT_E_HSTRT          0
     #define LULZBOT_E_HEND           0
@@ -1405,7 +1388,8 @@
         stepperZ.hstrt(LULZBOT_E_HSTRT);     /* HSTART = [0..7]   */ \
         stepperZ.hend(LULZBOT_E_HEND);       /* HEND   = [0..15]  */ \
         stepperZ.tbl(LULZBOT_E_TBL);         /* TBL    = [0..3]   */ \
-        LULZBOT_DEFAULT_OPERATING_MODE_E(stepperE0); \
+        /* Always use COOLSTEP on E0 */ \
+        LULZBOT_ENABLE_COOLSTEP_WITH_STALLGUARD(stepperE0); \
 
     #define LULZBOT_TMC_ADV { \
             LULZBOT_MOTOR_INIT_XY \
@@ -1418,10 +1402,8 @@
     /* Either stealthchop or coolstep, as previously configured */
     #if defined(LULZBOT_USE_TMC_STEALTHCHOP_XY)
         #define LULZBOT_DEFAULT_OPERATING_MODE_XY(st) LULZBOT_ENABLE_STEALTHCHOP(st)
-    #elif defined(LULZBOT_USE_TMC_COOLSTEP)
-        #define LULZBOT_DEFAULT_OPERATING_MODE_XY(st) LULZBOT_ENABLE_COOLSTEP_WITH_STALLGUARD(st)
     #else
-        #define LULZBOT_DEFAULT_OPERATING_MODE_XY(st) LULZBOT_ENABLE_STALLGUARD(st)
+        #define LULZBOT_DEFAULT_OPERATING_MODE_XY(st) LULZBOT_ENABLE_COOLSTEP_WITH_STALLGUARD(st)
     #endif
 
     /* Sensorless homing requires stallguard, which is not available with
@@ -1432,7 +1414,6 @@
             /* because the stallguard is triggered. Toggling in and out */ \
             /* of STEALHCHOP mode seems to resolve this. */ \
             LULZBOT_ENABLE_STEALTHCHOP(st) \
-            /* If not using coolstep when homing, sensorless homing will be broken */ \
             LULZBOT_ENABLE_COOLSTEP_WITH_STALLGUARD(st) \
         } else { \
             LULZBOT_DEFAULT_OPERATING_MODE_XY(st) \
