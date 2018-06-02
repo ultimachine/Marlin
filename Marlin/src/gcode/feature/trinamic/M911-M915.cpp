@@ -30,7 +30,7 @@
 #include "../../../module/planner.h"
 #include "../../queue.h"
 
-#define M91x_USE(ST) (AXIS_DRIVER_TYPE(ST, TMC2130) || (AXIS_DRIVER_TYPE(ST, TMC2208) && PIN_EXISTS(ST##_SERIAL_RX)))
+#define M91x_USE(ST) (AXIS_DRIVER_TYPE(ST, TMC2130) || AXIS_DRIVER_TYPE(ST, TMC5160) || (AXIS_DRIVER_TYPE(ST, TMC2208) && PIN_EXISTS(ST##_SERIAL_RX)))
 #define M91x_USE_E(N) (E_STEPPERS > N && M91x_USE(E##N))
 
 /**

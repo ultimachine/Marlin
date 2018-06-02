@@ -55,7 +55,7 @@
          is_s2gb,
          is_error;
   };
-  #if HAS_DRIVER(TMC2130)
+  #if HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC5160)
     static uint32_t get_pwm_scale(TMC2130Stepper &st) { return st.PWM_SCALE(); }
     static uint8_t get_status_response(TMC2130Stepper &st, uint32_t) { return st.status_response & 0xF; }
     static TMC_driver_data get_driver_data(TMC2130Stepper &st) {
@@ -206,7 +206,7 @@
     #endif
   }
 
-  #define HAS_HW_COMMS(ST) AXIS_DRIVER_TYPE(ST, TMC2130) || AXIS_DRIVER_TYPE(ST, TMC2660) || (AXIS_DRIVER_TYPE(ST, TMC2208) && defined(ST##_HARDWARE_SERIAL))
+  #define HAS_HW_COMMS(ST) AXIS_DRIVER_TYPE(ST, TMC2130) || AXIS_DRIVER_TYPE(ST, TMC2660) || AXIS_DRIVER_TYPE(ST, TMC5160) || (AXIS_DRIVER_TYPE(ST, TMC2208) && defined(ST##_HARDWARE_SERIAL))
 
   void monitor_tmc_driver() {
     static millis_t next_poll = 0;
@@ -334,7 +334,7 @@
   template<class TMC>
   static void print_vsense(TMC &st) { serialprintPGM(st.vsense() ? PSTR("1=.18") : PSTR("0=.325")); }
 
-  #if HAS_DRIVER(TMC2130)
+  #if HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC5160)
     static void tmc_status(TMC2130Stepper &st, const TMC_debug_enum i) {
       switch (i) {
         case TMC_PWM_SCALE: SERIAL_PRINT(st.PWM_SCALE(), DEC); break;
@@ -352,6 +352,10 @@
         default: break;
       }
     }
+  #endif
+
+  #if HAS_DRIVER(TMC5160)
+    template<> void print_vsense(TMCMarlin<TMC5160Stepper> &st) { UNUSED(st); SERIAL_CHAR('\t'); }
   #endif
 
   #if HAS_DRIVER(TMC2208)
@@ -636,7 +640,7 @@
     TMC_REPORT("Stallguard thrs",    TMC_SGT);
 
     DRV_REPORT("DRVSTATUS",          TMC_DRV_CODES);
-    #if HAS_DRIVER(TMC2130)
+    #if HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC5160)
       DRV_REPORT("stallguard\t",     TMC_STALLGUARD);
       DRV_REPORT("sg_result\t",      TMC_SG_RESULT);
       DRV_REPORT("fsactive\t",       TMC_FSACTIVE);
@@ -662,7 +666,7 @@
 
   #define PRINT_TMC_REGISTER(REG_CASE) case TMC_GET_##REG_CASE: print_hex_address_with_delimiter(st.REG_CASE(), ':'); break;
 
-  #if HAS_DRIVER(TMC2130)
+  #if HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC5160)
     static void _tmc_get_registers(TMC2130Stepper &st, const TMC_get_registers_enum i) {
       switch(i) {
         PRINT_TMC_REGISTER(TCOOLTHRS)
@@ -816,8 +820,8 @@
 
 #endif // SENSORLESS_HOMING
 
-#if HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC2660)
-  #define IS_TMC_SPI(ST) AXIS_DRIVER_TYPE(ST, TMC2130) || AXIS_DRIVER_TYPE(ST, TMC2660)
+#if HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC2660) || HAS_DRIVER(TMC5160)
+  #define IS_TMC_SPI(ST) AXIS_DRIVER_TYPE(ST, TMC2130) || AXIS_DRIVER_TYPE(ST, TMC2660) || AXIS_DRIVER_TYPE(ST, TMC5160)
   #define SET_CS_PIN(st) OUT_WRITE(st##_CS_PIN, HIGH)
   void tmc_init_cs_pins() {
     #if IS_TMC_SPI(X)

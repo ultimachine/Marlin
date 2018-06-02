@@ -1743,10 +1743,10 @@ static_assert(X_MAX_LENGTH >= X_BED_SIZE && Y_MAX_LENGTH >= Y_BED_SIZE,
 #endif
 
 #if ENABLED(SENSORLESS_HOMING) && !HAS_STALLGUARD
-  #error "SENSORLESS_HOMING requires TMC2130 or TMC2660 stepper drivers."
+  #error "SENSORLESS_HOMING requires TMC2130 or TMC5160 or TMC2660 stepper drivers."
 #endif
 #if ENABLED(STEALTHCHOP) && !HAS_STEALTHCHOP
-  #error "STEALTHCHOP requires TMC2130 or TMC2208 stepper drivers."
+  #error "STEALTHCHOP requires TMC2130 or TMC5160 or TMC2208 stepper drivers."
  #endif
 
 /**

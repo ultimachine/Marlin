@@ -196,7 +196,7 @@ void test_tmc_connection();
   void tmc_sensorless_homing(TMC2660Stepper &st, const bool enable=true);
 #endif
 
-#if HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC2660)
+#if HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC2660) || HAS_DRIVER(TMC5160)
   void tmc_init_cs_pins();
 #endif
 

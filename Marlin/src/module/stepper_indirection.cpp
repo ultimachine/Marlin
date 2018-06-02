@@ -593,6 +593,98 @@
   }
 #endif // TMC2660
 
+//
+// TMC5160 Driver objects and inits
+//
+#if HAS_DRIVER(TMC5160)
+
+  #include <SPI.h>
+  #include "planner.h"
+  #include "../core/enum.h"
+
+  #if ENABLED(TMC_USE_SW_SPI)
+    #define _TMC5160_DEFINE(ST) TMCMarlin<TMC5160Stepper> stepper##ST(TMC_##ST##_LABEL, ST##_CS_PIN, R_SENSE, TMC_SW_MOSI, TMC_SW_MISO, TMC_SW_SCK)
+  #else
+    #define _TMC5160_DEFINE(ST) TMCMarlin<TMC5160Stepper> stepper##ST(TMC_##ST##_LABEL, ST##_CS_PIN, R_SENSE)
+  #endif
+  // Stepper objects of TMC5160 steppers used
+  #if AXIS_DRIVER_TYPE(X, TMC5160)
+    _TMC5160_DEFINE(X);
+  #endif
+  #if AXIS_DRIVER_TYPE(X2, TMC5160)
+    _TMC5160_DEFINE(X2);
+  #endif
+  #if AXIS_DRIVER_TYPE(Y, TMC5160)
+    _TMC5160_DEFINE(Y);
+  #endif
+  #if AXIS_DRIVER_TYPE(Y2, TMC5160)
+    _TMC5160_DEFINE(Y2);
+  #endif
+  #if AXIS_DRIVER_TYPE(Z, TMC5160)
+    _TMC5160_DEFINE(Z);
+  #endif
+  #if AXIS_DRIVER_TYPE(Z2, TMC5160)
+    _TMC5160_DEFINE(Z2);
+  #endif
+  #if AXIS_DRIVER_TYPE(E0, TMC5160)
+    _TMC5160_DEFINE(E0);
+  #endif
+  #if AXIS_DRIVER_TYPE(E1, TMC5160)
+    _TMC5160_DEFINE(E1);
+  #endif
+  #if AXIS_DRIVER_TYPE(E2, TMC5160)
+    _TMC5160_DEFINE(E2);
+  #endif
+  #if AXIS_DRIVER_TYPE(E3, TMC5160)
+    _TMC5160_DEFINE(E3);
+  #endif
+  #if AXIS_DRIVER_TYPE(E4, TMC5160)
+    _TMC5160_DEFINE(E4);
+  #endif
+
+  void tmc_init(TMCMarlin<TMC5160Stepper> &st, const uint16_t mA, const uint16_t microsteps, const uint32_t thrs, const float spmm) {
+    #if DISABLED(STEALTHCHOP) || DISABLED(HYBRID_THRESHOLD)
+      UNUSED(thrs);
+      UNUSED(spmm);
+    #endif
+    st.begin();
+
+    int8_t timings[] = CHOPPER_TIMING; // Default 4, -2, 1
+
+    CHOPCONF_t chopconf{0};
+    chopconf.tbl = 1;
+    chopconf.toff = timings[0];
+    chopconf.intpol = INTERPOLATE;
+    chopconf.hend = timings[1] + 3;
+    chopconf.hstrt = timings[2] - 1;
+    st.CHOPCONF(chopconf.sr);
+
+    st.rms_current(mA, HOLD_MULTIPLIER);
+    st.microsteps(microsteps);
+    st.iholddelay(10);
+    st.TPOWERDOWN(128); // ~2s until driver lowers to hold current
+
+    #if ENABLED(STEALTHCHOP)
+      st.en_pwm_mode(true);
+
+      PWMCONF_t pwmconf{0};
+      pwmconf.pwm_freq = 0b01; // f_pwm = 2/683 f_clk
+      pwmconf.pwm_autoscale = true;
+      pwmconf.pwm_grad = 5;
+      pwmconf.pwm_ampl = 180;
+      st.PWMCONF(pwmconf.sr);
+
+      #if ENABLED(HYBRID_THRESHOLD)
+        st.TPWMTHRS(12650000UL*microsteps/(256*thrs*spmm));
+      #else
+        UNUSED(thrs);
+        UNUSED(spmm);
+      #endif
+    #endif
+    st.GSTAT(); // Clear GSTAT
+  }
+#endif // TMC5160
+
 void restore_stepper_drivers() {
   #if AXIS_IS_TMC(X)
     stepperX.push();
