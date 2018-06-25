@@ -60,7 +60,7 @@ HARDWARE_MOTHERBOARD ?= 301
 
 # Arduino source install directory, and version number
 # On most linuxes this will be /usr/share/arduino
-ARDUINO_INSTALL_DIR  ?= ../ArduinoAddons/arduino-1.8.5
+ARDUINO_INSTALL_DIR  ?= ../ArduinoAddons/arduino-1.8.3
 ARDUINO_VERSION      ?= 183
 
 # You can optionally set a path to the avr-gcc tools. Requires a trailing slash. (ex: /usr/local/avr-gcc/bin)
@@ -310,14 +310,10 @@ VPATH += $(ARDUINO_INSTALL_DIR)/libraries/Adafruit_NeoPixel
 endif
 ifeq ($(U8GLIB), 1)
 VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib
-VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib/csrc
-VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib/cppsrc
-VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib/fntsrc
+VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib/utility
 endif
 ifeq ($(TMC2630), 1)
 VPATH += $(ARDUINO_INSTALL_DIR)/libraries/TMC2130Stepper
-VPATH += $(ARDUINO_INSTALL_DIR)/libraries/TMC2130Stepper/src
-VPATH += $(ARDUINO_INSTALL_DIR)/libraries/TMC2130Stepper/src/source
 endif
 
 ifeq ($(HARDWARE_VARIANT), arduino)
@@ -357,7 +353,7 @@ CXXSRC += Wire.cpp
 endif
 
 ifeq ($(U8GLIB), 1)
-SRC += u8g_ll_api.c u8g_bitmap.c u8g_clip.c u8g_com_null.c u8g_delay.c u8g_page.c u8g_pb.c u8g_pb16h1.c u8g_rect.c u8g_state.c u8g_font.c u8g_font_6x13.c u8g_font_04b_03.c u8g_font_5x8.c
+SRC += u8g_ll_api.c u8g_bitmap.c u8g_clip.c u8g_com_null.c u8g_delay.c u8g_page.c u8g_pb.c u8g_pb16h1.c u8g_rect.c u8g_state.c u8g_font.c u8g_font_data.c
 endif
 
 ifeq ($(RELOC_WORKAROUND), 1)
@@ -366,7 +362,7 @@ LD_SUFFIX=-lm -lgcc -lc -lgcc -L$(ARDUINO_INSTALL_DIR)/hardware/tools/avr/avr/li
 endif
 
 ifeq ($(TMC2630), 1)
-CXXSRC += TMC2130Stepper.cpp TMC2130Stepper_CHOPCONF.cpp TMC2130Stepper_COOLCONF.cpp TMC2130Stepper_DRV_STATUS.cpp TMC2130Stepper_GCONF.cpp TMC2130Stepper_IHOLD_IRUN.cpp TMC2130Stepper_PWMCONF.cpp SW_SPI.cpp
+CXXSRC += TMC2130Stepper.cpp TMC2130Stepper_CHOPCONF.cpp TMC2130Stepper_COOLCONF.cpp TMC2130Stepper_DRV_STATUS.cpp TMC2130Stepper_GCONF.cpp TMC2130Stepper_IHOLD_IRUN.cpp TMC2130Stepper_PWMCONF.cpp
 endif
 
 #Check for Arduino 1.0.0 or higher and use the correct source files for that version
