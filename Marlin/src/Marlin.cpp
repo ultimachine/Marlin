@@ -666,6 +666,19 @@ void stop() {
  *    • status LEDs
  */
 void setup() {
+  #if MB(FEYNMAN_JUMPER)
+    //Initialize TMC2130 chip select pins
+    pinMode(X_CS_PIN,OUTPUT);
+    digitalWrite(X_CS_PIN,HIGH);
+    pinMode(Y_CS_PIN,OUTPUT);
+    digitalWrite(Y_CS_PIN,HIGH);
+    pinMode(Z_CS_PIN,OUTPUT);
+    digitalWrite(Z_CS_PIN,HIGH);
+    pinMode(E0_CS_PIN,OUTPUT);
+    digitalWrite(E0_CS_PIN,HIGH);
+
+    matrix_set_system_io( (1<<12) ); // Feynman_Jumper - (SYSIO12/PB12/ERASE) Allow GPIO access to PB12 in CCFG_SYSIO register
+  #endif
 
   #ifdef HAL_INIT
     HAL_init();
@@ -898,6 +911,11 @@ void setup() {
 
   #if ENABLED(USE_WATCHDOG) // Reinit watchdog after HAL_get_reset_source call
     watchdog_init();
+  #endif
+
+  #if MB(FEYNMAN_JUMPER)
+    //Initialize input pin for TMC2130 diag outputs
+    pinMode(TMC_MUX_DIAG_PIN,INPUT_PULLUP);
   #endif
 }
 
