@@ -1,4 +1,4 @@
-#ifdef ARDUINO_ARCH_SAM
+#ifdef __SAM3X8E__
 
 #include "../persistent_store_api.h"
 

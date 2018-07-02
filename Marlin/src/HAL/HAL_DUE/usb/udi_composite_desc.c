@@ -44,7 +44,7 @@
  * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 
-#ifdef ARDUINO_ARCH_SAM
+#ifdef __SAM3X8E__
 
 #include "conf_usb.h"
 #include "udd.h"

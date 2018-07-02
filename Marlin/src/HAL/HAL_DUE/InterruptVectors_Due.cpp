@@ -30,7 +30,7 @@
  *
  * Copyright (c) 2017 Eduardo José Tagle. All right reserved
  */
-#ifdef ARDUINO_ARCH_SAM
+#ifdef __SAM3X8E__
 
 #include "HAL.h"
 #include "InterruptVectors_Due.h"

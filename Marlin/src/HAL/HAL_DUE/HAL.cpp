@@ -23,7 +23,7 @@
  * For ARDUINO_ARCH_SAM
  */
 
-#ifdef ARDUINO_ARCH_SAM
+#ifdef __SAM3X8E__
 
 // --------------------------------------------------------------------------
 // Includes

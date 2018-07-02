@@ -25,7 +25,7 @@
  * Copyright (c) 2017 Eduardo José Tagle. All right reserved
  * Based on MarlinSerial for AVR, copyright (c) 2006 Nicholas Zambetti.  All right reserved.
  */
-#ifdef ARDUINO_ARCH_SAM
+#ifdef __SAM3X8E__
 
 #include "../../inc/MarlinConfig.h"
 

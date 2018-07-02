@@ -25,7 +25,7 @@
  * Derived from http://forum.arduino.cc/index.php?topic=136500.msg2903012#msg2903012
  */
 
-#ifdef ARDUINO_ARCH_SAM
+#ifdef __SAM3X8E__
 
 #include "HAL.h"
 #include "HAL_timers_Due.h"

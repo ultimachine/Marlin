@@ -2,7 +2,7 @@
  * Interface from Atmel USB MSD to Marlin SD card
  */
 
-#ifdef ARDUINO_ARCH_SAM
+#ifdef __SAM3X8E__
 
 #include "../../../inc/MarlinConfig.h"
 
