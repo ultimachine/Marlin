@@ -5,6 +5,8 @@
 
 #ifdef __AVR__
   #define HAL_PLATFORM HAL_AVR
+#elif defined(__SAMG55J19__)
+  #define HAL_PLATFORM HAL_SAMG55
 #elif defined(ARDUINO_ARCH_SAM)
   #define HAL_PLATFORM HAL_DUE
 #elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
