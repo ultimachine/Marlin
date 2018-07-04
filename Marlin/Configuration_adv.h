@@ -1229,6 +1229,12 @@
   #define STEALTHCHOP
 
   /**
+   * Adjust spreadCycle chopper parameters with the help of an example included in the library.
+   * The parameters are off time, hysteresis end and hysteresis start.
+   */
+  #define CHOPPER_TIMING { 4, -2, 1}
+
+  /**
    * Monitor Trinamic TMC2130 and TMC2208 drivers for error conditions,
    * like overtemperature and short to ground. TMC2208 requires hardware serial.
    * In the case of overtemperature Marlin can decrease the driver current until error condition clears.
