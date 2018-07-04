@@ -347,7 +347,12 @@ bool report_tmc_status = false;
         break;
       case TMC_VSENSE: print_vsense(st); break;
       case TMC_MICROSTEPS: SERIAL_ECHO(st.microsteps()); break;
-      case TMC_TSTEP: SERIAL_ECHO(st.TSTEP()); break;
+      case TMC_TSTEP: {
+          uint32_t tstep_val = st.TSTEP();
+          if (tstep_val == 0xFFFFF) SERIAL_ECHOPGM("max");
+          else SERIAL_ECHO(st.TSTEP());
+        }
+        break;
       case TMC_TPWMTHRS: {
           uint32_t tpwmthrs_val = st.TPWMTHRS();
           SERIAL_ECHO(tpwmthrs_val);
