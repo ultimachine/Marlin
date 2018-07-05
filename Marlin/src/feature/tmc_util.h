@@ -190,9 +190,10 @@ void monitor_tmc_driver();
  */
 #if ENABLED(SENSORLESS_HOMING)
   void tmc_sensorless_homing(TMC2130Stepper &st, const bool enable=true);
+  void tmc_sensorless_homing(TMC2660Stepper &st, const bool enable=true);
 #endif
 
-#if HAS_DRIVER(TMC2130)
+#if HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC2660)
   void tmc_init_cs_pins();
 #endif
 
