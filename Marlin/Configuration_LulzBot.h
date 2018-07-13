@@ -7,22 +7,23 @@
 
       build-all-taz-toolheads.sh
 
-   Else, if compiling using Arduino IDE, edit lines 40 and 41.
+   Else, if compiling using Arduino IDE, edit the "#define" lines below.
 
    Printer Model Choices:
       Gladiola_Mini            // Lulzbot Mini (Gladiola)
       Gladiola_MiniLCD         // Lulzbot Mini (Gladiola w/ LCD)
       Hibiscus_Mini2           // Lulzbot Mini 2 (Hibiscus)
-      Hibiscus_Mini2_CLCD      // Lulzbot Mini 2 (Hibiscus w/ CLCD)
       Juniper_TAZ5             // Lulzbot TAZ 5 (Juniper, Juniperberry, Juniperbush)
       Oliveoil_TAZ6            // Lulzbot TAZ 6 (Oliveoil)
       Quiver_TAZ7              // Lulzbot TAZ 7 (Quiver)
-      Quiver_TAZ7_CLCD         // Lulzbot TAZ 7 (Quiver w/ CLCD)
 
    Mini Toolhead Choices:
       Gladiola_SingleExtruder  // Standard Single Extruder (Gladiola)
       Albatross_Flexystruder   // Flexystruder (Albatross)
       Finch_Aerostruder        // Titan Aerostruder (Finch)
+
+   Mini 2 Toolhead Choices:
+      Finch_AerostruderV2      // Titan Aerostruder V2 (Finch)
 
    TAZ Toolhead Choices:
       Tilapia_SingleExtruder   // Standard Single Extruder (Tilapia)
@@ -35,8 +36,9 @@
 
 */
 
-// If compiling using the Arduino IDE, uncomment and set printer model
-// and toolhead here:
+
+// If compiling using the Arduino IDE, remove the "//" from the following lines and
+// set printer model and toolhead after the "LULZBOT_" and "TOOLHEAD_" respectively:
 
 //#define LULZBOT_Oliveoil_TAZ6
 //#define TOOLHEAD_Tilapia_SingleExtruder
