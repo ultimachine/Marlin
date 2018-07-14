@@ -39,4 +39,11 @@ void GcodeSuite::M122() {
     tmc_report_all();
 }
 
+/**
+ * M823: Test TMC connection
+ */
+void GcodeSuite::M823() {
+	test_tmc_connection();
+}
+
 #endif // TMC_DEBUG

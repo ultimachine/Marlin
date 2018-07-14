@@ -771,6 +771,7 @@ private:
   #if HAS_TRINAMIC
     #if ENABLED(TMC_DEBUG)
       static void M122();
+      static void M823();
     #endif
     static void M906();
     static void M911();

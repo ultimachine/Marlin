@@ -925,6 +925,10 @@ void setup() {
   #if ENABLED(SDSUPPORT) && DISABLED(ULTRA_LCD)
     card.beginautostart();
   #endif
+
+  #if HAS_TRINAMIC
+    test_tmc_connection();
+  #endif
 }
 
 /**
