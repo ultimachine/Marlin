@@ -73,7 +73,8 @@ class TMCStorage {
     TMCStorage(const char* tmc_label) : label(tmc_label) {}
 
     #if ENABLED(MONITOR_DRIVER_STATUS)
-      uint8_t otpw_count = 0;
+      uint8_t otpw_count = 0,
+              error_count = 0;
     #endif
 
     bool flag_otpw = false;

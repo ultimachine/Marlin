@@ -51,7 +51,6 @@ bool report_tmc_status = false;
     uint32_t drv_status;
     bool is_otpw;
     bool is_ot;
-    bool is_error;
   };
   #if HAS_DRIVER(TMC2130)
     static uint32_t get_pwm_scale(TMC2130Stepper &st) { return st.PWM_SCALE(); }
@@ -61,13 +60,10 @@ bool report_tmc_status = false;
       constexpr uint8_t OTPW_bp = 26;
       constexpr uint32_t OT_bm = 0x2000000UL;
       constexpr uint8_t OT_bp = 25;
-      constexpr uint8_t DRIVER_ERROR_bm = 0x2UL;
-      constexpr uint8_t DRIVER_ERROR_bp = 1;
       TMC_driver_data data;
       data.drv_status = st.DRV_STATUS();
       data.is_otpw = (data.drv_status & OTPW_bm) >> OTPW_bp;
       data.is_ot = (data.drv_status & OT_bm) >> OT_bp;
-      data.is_error = (st.status_response & DRIVER_ERROR_bm) >> DRIVER_ERROR_bp;
       return data;
     }
   #endif
@@ -90,7 +86,6 @@ bool report_tmc_status = false;
       data.drv_status = st.DRV_STATUS();
       data.is_otpw = (data.drv_status & OTPW_bm) >> OTPW_bp;
       data.is_ot = (data.drv_status & OT_bm) >> OT_bp;
-      data.is_error = st.drv_err();
       return data;
     }
   #endif
@@ -102,12 +97,10 @@ bool report_tmc_status = false;
       constexpr uint8_t OTPW_bp = 2;
       constexpr uint32_t OT_bm = 0x2UL;
       constexpr uint8_t OT_bp = 1;
-      constexpr uint8_t DRIVER_ERROR_bm = 0x1EUL;
       TMC_driver_data data;
       data.drv_status = st.DRVSTATUS();
       data.is_otpw = (data.drv_status & OTPW_bm) >> OTPW_bp;
       data.is_ot = (data.drv_status & OT_bm) >> OT_bp;
-      data.is_error = data.drv_status & DRIVER_ERROR_bm;
       return data;
     }
   #endif
@@ -116,11 +109,15 @@ bool report_tmc_status = false;
   void monitor_tmc_driver(TMC &st) {
     TMC_driver_data data = get_driver_data(st);
 
+    if (data.is_ot /* | data.s2ga | data.s2gb*/) st.error_count++;
+    else if (st.error_count > 0) st.error_count--;
+
     #if ENABLED(STOP_ON_ERROR)
-      if (data.is_error) {
+      if (st.error_count >= 10) {
         SERIAL_EOL();
         st.printLabel();
-        SERIAL_ECHOLNPGM(" driver error detected:");
+        SERIAL_ECHOPGM(" driver error detected: 0x");
+        SERIAL_PRINTLN(data.drv_status, HEX);
         if (data.is_ot) SERIAL_ECHOLNPGM("overtemperature");
         if (st.s2ga()) SERIAL_ECHOLNPGM("short to ground (coil A)");
         if (st.s2gb()) SERIAL_ECHOLNPGM("short to ground (coil B)");
@@ -168,7 +165,7 @@ bool report_tmc_status = false;
       SERIAL_ECHOPAIR(":", pwm_scale);
       SERIAL_ECHOPGM(" |0b"); SERIAL_PRINT(get_status_response(st), BIN);
       SERIAL_ECHOPGM("| ");
-      if (data.is_error) SERIAL_CHAR('E');
+      if (st.error_count) SERIAL_CHAR('E');
       else if (data.is_ot) SERIAL_CHAR('O');
       else if (data.is_otpw) SERIAL_CHAR('W');
       else if (st.otpw_count > 0) SERIAL_PRINT(st.otpw_count, DEC);
