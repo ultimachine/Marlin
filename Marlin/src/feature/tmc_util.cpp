@@ -34,6 +34,7 @@
 
 #if ENABLED(TMC_DEBUG)
   #include "../module/planner.h"
+  #include "../libs/hex_print_routines.h"
 #endif
 
 bool report_tmc_status = false;
@@ -276,17 +277,6 @@ bool report_tmc_status = false;
     TMC_S2VSB,
     TMC_S2VSA
   };
-  static void drv_status_print_hex(const uint32_t drv_status) {
-    SERIAL_ECHOPGM(" = 0x");
-    for (int B = 24; B >= 8; B -= 8){
-      SERIAL_PRINT((drv_status >> (B + 4)) & 0xF, HEX);
-      SERIAL_PRINT((drv_status >> B) & 0xF, HEX);
-      SERIAL_CHAR(':');
-    }
-    SERIAL_PRINT((drv_status >> 4) & 0xF, HEX);
-    SERIAL_PRINT((drv_status) & 0xF, HEX);
-    SERIAL_EOL();
-  }
 
   template<class TMC>
   static void print_vsense(TMC &st) { serialprintPGM(st.vsense() ? PSTR("1=.18") : PSTR("0=.325")); }
@@ -426,7 +416,9 @@ bool report_tmc_status = false;
       case TMC_OT:            if (st.ot())           SERIAL_CHAR('X'); break;
       case TMC_DRV_STATUS_HEX:
         st.printLabel();
-        drv_status_print_hex(st.DRV_STATUS());
+        SERIAL_ECHOPGM(" = ");
+        print_hex_address_with_delimiter(st.DRV_STATUS(), ':');
+        SERIAL_EOL();
         break;
       default: _tmc_parse_drv_status(st, i); break;
     }
@@ -602,7 +594,7 @@ bool report_tmc_status = false;
       DRV_REPORT("s2vsa\t",          TMC_S2VSA);
       DRV_REPORT("s2vsb\t",          TMC_S2VSB);
     #endif
-    DRV_REPORT("Driver registers:",  TMC_DRV_STATUS_HEX);
+    DRV_REPORT("Driver registers:\n",TMC_DRV_STATUS_HEX);
     SERIAL_EOL();
   }
 
