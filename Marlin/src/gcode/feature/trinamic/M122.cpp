@@ -33,6 +33,8 @@
 void GcodeSuite::M122() {
   if (parser.seen('S'))
     tmc_set_report_status(parser.value_bool());
+  else if (parser.seen('V'))
+    tmc_get_registers();
   else
     tmc_report_all();
 }

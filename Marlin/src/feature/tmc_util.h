@@ -180,6 +180,7 @@ void monitor_tmc_driver();
 #if ENABLED(TMC_DEBUG)
   void tmc_set_report_status(const bool status);
   void tmc_report_all();
+  void tmc_get_registers();
 #endif
 
 /**

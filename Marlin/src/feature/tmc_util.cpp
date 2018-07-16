@@ -274,6 +274,28 @@ bool report_tmc_status = false;
     TMC_S2VSB,
     TMC_S2VSA
   };
+  enum TMC_get_registers_enum : char {
+    TMC_AXIS_CODES,
+    TMC_GET_GCONF,
+    TMC_GET_IHOLD_IRUN,
+    TMC_GET_GSTAT,
+    TMC_GET_IOIN,
+    TMC_GET_TPOWERDOWN,
+    TMC_GET_TSTEP,
+    TMC_GET_TPWMTHRS,
+    TMC_GET_TCOOLTHRS,
+    TMC_GET_THIGH,
+    TMC_GET_CHOPCONF,
+    TMC_GET_COOLCONF,
+    TMC_GET_PWMCONF,
+    TMC_GET_PWM_SCALE,
+    TMC_GET_DRV_STATUS,
+    TMC_GET_DRVCONF,
+    TMC_GET_DRVCTRL,
+    TMC_GET_DRVSTATUS,
+    TMC_GET_SGCSCONF,
+    TMC_GET_SMARTEN
+  };
 
   template<class TMC>
   static void print_vsense(TMC &st) { serialprintPGM(st.vsense() ? PSTR("1=.18") : PSTR("0=.325")); }
@@ -416,12 +438,16 @@ bool report_tmc_status = false;
       case TMC_S2GA:          if (st.s2ga())         SERIAL_CHAR('X'); break;
       case TMC_DRV_OTPW:      if (st.otpw())         SERIAL_CHAR('X'); break;
       case TMC_OT:            if (st.ot())           SERIAL_CHAR('X'); break;
-      case TMC_DRV_STATUS_HEX:
+      case TMC_DRV_STATUS_HEX: {
+        uint32_t drv_status = st.DRV_STATUS();
+        SERIAL_ECHOPGM("\t");
         st.printLabel();
         SERIAL_ECHOPGM(" = ");
-        print_hex_address_with_delimiter(st.DRV_STATUS(), ':');
+        print_hex_address_with_delimiter(drv_status, ':');
+        if (drv_status == 0xFFFFFFFF || drv_status == 0) SERIAL_ECHOPGM("\t Bad response!");
         SERIAL_EOL();
         break;
+      }
       default: _tmc_parse_drv_status(st, i); break;
     }
   }
@@ -598,6 +624,145 @@ bool report_tmc_status = false;
     #endif
     DRV_REPORT("Driver registers:\n",TMC_DRV_STATUS_HEX);
     SERIAL_EOL();
+  }
+
+  #define PRINT_TMC_REGISTER(REG_CASE) case TMC_GET_##REG_CASE: print_hex_address_with_delimiter(st.REG_CASE(), ':'); break;
+
+  #if HAS_DRIVER(TMC2130)
+    static void _tmc_get_registers(TMC2130Stepper &st, const TMC_get_registers_enum i) {
+      switch(i) {
+        PRINT_TMC_REGISTER(TCOOLTHRS)
+        PRINT_TMC_REGISTER(THIGH)
+        PRINT_TMC_REGISTER(COOLCONF)
+        default: SERIAL_ECHOPGM("-\t"); break;
+      }
+    }
+  #endif
+  #if HAS_DRIVER(TMC2208)
+    static void _tmc_get_registers(TMC2208Stepper &st, const TMC_get_registers_enum i) {
+      switch(i) {
+        /* TODO: Add TMC2208 registers */
+        default: SERIAL_ECHOPGM("-\t"); break;
+      }
+    }
+  #endif
+  #if HAS_TRINAMIC
+    template<class TMC>
+    static void tmc_get_registers(TMC &st, const TMC_get_registers_enum i) {
+      if (i != TMC_AXIS_CODES) SERIAL_ECHOPGM("0x");
+
+      switch(i) {
+        case TMC_AXIS_CODES: SERIAL_CHAR('\t'); st.printLabel(); break;
+        PRINT_TMC_REGISTER(GCONF)
+        PRINT_TMC_REGISTER(IHOLD_IRUN)
+        PRINT_TMC_REGISTER(GSTAT)
+        PRINT_TMC_REGISTER(IOIN)
+        PRINT_TMC_REGISTER(TPOWERDOWN)
+        PRINT_TMC_REGISTER(TSTEP)
+        PRINT_TMC_REGISTER(TPWMTHRS)
+        PRINT_TMC_REGISTER(CHOPCONF)
+        PRINT_TMC_REGISTER(PWMCONF)
+        PRINT_TMC_REGISTER(PWM_SCALE)
+        PRINT_TMC_REGISTER(DRV_STATUS)
+        default: _tmc_get_registers(st, i); break;
+      }
+      SERIAL_CHAR('\t');
+    }
+  #endif
+  #if HAS_DRIVER(TMC2660)
+    static void tmc_get_registers(TMCMarlin<TMC2660Stepper> &st, const TMC_get_registers_enum i) {
+      if (i != TMC_AXIS_CODES) SERIAL_ECHOPGM("0x");
+
+      switch(i) {
+        case TMC_AXIS_CODES: SERIAL_CHAR('\t'); st.printLabel(); break;
+        PRINT_TMC_REGISTER(DRVCONF)
+        PRINT_TMC_REGISTER(DRVCTRL)
+        PRINT_TMC_REGISTER(CHOPCONF)
+        PRINT_TMC_REGISTER(DRVSTATUS)
+        PRINT_TMC_REGISTER(SGCSCONF)
+        PRINT_TMC_REGISTER(SMARTEN)
+        default: SERIAL_ECHOPGM("-\t"); break;
+      }
+      SERIAL_CHAR('\t');
+    }
+  #endif
+
+  static void tmc_get_registers(TMC_get_registers_enum i, bool print_x, bool print_y, bool print_z, bool print_e) {
+    if (print_x) {
+      #if AXIS_IS_TMC(X)
+        tmc_get_registers(stepperX, i);
+      #endif
+      #if AXIS_IS_TMC(X2)
+        tmc_get_registers(stepperX2, i);
+      #endif
+    }
+
+    if (print_y) {
+      #if AXIS_IS_TMC(Y)
+        tmc_get_registers(stepperY, i);
+      #endif
+      #if AXIS_IS_TMC(Y2)
+        tmc_get_registers(stepperY2, i);
+      #endif
+    }
+
+    if (print_z) {
+      #if AXIS_IS_TMC(Z)
+        tmc_get_registers(stepperZ, i);
+      #endif
+      #if AXIS_IS_TMC(Z2)
+        tmc_get_registers(stepperZ2, i);
+      #endif
+      #if AXIS_IS_TMC(Z3)
+        tmc_get_registers(stepperZ3, i);
+      #endif
+    }
+
+    if (print_e) {
+      #if AXIS_IS_TMC(E0)
+        tmc_get_registers(stepperE0, i);
+      #endif
+      #if AXIS_IS_TMC(E1)
+        tmc_get_registers(stepperE1, i);
+      #endif
+      #if AXIS_IS_TMC(E2)
+        tmc_get_registers(stepperE2, i);
+      #endif
+      #if AXIS_IS_TMC(E3)
+        tmc_get_registers(stepperE3, i);
+      #endif
+      #if AXIS_IS_TMC(E4)
+        tmc_get_registers(stepperE4, i);
+      #endif
+      #if AXIS_IS_TMC(E5)
+        tmc_get_registers(stepperE5, i);
+      #endif
+    }
+
+    SERIAL_EOL();
+  }
+
+  void tmc_get_registers() {
+    bool print_axis[XYZE],
+         print_all = true;
+    LOOP_XYZE(i) if (parser.seen(axis_codes[i])) { print_axis[i] = true; print_all = false; }
+
+    #define TMC_GET_REG(LABEL, ITEM) do{ SERIAL_ECHOPGM(LABEL); tmc_get_registers(ITEM, print_axis[X_AXIS]||print_all, print_axis[Y_AXIS]||print_all, print_axis[Z_AXIS]||print_all, print_axis[E_AXIS]||print_all); }while(0)
+    TMC_GET_REG("\t",             TMC_AXIS_CODES);
+    TMC_GET_REG("GCONF\t\t",      TMC_GET_GCONF);
+    TMC_GET_REG("IHOLD_IRUN\t",   TMC_GET_IHOLD_IRUN);
+    TMC_GET_REG("GSTAT\t\t",      TMC_GET_GSTAT);
+    TMC_GET_REG("IOIN\t\t",       TMC_GET_IOIN);
+    TMC_GET_REG("TPOWERDOWN\t",   TMC_GET_TPOWERDOWN);
+    TMC_GET_REG("TSTEP\t\t",      TMC_GET_TSTEP);
+    TMC_GET_REG("TPWMTHRS\t",     TMC_GET_TPWMTHRS);
+    TMC_GET_REG("TCOOLTHRS\t",    TMC_GET_TCOOLTHRS);
+    TMC_GET_REG("THIGH\t\t",      TMC_GET_THIGH);
+    TMC_GET_REG("CHOPCONF\t",     TMC_GET_CHOPCONF);
+    TMC_GET_REG("COOLCONF\t",     TMC_GET_COOLCONF);
+    TMC_GET_REG("PWMCONF\t",      TMC_GET_PWMCONF);
+    TMC_GET_REG("PWM_SCALE\t",    TMC_GET_PWM_SCALE);
+    TMC_GET_REG("DRV_STATUS\t",   TMC_GET_DRV_STATUS);
   }
 
 #endif // TMC_DEBUG
