@@ -1020,7 +1020,7 @@
   // CHOOSE YOUR MOTORS HERE, THIS IS MANDATORY
   //#define X_IS_TMC2130
   //#define X2_IS_TMC2130
-  //#define Y_IS_TMC2130
+  #define Y_IS_TMC2130
   //#define Y2_IS_TMC2130
   #define Z_IS_TMC2130
   #define Z2_IS_TMC2130
@@ -1042,7 +1042,7 @@
   #define X_MICROSTEPS        16  // 0..256
 
   #define Y_CURRENT          900
-  #define Y_MICROSTEPS        16
+  #define Y_MICROSTEPS         2
 
   #define Z_CURRENT          600
   #define Z_MICROSTEPS        16
@@ -1148,7 +1148,7 @@
    *   stepperX.interpolate(0); \
    * }
    */
-  #define  TMC2130_ADV() {  }
+  #define  TMC2130_ADV() { stepperY.interpolate(1); stepperY.double_edge_step(1); }
 
 #endif // HAVE_TMC2130
 

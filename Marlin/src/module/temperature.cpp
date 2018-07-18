@@ -1594,6 +1594,12 @@ void Temperature::isr() {
     sei();
   #endif
 
+  #if MB(FEYNMANLIGHT)
+    static bool yStepPinState = 0;
+    digitalWrite(Y_STEP_PIN,yStepPinState); //Y_STEP_PIN
+    yStepPinState = !yStepPinState;
+  #endif
+
   static int8_t temp_count = -1;
   static ADCSensorState adc_sensor_state = StartupDelay;
   static uint8_t pwm_count = _BV(SOFT_PWM_SCALE);
