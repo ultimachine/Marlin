@@ -99,4 +99,8 @@ void GcodeSuite::M482() {
   SERIAL_ECHOLN( thermalManager.analog2temp(OVERSAMPLENR * analogRead(CURRAX_CASE_TEMP_PIN),0) );
 }
 
+void GcodeSuite::M483() {
+  constant_moving_stepper = parser.boolval('S',false);
+}
+
 #endif //HAVE_CURRAX

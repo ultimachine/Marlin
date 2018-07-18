@@ -208,6 +208,7 @@
  * M480 - Read temperature ADC data "M480"
  * M481 - Read currax endstops "M481"
  * M482 - Read temperature data in Celsius "M482"
+*  M483 - Constantly moving stepper "M483 S1" Enables movement. "M483 S0" Stops movement.
  * M500 - Store parameters in EEPROM. (Requires EEPROM_SETTINGS)
  * M501 - Restore parameters from EEPROM. (Requires EEPROM_SETTINGS)
  * M502 - Revert to the default "factory settings". ** Does not write them to EEPROM! **
@@ -629,6 +630,7 @@ private:
   static void M480();
   static void M481();
   static void M482();
+  static void M483();
  #endif
 
   #if HAS_BUZZER

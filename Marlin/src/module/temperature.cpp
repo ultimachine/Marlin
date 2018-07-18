@@ -1581,6 +1581,7 @@ HAL_TEMP_TIMER_ISR {
 }
 
 volatile bool Temperature::in_temp_isr = false;
+volatile bool constant_moving_stepper = false;
 
 void Temperature::isr() {
   // The stepper ISR can interrupt this ISR. When it does it re-enables this ISR
@@ -1594,10 +1595,12 @@ void Temperature::isr() {
     sei();
   #endif
 
-  #if MB(FEYNMANLIGHT)
+  #if ENABLED(HAVE_CURRAX)
+  if(constant_moving_stepper) {
     static bool yStepPinState = 0;
     digitalWrite(Y_STEP_PIN,yStepPinState); //Y_STEP_PIN
     yStepPinState = !yStepPinState;
+  }
   #endif
 
   static int8_t temp_count = -1;

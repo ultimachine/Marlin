@@ -648,6 +648,7 @@ void GcodeSuite::process_next_command() {
       case 480: M480(); break;    // M480: Read temperature adc data
       case 481: M481(); break;    // M481: Read currax endstops
       case 482: M482(); break;    // M482: Read temperature data in Celsius
+      case 483: M483(); break;    // M483: Turn on/off constant moving stepper
     #endif
 
       case 500: M500(); break;    // M500: Store settings in EEPROM

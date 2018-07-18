@@ -35,6 +35,10 @@
   extern bool axis_known_position[XYZ];
 #endif
 
+#if ENABLED(HAVE_CURRAX)
+  extern volatile bool constant_moving_stepper;
+#endif
+
 #if ENABLED(PID_EXTRUSION_SCALING)
   #include "stepper.h"
 #endif
