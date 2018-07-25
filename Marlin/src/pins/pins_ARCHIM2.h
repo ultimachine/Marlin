@@ -37,6 +37,8 @@
 
 #ifndef __SAM3X8E__
   #error "Oops!  Make sure you have 'Archim' selected from the 'Tools -> Boards' menu."
+#elif DISABLED(TMC_USE_SW_SPI)
+  #error "Archim2 uses Software SPI. Enable TMC_USE_SW_SPI in configuration_adv.h."
 #endif
 
 //
