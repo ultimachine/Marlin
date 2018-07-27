@@ -25,9 +25,6 @@ TAZ_TOOLHEADS="Tilapia_SingleExtruder Kanyu_Flexystruder Opah_Moarstruder Javeli
 MINI2_MODELS="Hibiscus_Mini2"
 MINI2_TOOLHEADS="Finch_AerostruderV2 Achemon_AeroMicroV2"
 
-TAZ7_MODELS="Quiver_TAZ7"
-TAZ7_TOOLHEADS="Angelfish_Aerostruder Achemon_AeroMicroV2"
-
 ####
 # usage
 #
@@ -208,13 +205,6 @@ build_for_taz() {
   for model in $TAZ_MODELS
   do
     for toolhead in $TAZ_TOOLHEADS
-    do
-      build_firmware ${model} ${toolhead}
-    done
-  done
-  for model in $TAZ7_MODELS
-  do
-    for toolhead in $TAZ7_TOOLHEADS
     do
       build_firmware ${model} ${toolhead}
     done
