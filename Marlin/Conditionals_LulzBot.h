@@ -20,7 +20,7 @@
     !defined(LULZBOT_Gladiola_MiniLCD) && \
     !defined(LULZBOT_Juniper_TAZ5) && \
     !defined(LULZBOT_Oliveoil_TAZ6) && \
-    !defined(LULZBOT_Hibiscus_Mini2)
+    !defined(LULZBOT_Hibiscus_Mini2) \
 ) || ( \
     !defined(TOOLHEAD_Gladiola_SingleExtruder) && \
     !defined(TOOLHEAD_Albatross_Flexystruder) && \
@@ -33,7 +33,7 @@
     !defined(TOOLHEAD_Javelin_DualExtruderV2) && \
     !defined(TOOLHEAD_Longfin_FlexyDually) && \
     !defined(TOOLHEAD_Yellowfin_DualExtruderV3) && \
-    !defined(TOOLHEAD_Angelfish_Aerostruder)
+    !defined(TOOLHEAD_Angelfish_Aerostruder) \
 )
     #error Must specify model and toolhead. Please see "Configuration_LulzBot.h" for directions.
 #endif
@@ -564,7 +564,7 @@
 
 /**************************** MINI TOOLHEADS ***********************************/
 
-#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aerostruder) || defined(TOOLHEAD_Finch_AerostruderV2)
+#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aerostruder) || defined(TOOLHEAD_Finch_AerostruderV2) || defined(TOOLHEAD_Achemon_AeroMicroV2)
     #define LULZBOT_EXTRUDERS                  1
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         0
     #define LULZBOT_TOOLHEAD_X_MIN_ADJ         0
