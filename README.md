@@ -1,3 +1,35 @@
+# Marlin development master branch for TMC drivers
+
+This fork and branch is used to develop the Trinamic stepper driver support for Marlin firmware.
+It is not meant for daily use. Consider everything to be public alpha.
+
+**I will be rewriting the git history very liberally** (`git reset --hard` is your friend. Remember to backup configs).
+
+You will need to install the [TMCStepper library](https://github.com/teemuatlut/TMCStepper).
+
+Testing (=compiling) is done mostly with PlatformIO, primarily targeting ATMega2560 and LPC1768 platforms.
+
+## Current features under development
+- [x] Move to new universal TMCStepper library
+- [x] Implement inherited Marlin TMC classes
+- [x] Support TMC2660
+- [x] Support TMC5160
+- [x] Add sanity checking for driver errors
+- [x] Greatly reduce communication attempts for monitoring
+- [x] Improve TMC error verbosity with better error messages
+- [x] Add communication checking on boot
+- [x] Add the ability to change chopper timings (spreadCycle)
+- [x] Tweak default chopper settings for quieter spreadCycle operation
+- [x] Support Trinamic coolStep technology
+- [x] Improve `M122` with fetching raw register data
+- [ ] Add TMC section to the LCD (partly done)
+- [ ] Support TMC5130
+- [ ] Support TMC2224
+- [ ] Add `SOFTWARE_ENABLE` for all smart drivers
+
+
+---
+
 # Marlin 3D Printer Firmware
 
 [![Build Status](https://travis-ci.org/MarlinFirmware/Marlin.svg?branch=RCBugFix)](https://travis-ci.org/MarlinFirmware/Marlin)

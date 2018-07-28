@@ -100,7 +100,7 @@
 #define X_DIR_PIN          55
 #define X_ENABLE_PIN       38
 #ifndef X_CS_PIN
-  #define X_CS_PIN         53
+  #define X_CS_PIN         X_ENABLE_PIN
 #endif
 
 #define Y_STEP_PIN         60
@@ -155,7 +155,7 @@
    */
   //#define X_HARDWARE_SERIAL  Serial1
   //#define X2_HARDWARE_SERIAL Serial1
-  //#define Y_HARDWARE_SERIAL  Serial1
+  #define Y_HARDWARE_SERIAL  Serial1
   //#define Y2_HARDWARE_SERIAL Serial1
   //#define Z_HARDWARE_SERIAL  Serial1
   //#define Z2_HARDWARE_SERIAL Serial1

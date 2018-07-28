@@ -116,6 +116,9 @@
   #define TMC_SW_SCK       P1_09   // ETH
 #endif
 
+  #define Y_SERIAL_TX_PIN    P2_08
+  #define Y_SERIAL_RX_PIN    P2_13
+
 //
 // Temperature Sensors
 //  3.3V max when defined as an analog input

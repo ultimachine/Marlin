@@ -1151,17 +1151,17 @@
  */
 #if HAS_TRINAMIC
 
-  #define R_SENSE           0.11  // R_sense resistor for SilentStepStick2130
+  #define R_SENSE           0.10  // R_sense resistor for SilentStepStick2130
   #define HOLD_MULTIPLIER    0.5  // Scales down the holding current from run current
   #define INTERPOLATE       true  // Interpolate X/Y/Z_MICROSTEPS to 256
 
   #define X_CURRENT          800  // rms current in mA. Multiply by 1.41 for peak current.
   #define X_MICROSTEPS        16  // 0..256
 
-  #define Y_CURRENT          800
+  #define Y_CURRENT          600
   #define Y_MICROSTEPS        16
 
-  #define Z_CURRENT          800
+  #define Z_CURRENT          700
   #define Z_MICROSTEPS        16
 
   #define X2_CURRENT         800
@@ -1213,7 +1213,7 @@
   //#define E5_CS_PIN         -1
 
   /**
-   * Use software SPI for TMC2130.
+   * Software option for SPI driven drivers (TMC2130, TMC2660).
    * The default SW SPI pins are defined the respective pins files,
    * but you can override or define them here.
    */
@@ -1223,6 +1223,7 @@
   //#define TMC_SW_SCK        -1
 
   /**
+   * TMC2130, TMC2208 only
    * Use Trinamic's ultra quiet stepping mode.
    * When disabled, Marlin will use spreadCycle stepping mode.
    */
@@ -1245,7 +1246,7 @@
    * and increased if the measurement is lower then INCREASE_CURRENT_THRS.
    * Current will never be increased over the configured values nor reduced below 50%.
    */
-  //#define ADAPTIVE_CURRENT
+  #define ADAPTIVE_CURRENT
 
   #if ENABLED(ADAPTIVE_CURRENT)
     #define REDUCE_CURRENT_THRS     3
@@ -1263,21 +1264,22 @@
    * M912 - Clear stepper driver overtemperature pre-warn condition flag.
    * M122 S0/1 - Report driver parameters (Requires TMC_DEBUG)
    */
-  //#define MONITOR_DRIVER_STATUS
+  #define MONITOR_DRIVER_STATUS
 
   #if ENABLED(MONITOR_DRIVER_STATUS)
     #define CURRENT_STEP_DOWN     50  // [mA]
     #define REPORT_CURRENT_CHANGE
-    #define STOP_ON_ERROR
+    //#define STOP_ON_ERROR
   #endif
 
   /**
+   * TMC2130, TMC2208 only
    * The driver will switch to spreadCycle when stepper speed is over HYBRID_THRESHOLD.
    * This mode allows for faster movements at the expense of higher noise levels.
    * STEALTHCHOP needs to be enabled.
    * M913 X/Y/Z/E to live tune the setting
    */
-  //#define HYBRID_THRESHOLD
+  #define HYBRID_THRESHOLD
 
   #define X_HYBRID_THRESHOLD     100  // [mm/s]
   #define X2_HYBRID_THRESHOLD    100
@@ -1294,6 +1296,7 @@
   #define E5_HYBRID_THRESHOLD     30
 
   /**
+   * TMC2130, TMC2660 only
    * Use stallGuard2 to sense an obstacle and trigger an endstop.
    * You need to place a wire from the driver's DIAG1 pin to the X/Y endstop pin.
    * X, Y, and Z homing will always be done in spreadCycle mode.
@@ -1305,7 +1308,7 @@
    * It is advised to set X/Y/Z_HOME_BUMP_MM to 0.
    * M914 X/Y/Z to live tune the setting
    */
-  //#define SENSORLESS_HOMING // TMC2130 only
+  #define SENSORLESS_HOMING // TMC2130 and TMC2660 only
 
   #if ENABLED(SENSORLESS_HOMING)
     #define X_HOMING_SENSITIVITY  8
@@ -1317,7 +1320,7 @@
    * Enable M122 debugging command for TMC stepper drivers.
    * M122 S0/1 will enable continous reporting.
    */
-  //#define TMC_DEBUG
+  #define TMC_DEBUG
 
   /**
    * M915 Z Axis Calibration
@@ -1329,7 +1332,7 @@
    * Use M915 Snn to specify the current.
    * Use M925 Znn to add extra Z height to Z_MAX_POS.
    */
-  //#define TMC_Z_CALIBRATION
+  #define TMC_Z_CALIBRATION
   #if ENABLED(TMC_Z_CALIBRATION)
     #define CALIBRATION_CURRENT 250
     #define CALIBRATION_EXTRA_HEIGHT 10
