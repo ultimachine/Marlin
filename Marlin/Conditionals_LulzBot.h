@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".65" // Change this with each update
+#define LULZBOT_FW_VERSION ".66" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \

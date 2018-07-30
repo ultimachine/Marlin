@@ -384,9 +384,11 @@ void CardReader::openFile(char* name, const bool read, const bool subcall/*=fals
       //SERIAL_ECHOPGM("start:");SERIAL_ECHOLN((int)(dirname_start - name));
       //SERIAL_ECHOPGM("end  :");SERIAL_ECHOLN((int)(dirname_end - name));
       if (dirname_end != NULL && dirname_end > dirname_start) {
-        char subdirname[FILENAME_LENGTH];
-        strncpy(subdirname, dirname_start, dirname_end - dirname_start);
-        subdirname[dirname_end - dirname_start] = '\0';
+        const int8_t len = dirname_end - dirname_start;
+        if (len <= 0) break;
+        char subdirname[len + 1];
+        strncpy(subdirname, dirname_start, len);
+        subdirname[len] = '\0';
         if (!myDir.open(curDir, subdirname, O_READ)) {
           SERIAL_PROTOCOLPGM(MSG_SD_OPEN_FILE_FAIL);
           SERIAL_PROTOCOL(subdirname);
@@ -458,9 +460,11 @@ void CardReader::removeFile(const char * const name) {
       //SERIAL_ECHOPGM("start:");SERIAL_ECHOLN((int)(dirname_start - name));
       //SERIAL_ECHOPGM("end  :");SERIAL_ECHOLN((int)(dirname_end - name));
       if (dirname_end != NULL && dirname_end > dirname_start) {
-        char subdirname[FILENAME_LENGTH];
-        strncpy(subdirname, dirname_start, dirname_end - dirname_start);
-        subdirname[dirname_end - dirname_start] = 0;
+        const int8_t len = dirname_end - dirname_start;
+        if (len <= 0) break;
+        char subdirname[len + 1];
+        strncpy(subdirname, dirname_start, len);
+        subdirname[len] = 0;
         SERIAL_ECHOLN(subdirname);
         if (!myDir.open(curDir, subdirname, O_READ)) {
           SERIAL_PROTOCOLPAIR(MSG_SD_OPEN_FILE_FAIL, subdirname);
