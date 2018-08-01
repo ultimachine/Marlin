@@ -116,6 +116,9 @@ void GcodeSuite::G38(const bool is_38_2) {
     }
 
   clean_up_after_endstop_or_probe_move();
+
+  stepper.synchronize();
+  SERIAL_ECHOLNPGM("G38_move_comp");
 }
 
 #endif // G38_PROBE_TARGET
