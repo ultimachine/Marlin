@@ -22,6 +22,7 @@
 
 #include "../gcode.h"
 #include "../../module/motion.h"
+#include "../../module/stepper.h"
 
 #include "../../Marlin.h"
 
@@ -66,5 +67,8 @@ void GcodeSuite::G0_G1(
     #else
       prepare_move_to_destination();
     #endif
+
+    stepper.synchronize();
+    SERIAL_ECHOLNPGM("Z_move_comp");
   }
 }
