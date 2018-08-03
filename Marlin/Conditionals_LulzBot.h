@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".1" // Change this with each update
+#define LULZBOT_FW_VERSION ".2" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1841,6 +1841,7 @@
     #define LULZBOT_DISABLE_KILL_BUTTON
     #define LULZBOT_ZOFFSET_PRECISION ftostr52
     #define LULZBOT_RESET_SELECTION_TO_FIRST_ON_MENU_BACK
+    #define LULZBOT_SHOW_TEMPERATURE_ADJUSTMENT_IN_PREHEAT_MENU
 #endif
 
 #if defined(LULZBOT_LIGHTWEIGHT_UI)

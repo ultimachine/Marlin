@@ -4474,6 +4474,17 @@ void lcd_quick_feedback(const bool clear_buttons) {
       return PSTR(MSG_FILAMENTCHANGE);
     }
 
+    #if defined(LULZBOT_SHOW_TEMPERATURE_ADJUSTMENT_IN_PREHEAT_MENU)
+    void _change_filament_temp(const uint16_t temperature) {
+      char cmd[11];
+      sprintf_P(cmd, _change_filament_temp_command(), _change_filament_temp_extruder);
+      thermalManager.setTargetHotend(temperature, _change_filament_temp_extruder);
+      lcd_enqueue_command(cmd);
+    }
+    void _lcd_change_filament_temp_1_menu()      {_change_filament_temp(PREHEAT_1_TEMP_HOTEND); }
+    void _lcd_change_filament_temp_2_menu()      {_change_filament_temp(PREHEAT_2_TEMP_HOTEND); }
+    void _lcd_change_filament_temp_custom_menu() {_change_filament_temp(thermalManager.target_temperature[_change_filament_temp_extruder]);}
+    #else
     void _change_filament_temp(const uint8_t index) {
       char cmd[11];
       sprintf_P(cmd, _change_filament_temp_command(), _change_filament_temp_extruder);
@@ -4482,6 +4493,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
     }
     void _lcd_change_filament_temp_1_menu() { _change_filament_temp(1); }
     void _lcd_change_filament_temp_2_menu() { _change_filament_temp(2); }
+    #endif
 
     static const char* change_filament_header(const AdvancedPauseMode mode) {
       switch (mode) {
@@ -4502,6 +4514,9 @@ void lcd_quick_feedback(const bool clear_buttons) {
       MENU_BACK(MSG_FILAMENTCHANGE);
       MENU_ITEM(submenu, MSG_PREHEAT_1, _lcd_change_filament_temp_1_menu);
       MENU_ITEM(submenu, MSG_PREHEAT_2, _lcd_change_filament_temp_2_menu);
+      #if defined(LULZBOT_SHOW_TEMPERATURE_ADJUSTMENT_IN_PREHEAT_MENU)
+        MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, _UxGT("Preheat Custom"), &thermalManager.target_temperature[_change_filament_temp_extruder], EXTRUDE_MINTEMP, HEATER_0_MAXTEMP - 15, _lcd_change_filament_temp_custom_menu);
+      #endif
       END_MENU();
     }
     void lcd_temp_menu_e0_filament_change()  { _lcd_temp_menu_filament_op(ADVANCED_PAUSE_MODE_PAUSE_PRINT, 0); }
