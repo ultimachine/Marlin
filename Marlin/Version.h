@@ -35,20 +35,20 @@
   /**
    * Marlin release version identifier
    */
-  #define SHORT_BUILD_VERSION "1.1.8"
+  #define SHORT_BUILD_VERSION "1.1.9"
 
   /**
    * Verbose version identifier which should contain a reference to the location
    * from where the binary was downloaded or the source code was compiled.
    */
-  #define DETAILED_BUILD_VERSION LULZBOT_DETAILED_BUILD_VERSION
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (Github)"
 
   /**
    * The STRING_DISTRIBUTION_DATE represents when the binary file was built,
    * here we define this default string as the date where the latest release
    * version was tagged.
    */
-  #define STRING_DISTRIBUTION_DATE LULZBOT_STRING_DISTRIBUTION_DATE
+  #define STRING_DISTRIBUTION_DATE "2018-07-31"
 
   /**
    * Required minimum Configuration.h and Configuration_adv.h file versions.
@@ -57,8 +57,8 @@
    * but not limited to: ADD, DELETE RENAME OR REPURPOSE any directive/option on
    * the configuration files.
    */
-  #define REQUIRED_CONFIGURATION_H_VERSION 010107
-  #define REQUIRED_CONFIGURATION_ADV_H_VERSION 010107
+  #define REQUIRED_CONFIGURATION_H_VERSION 010109
+  #define REQUIRED_CONFIGURATION_ADV_H_VERSION 010109
 
   /**
    * The protocol for communication to the host. Protocol indicates communication
@@ -78,7 +78,7 @@
    * has a distinct Github fork— the Source Code URL should just be the main
    * Marlin repository.
    */
-  #define SOURCE_CODE_URL LULZBOT_SOURCE_CODE_URL
+  #define SOURCE_CODE_URL "https://github.com/MarlinFirmware/Marlin"
 
   /**
    * Default generic printer UUID.

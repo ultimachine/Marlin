@@ -49,17 +49,10 @@
 //
 // Servos
 //
-#define SERVO0_PIN         22 // Motor header MX1
-#define SERVO1_PIN         23 // Motor header MX2
-#define SERVO2_PIN         24 // Motor header MX3
-#define SERVO3_PIN          5 // PWM header pin 5
-
-//
-// Z Probe (when not Z_MIN_PIN)
-//
-#ifndef Z_MIN_PROBE_PIN
-  #define Z_MIN_PROBE_PIN  30
-#endif
+#define SERVO0_PIN         22   // Motor header MX1
+#define SERVO1_PIN         23   // Motor header MX2
+#define SERVO2_PIN         24   // Motor header MX3
+#define SERVO3_PIN          5   // PWM header pin 5
 
 //
 // Limit Switches
@@ -70,6 +63,13 @@
 #define Y_MAX_PIN          23
 #define Z_MIN_PIN          10
 #define Z_MAX_PIN          30
+
+//
+// Z Probe (when not Z_MIN_PIN)
+//
+#ifndef Z_MIN_PROBE_PIN
+  #define Z_MIN_PROBE_PIN  30
+#endif
 
 //
 // Steppers
@@ -86,15 +86,6 @@
 #define Z_DIR_PIN          47
 #define Z_ENABLE_PIN       27
 
-#if defined(LULZBOT_SWAP_EXTRUDERS)
-#define E0_STEP_PIN        33
-#define E0_DIR_PIN         42
-#define E0_ENABLE_PIN      25
-
-#define E1_STEP_PIN        34
-#define E1_DIR_PIN         43
-#define E1_ENABLE_PIN      26
-#else
 #define E0_STEP_PIN        34
 #define E0_DIR_PIN         43
 #define E0_ENABLE_PIN      26
@@ -102,7 +93,6 @@
 #define E1_STEP_PIN        33
 #define E1_DIR_PIN         42
 #define E1_ENABLE_PIN      25
-#endif
 
 // Microstepping pins - Mapping not from fastio.h (?)
 #define X_MS1_PIN          40
@@ -111,61 +101,36 @@
 #define Y_MS2_PIN          39
 #define Z_MS1_PIN          68
 #define Z_MS2_PIN          67
-
-#if defined(LULZBOT_SWAP_EXTRUDERS)
-#define E0_MS1_PIN         63
-#define E0_MS2_PIN         64
-#define E1_MS1_PIN         65
-#define E1_MS2_PIN         66
-#else
 #define E0_MS1_PIN         65
 #define E0_MS2_PIN         66
 #define E1_MS1_PIN         63
 #define E1_MS2_PIN         64
-#endif
 
 #define DIGIPOTSS_PIN      38
-#if defined(LULZBOT_SWAP_EXTRUDERS)
-#define DIGIPOT_CHANNELS {4,5,3,1,0} // X Y Z E0 E1 digipot channels to stepper driver mapping
-#else
-#define DIGIPOT_CHANNELS {4,5,3,0,1} // X Y Z E0 E1 digipot channels to stepper driver mapping
+#define DIGIPOT_CHANNELS  { 4,5,3,0,1 }   // X Y Z E0 E1 digipot channels to stepper driver mapping
+#ifndef DIGIPOT_MOTOR_CURRENT
+  #define DIGIPOT_MOTOR_CURRENT { 135,135,135,135,135 }   // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
 #endif
 
 //
 // Temperature Sensors
 //
-#if defined(LULZBOT_SWAP_EXTRUDERS)
-#define TEMP_0_PIN          1   // Analog Input
-#define TEMP_1_PIN          0   // Analog Input
-#else
 #define TEMP_0_PIN          0   // Analog Input
 #define TEMP_1_PIN          1   // Analog Input
-#endif
 #define TEMP_BED_PIN        2   // Analog Input
 
 //
 // Heaters / Fans
 //
-
-#if defined(LULZBOT_SWAP_EXTRUDERS)
-#define HEATER_0_PIN        7
-#define HEATER_1_PIN        9
-#else
 #define HEATER_0_PIN        9
 #define HEATER_1_PIN        7
-#endif
-
 #define HEATER_2_PIN        6
 #define HEATER_BED_PIN      3
 
-#if defined(LULZBOT_EXTRUDER_FAN_ON_PIN_6)
-  #define FAN_PIN           6
-  #define FAN1_PIN          8
-#else
+#ifndef FAN_PIN
   #define FAN_PIN           8
-  #define FAN1_PIN          6
 #endif
-
+#define FAN1_PIN            6
 #define FAN2_PIN            2
 
 //
@@ -183,8 +148,8 @@
 //
 // M3/M4/M5 - Spindle/Laser Control
 //
-#define SPINDLE_LASER_PWM_PIN    45  // MUST BE HARDWARE PWM
-#define SPINDLE_LASER_ENABLE_PIN 31  // Pin should have a pullup!
+#define SPINDLE_LASER_PWM_PIN    45   // MUST BE HARDWARE PWM
+#define SPINDLE_LASER_ENABLE_PIN 31   // Pin should have a pullup!
 #define SPINDLE_DIR_PIN          32
 
 //
@@ -192,16 +157,14 @@
 //
 #define E_MUX0_PIN         17
 #define E_MUX1_PIN         16
-#define E_MUX2_PIN         84 // 84 in MK2 Firmware
+#define E_MUX2_PIN         84   // 84 in MK2 Firmware
 
 //
 // LCD / Controller
 //
 #if ENABLED(ULTRA_LCD)
 
-  #if !defined(LULZBOT_DISABLE_KILL_BUTTON)
-  #define KILL_PIN 80
-  #endif
+  #define KILL_PIN         80
 
   #if ENABLED(NEWPANEL)
 
@@ -213,41 +176,41 @@
     #define LCD_PINS_D7     75
 
     #if ENABLED(VIKI2) || ENABLED(miniVIKI)
-      #define BEEPER_PIN 44
+      #define BEEPER_PIN   44
       // NB: Panucatt's Viki 2.0 wiring diagram (v1.2) indicates that the
       //     beeper/buzzer is connected to pin 33; however, the pin used in the
       //     diagram is actually pin 44, so this is correct.
 
-      #define DOGLCD_A0  70
-      #define DOGLCD_CS  71
+      #define DOGLCD_A0    70
+      #define DOGLCD_CS    71
       #define LCD_SCREEN_ROT_180
 
-      #define BTN_EN1 85
-      #define BTN_EN2 84
-      #define BTN_ENC 83
+      #define BTN_EN1      85
+      #define BTN_EN2      84
+      #define BTN_ENC      83
 
-      #define SD_DETECT_PIN -1 // Pin 72 if using easy adapter board
+      #define SD_DETECT_PIN -1   // Pin 72 if using easy adapter board
 
       #define STAT_LED_RED_PIN 22
       #define STAT_LED_BLUE_PIN 32
 
-    #else
+    #else // !VIKI2 && !miniVIKI
 
-      #define BEEPER_PIN 79 // AUX-4
+      #define BEEPER_PIN   79   // AUX-4
 
       // AUX-2
-      #define BTN_EN1 76
-      #define BTN_EN2 77
-      #define BTN_ENC 78
+      #define BTN_EN1      76
+      #define BTN_EN2      77
+      #define BTN_ENC      78
 
       #define SD_DETECT_PIN 81
 
-    #endif // VIKI2/miniVIKI
+    #endif // !VIKI2 && !miniVIKI
 
   #else // !NEWPANEL - old style panel with shift register
 
     // No Beeper added
-    #define BEEPER_PIN 33
+    #define BEEPER_PIN     33
 
     // buttons are attached to a shift register
     // Not wired yet

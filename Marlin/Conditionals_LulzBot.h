@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".66" // Change this with each update
+#define LULZBOT_FW_VERSION ".1" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -52,6 +52,7 @@
     #define LULZBOT_USE_Z_SCREW
     #define LULZBOT_BACKLASH_COMPENSATION
     #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "351487b6-ca9a-4c1a-8765-d668b1da6585"
 #endif
 
@@ -68,6 +69,7 @@
     #define LULZBOT_USE_Z_SCREW
     #define LULZBOT_BACKLASH_COMPENSATION
     #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "083f68f1-028e-494c-98e1-f2e0dfaee9a5"
 #endif
 
@@ -82,6 +84,7 @@
     #define LULZBOT_USE_Z_SCREW
     #define LULZBOT_BACKLASH_COMPENSATION
     #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "c3255c96-4097-4884-8ed0-ded2ff9bae61"
 #endif
 
@@ -99,6 +102,7 @@
     #define LULZBOT_USE_Z_SCREW
     #define LULZBOT_BACKLASH_COMPENSATION
     #define LULZBOT_BAUDRATE 250000
+    #define LULZBOT_PRINTCOUNTER
     #define LULZBOT_UUID "845f003c-aebd-4e53-a6b9-7d0984fde609"
 #endif
 
@@ -107,14 +111,14 @@
     #define LULZBOT_LCD_MACHINE_NAME "Mini 2"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
-    #define LULZBOT_USE_EINSYRAMBO
     #define LULZBOT_USE_EINSY_RETRO
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
-    #define LULZBOT_REPROBE_EXTENDED_RECOVERY
+    #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_USE_TMC_STEALTHCHOP_Z
+    //#define LULZBOT_USE_TMC_HYBRID_THRESHOLD
     #define LULZBOT_USE_Z_BELT
     #define LULZBOT_USE_Z_BACKLASH_COMPENSATION
     #define LULZBOT_BAUDRATE 250000
@@ -123,6 +127,7 @@
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
     #define LULZBOT_LIGHTWEIGHT_UI
     #define LULZBOT_USE_EXPERIMENTAL_FEATURES
+    #define LULZBOT_REPROBE_EXTENDED_RECOVERY
 #endif
 
 /****************************** DEBUGGING OPTIONS *******************************/
@@ -171,31 +176,9 @@
 // Q&A wants to be able to use M226 on endstops switches
 #define LULZBOT_NO_PIN_PROTECTION_ON_M226
 
-// Marlin 1.1.5 has an issue where bed leveling is disabled when homing,
-// this causes problems when rehoming X/Y after pausing a print. This
-// bug has been reported upstream as bug #8670
-#if defined(LULZBOT_USE_AUTOLEVELING)
-    #define LULZBOT_G28_DISABLES_LEVELING_WORKAROUND
-#endif
-
-// Fix for OctoPrint serial buffer overflow when using auto temperature
-// report.
-//      Back port of upstream https://github.com/MarlinFirmware/Marlin/commit/6ed284061580ffc6eef40df391afb30d2f8b45f5
-#define LULZBOT_OCTOPRINT_RX_BUFFER_OVERFLOW_WORKAROUND delay(2);
-
-// Fix for bug where the LCD is not being properly cleared at startup
-#define LULZBOT_LCD_CLEAR_WORKAROUND
-
-// Fix for bug where going to the Move Axis screen causes the menu
-// not to timeout. This has been reported upstream:
-//    https://github.com/MarlinFirmware/Marlin/issues/10085
-#define LULZBOT_MOVE_AXIS_LCD_TIMER_WORKAROUND
-
 /************************* EXPERIMENTAL FEATURES ******************************/
 
 #if defined(LULZBOT_USE_EXPERIMENTAL_FEATURES)
-    //#define LULZBOT_USE_STATUS_LED
-
     // Enable linear advance, but leave K at zero so
     // it is not used unless the user requests it.
     #define LULZBOT_LIN_ADVANCE
@@ -209,9 +192,9 @@
 #define LULZBOT_NORMALLY_OPEN_ENDSTOP         true
 #define LULZBOT_NO_ENDSTOP                    true
 
-#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_EINSYRAMBO)
+#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_EINSY_RETRO)
     // Experimental Mini retrofitted with EinsyRambo from UltiMachine
-    #define LULZBOT_MOTHERBOARD                   BOARD_EINSYRAMBO
+    #define LULZBOT_MOTHERBOARD                   BOARD_EINSY_RETRO
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN  // Digital pin 6
 
 #elif defined(LULZBOT_IS_MINI)
@@ -232,15 +215,8 @@
     // to "endstops.cpp"
     #define LULZBOT_Z_MIN_USES_Z_PROBE_ENABLED
 
-#elif defined(LULZBOT_SENSORLESS_HOMING_Z)
-    /* When using stallguard for sensorless Z homing, "pins_EINSYRAMBO.h"
-    /* ties Z_MIN and Z_MAX to the diag output on the TMC. For the
-    /* electrical probe, we use the Z_MIN connector on the board. */
-    #define LULZBOT_Z_MIN_PROBE_ENDSTOP
-    #define LULZBOT_Z_MIN_PROBE_PIN BOARD_Z_MIN_PIN
-
 #else
-    // The Mini and TAZ 7+ lack a home button and probe using the Z_MIN pin.
+    // The Mini 2 lacks a home button and probes using the Z_MIN pin.
     #define LULZBOT_Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
 #endif
 
@@ -253,31 +229,27 @@
 #define LULZBOT_INVERT_E1_DIR                     true
 
 #if defined(LULZBOT_IS_MINI)
-    #define LULZBOT_INVERT_X_HOME_DIR             -1 // Home left
-    #define LULZBOT_INVERT_Y_HOME_DIR              1 // Home bed forward
-    #if defined(LULZBOT_SENSORLESS_HOMING_Z)
-        #define LULZBOT_INVERT_Z_HOME_DIR         -1 // Home to bottom
-    #else
-        #define LULZBOT_INVERT_Z_HOME_DIR          1 // Home to top
-    #endif
+    #define LULZBOT_X_HOME_DIR             -1 // Home left
+    #define LULZBOT_Y_HOME_DIR              1 // Home bed forward
+    #define LULZBOT_Z_HOME_DIR          1 // Home to top
     #define LULZBOT_QUICKHOME
 
 #elif defined(LULZBOT_Juniper_TAZ5)
-    #define LULZBOT_INVERT_X_HOME_DIR             -1 // Home left
-    #define LULZBOT_INVERT_Y_HOME_DIR             -1 // Home bed rear
-    #define LULZBOT_INVERT_Z_HOME_DIR             -1 // Home towards bed
+    #define LULZBOT_X_HOME_DIR             -1 // Home left
+    #define LULZBOT_Y_HOME_DIR             -1 // Home bed rear
+    #define LULZBOT_Z_HOME_DIR             -1 // Home towards bed
     #define LULZBOT_QUICKHOME
 
 #elif defined(LULZBOT_IS_TAZ) && !defined(LULZBOT_USE_HOME_BUTTON)
-    #define LULZBOT_INVERT_X_HOME_DIR             -1 // Home left
-    #define LULZBOT_INVERT_Y_HOME_DIR              1 // Home bed forward
-    #define LULZBOT_INVERT_Z_HOME_DIR              1 // Home to top
+    #define LULZBOT_X_HOME_DIR             -1 // Home left
+    #define LULZBOT_Y_HOME_DIR              1 // Home bed forward
+    #define LULZBOT_Z_HOME_DIR              1 // Home to top
     #define LULZBOT_QUICKHOME
 
 #elif defined(LULZBOT_IS_TAZ) &&  defined(LULZBOT_USE_HOME_BUTTON)
-    #define LULZBOT_INVERT_X_HOME_DIR             -1 // Home left
-    #define LULZBOT_INVERT_Y_HOME_DIR              1 // Home bed forward
-    #define LULZBOT_INVERT_Z_HOME_DIR             -1 // Home towards bed
+    #define LULZBOT_X_HOME_DIR             -1 // Home left
+    #define LULZBOT_Y_HOME_DIR              1 // Home bed forward
+    #define LULZBOT_Z_HOME_DIR             -1 // Home towards bed
     #define LULZBOT_QUICKHOME
 #endif
 
@@ -322,7 +294,7 @@
 #endif  // LULZBOT_USE_HOME_BUTTON
 
 #define LULZBOT_G92_Z(z) \
-      stepper.synchronize(); \
+      planner.synchronize(); \
       current_position[Z_AXIS] = z; \
       SYNC_PLAN_POSITION_KINEMATIC();
 
@@ -396,6 +368,7 @@
 #endif
 
 #if defined(LULZBOT_USE_AUTOLEVELING)
+    #define LULZBOT_RESTORE_LEVELING_AFTER_G28
     #define LULZBOT_NOZZLE_CLEAN_FEATURE
     // Select type of leveling to use:
     //#define LULZBOT_AUTO_BED_LEVELING_BILINEAR
@@ -405,12 +378,12 @@
 
 #if defined(LULZBOT_AUTO_BED_LEVELING_3POINT)
   // Experimental three point leveling.
-  #define LULZBOT_ABL_PROBE_PT_1_X LULZBOT_LEFT_PROBE_BED_POSITION
-  #define LULZBOT_ABL_PROBE_PT_1_Y LULZBOT_FRONT_PROBE_BED_POSITION
-  #define LULZBOT_ABL_PROBE_PT_2_X LULZBOT_RIGHT_PROBE_BED_POSITION
-  #define LULZBOT_ABL_PROBE_PT_2_Y LULZBOT_FRONT_PROBE_BED_POSITION
-  #define LULZBOT_ABL_PROBE_PT_3_X LULZBOT_RIGHT_PROBE_BED_POSITION
-  #define LULZBOT_ABL_PROBE_PT_3_Y LULZBOT_BACK_PROBE_BED_POSITION
+  #define LULZBOT_PROBE_PT_1_X LULZBOT_LEFT_PROBE_BED_POSITION
+  #define LULZBOT_PROBE_PT_1_Y LULZBOT_FRONT_PROBE_BED_POSITION
+  #define LULZBOT_PROBE_PT_2_X LULZBOT_RIGHT_PROBE_BED_POSITION
+  #define LULZBOT_PROBE_PT_2_Y LULZBOT_FRONT_PROBE_BED_POSITION
+  #define LULZBOT_PROBE_PT_3_X LULZBOT_RIGHT_PROBE_BED_POSITION
+  #define LULZBOT_PROBE_PT_3_Y LULZBOT_BACK_PROBE_BED_POSITION
 #elif defined(LULZBOT_AUTO_BED_LEVELING_LINEAR) || defined(LULZBOT_AUTO_BED_LEVELING_BILINEAR)
   // Traditionally LulzBot printers have employed a four-point leveling
   // using a degenerate 2x2 grid. This is the traditional behavior.
@@ -505,14 +478,7 @@
         WRITE(pin, LOW); \
     }
 
-#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_SENSORLESS_HOMING_Z)
-    #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
-        endstops.enable_z_probe(enable); \
-        LULZBOT_SET_PIN_STATE(LULZBOT_Z_MIN_PROBE_PIN, enable) \
-        LULZBOT_EXTRUDER_MOTOR_SHUTOFF_ON_PROBE(enable) \
-    }
-
-#elif defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
+#if defined(LULZBOT_USE_AUTOLEVELING) && defined(LULZBOT_MINI_BED)
     #define LULZBOT_ENABLE_PROBE_PINS(enable) { \
         endstops.enable_z_probe(enable); \
         LULZBOT_SET_PIN_STATE(Z_MIN_PIN, enable) \
@@ -577,7 +543,7 @@
     #define LULZBOT_TOOLHEAD_WIPE_Y1_ADJ       0
     #define LULZBOT_TOOLHEAD_WIPE_Y2_ADJ       0
 
-    #if defined(LULZBOT_USE_EINSYRAMBO)
+    #if defined(LULZBOT_USE_EINSY_RETRO)
         #define LULZBOT_MOTOR_CURRENT_E          960 // mA
     #else
         #define LULZBOT_MOTOR_CURRENT_E         1250 // mA
@@ -939,7 +905,7 @@
 #define LULZBOT_FAN_MIN_PWM                      70
 
 #define LULZBOT_USE_CONTROLLER_FAN
-#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_EINSYRAMBO)
+#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_EINSY_RETRO)
     // The TMC drivers need a bit more cooling.
     #define LULZBOT_CONTROLLERFAN_SPEED                    255
     #define LULZBOT_CONTROLLERFAN_SPEED_WHEN_ONLY_Z_ACTIVE 120
@@ -1014,10 +980,6 @@
 #if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_STANDARD_Z_MIN_POS          -2
     #define LULZBOT_STANDARD_Z_MAX_POS         159
-
-#elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT) && defined(LULZBOT_SENSORLESS_HOMING_Z)
-    #define LULZBOT_STANDARD_Z_MIN_POS        -3.5
-    #define LULZBOT_STANDARD_Z_MAX_POS         183
 
 #elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_STANDARD_Z_MIN_POS           0
@@ -1100,13 +1062,24 @@
 #define LULZBOT_Z_MIN_ENDSTOP_INVERTING       LULZBOT_NORMALLY_OPEN_ENDSTOP
 #define LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING LULZBOT_NORMALLY_OPEN_ENDSTOP
 
-/********************************* STATUS LIGHTS ********************************/
+/******************************* MOTOR DRIVER TYPE ******************************/
 
-#if defined(LULZBOT_USE_STATUS_LED)
-    #define LULZBOT_NEOPIXEL_RGBW_LED
-    #define LULZBOT_NEOPIXEL_PIN        BOARD_X_MAX_PIN
-    #define LULZBOT_NEOPIXEL_PIXELS     8
-    #undef  LULZBOT_USE_XMAX_PLUG
+#if defined(LULZBOT_USE_EINSY_RETRO) || defined(LULZBOT_USE_ARCHIM2)
+    #define LULZBOT_X_DRIVER_TYPE  TMC2130
+    #define LULZBOT_Y_DRIVER_TYPE  TMC2130
+    #define LULZBOT_Z_DRIVER_TYPE  TMC2130
+    #define LULZBOT_E0_DRIVER_TYPE TMC2130
+    #if LULZBOT_EXTRUDERS > 1
+        #define LULZBOT_E1_DRIVER_TYPE TMC2130
+    #else
+        #define LULZBOT_E1_DRIVER_TYPE A4988
+    #endif
+#else
+    #define LULZBOT_X_DRIVER_TYPE  A4988
+    #define LULZBOT_Y_DRIVER_TYPE  A4988
+    #define LULZBOT_Z_DRIVER_TYPE  A4988
+    #define LULZBOT_E0_DRIVER_TYPE A4988
+    #define LULZBOT_E1_DRIVER_TYPE A4988
 #endif
 
 /******************************* SENSORLESS HOMING ******************************/
@@ -1114,55 +1087,7 @@
 #if defined(LULZBOT_SENSORLESS_HOMING)
     #define LULZBOT_X_HOMING_SENSITIVITY 4
     #define LULZBOT_Y_HOMING_SENSITIVITY 4
-    #define LULZBOT_Z_HOMING_SENSITIVITY 4
-#endif
-
-#if defined(LULZBOT_SENSORLESS_HOMING_Z)
-    /* With sensorless Z homing, we position the head over a corner washer,
-       lower the Z current and push the head down until we detect a stall
-       (or electrical contact is made, if LULZBOT_HOMING_USES_PROBE_PINS).
-
-       Sensorless Z homing is not accurate enough for bed leveling, but it
-       is good enough to allow us to find the wiper pad and proceed to
-       probe electrically (as was done on previous generation machines).
-     */
-    #define LULZBOT_Z_SAFE_HOMING
-    #define LULZBOT_Z_SAFE_HOMING_X_POINT          17 // LULZBOT_LEFT_PROBE_BED_POSITION
-    #define LULZBOT_Z_SAFE_HOMING_Y_POINT         180 // LULZBOT_BACK_PROBE_BED_POSITION
-
-    #define LULZBOT_Z_HOMING_SENSITIVITY 2
-    #define LULZBOT_Z_HOMING_CURRENT     500
-
-    #define LULZBOT_Z_HOMING_HEIGHT      5
-
-    //#define LULZBOT_HOMING_FEEDRATE_Z (3*60) // mm/m
-
-    /* Lower the current on Z, otherwise the gearing on the axis prevents
-       us from detecting a stall. */
-    #define LULZBOT_ADJUST_Z_HOMING_CURRENT(enable) \
-        { \
-            if(enable) { \
-                stepperZ.setCurrent(LULZBOT_Z_HOMING_CURRENT, R_SENSE, HOLD_MULTIPLIER); \
-                stepperZ.sg_stall_value(LULZBOT_Z_HOMING_SENSITIVITY); \
-                stepperZ.diag1_stall(1); \
-            } else { \
-                stepperZ.setCurrent(LULZBOT_MOTOR_CURRENT_Z,  R_SENSE, HOLD_MULTIPLIER); \
-                stepperZ.diag1_stall(0); \
-            } \
-        }
-
-    /* When this is enabled, the probe pin will also be used, in addition to stallguard,
-       to detect the X_MIN. Will generally keep the bed from flexing as far. */
-    //#define LULZBOT_HOMING_USES_PROBE_PINS
-
-    #define LULZBOT_SENSORLESS_HOMING_Z_INIT \
-            LULZBOT_ENABLE_COOLSTEP_WITH_STALLGUARD(stepperZ); \
-            /* Set stallguard value for Z sensing */ \
-            stepperZ.sg_stall_value(LULZBOT_Z_HOMING_SENSITIVITY); \
-            stepperZ.diag1_stall(0); /* Start disabled */
-#else
-    #define LULZBOT_SENSORLESS_HOMING_Z_INIT
-    #define LULZBOT_ADJUST_Z_HOMING_CURRENT(enable)
+    #define LULZBOT_Z_HOMING_SENSITIVITY_DISABLED
 #endif
 
 #if defined(LULZBOT_SENSORLESS_HOMING)
@@ -1173,21 +1098,11 @@
     #define LULZBOT_Y_HOME_BUMP_MM                5
 #endif
 
-#if defined(LULZBOT_SENSORLESS_HOMING_Z)
-    #define LULZBOT_Z_HOME_BUMP_MM                0
-#else
-    #define LULZBOT_Z_HOME_BUMP_MM                2
-#endif
+#define LULZBOT_Z_HOME_BUMP_MM                2
 
-#if defined(LULZBOT_USE_EINSYRAMBO)
+#if defined(LULZBOT_USE_EINSY_RETRO)
     #define LULZBOT_HAVE_TMC2130
-
-    #if defined(LULZBOT_USE_EINSY_RETRO)
-        #define LULZBOT_R_SENSE         0.12
-    #else
-        #define LULZBOT_R_SENSE         0.1
-    #endif
-
+    #define LULZBOT_R_SENSE         0.12
     #define LULZBOT_HOLD_MULTIPLIER 0.5
 
     // If true, use STEALTHCHOP, otherwise use COOLSTEP
@@ -1275,8 +1190,6 @@
         stepperZ.hstrt(LULZBOT_Z_HSTRT);     /* HSTART = [0..7]   */ \
         stepperZ.hend(LULZBOT_Z_HEND);       /* HEND   = [0..15]  */ \
         stepperZ.tbl(LULZBOT_Z_TBL);         /* TBL    = [0..3]   */ \
-        /* Set Z homing sensitivity, but not yet homing */ \
-        stepperZ.sg_stall_value(LULZBOT_Z_HOMING_SENSITIVITY); \
         LULZBOT_DEFAULT_OPERATING_MODE_Z(stepperZ);
 
     #define LULZBOT_E_TOFF           1
@@ -1297,7 +1210,6 @@
             LULZBOT_MOTOR_INIT_XY \
             LULZBOT_MOTOR_INIT_Z \
             LULZBOT_MOTOR_INIT_E \
-            LULZBOT_SENSORLESS_HOMING_Z_INIT \
         }
 
     /* Once homing is finished, return to the normal operating mode: */
@@ -1330,9 +1242,9 @@
 
     #define LULZBOT_AFTER_Z_HOME_ACTION \
         { \
-            int x = (LULZBOT_INVERT_X_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_XY : LULZBOT_STANDARD_X_MAX_POS - LULZBOT_BACKOFF_DIST_XY); \
-            int y = (LULZBOT_INVERT_Y_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_XY : LULZBOT_STANDARD_Y_MAX_POS - LULZBOT_BACKOFF_DIST_XY); \
-            int z = (LULZBOT_INVERT_Z_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_Z  : LULZBOT_STANDARD_Z_MAX_POS - LULZBOT_BACKOFF_DIST_Z); \
+            int x = (LULZBOT_X_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_XY : LULZBOT_STANDARD_X_MAX_POS - LULZBOT_BACKOFF_DIST_XY); \
+            int y = (LULZBOT_Y_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_XY : LULZBOT_STANDARD_Y_MAX_POS - LULZBOT_BACKOFF_DIST_XY); \
+            int z = (LULZBOT_Z_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_Z  : LULZBOT_STANDARD_Z_MAX_POS - LULZBOT_BACKOFF_DIST_Z); \
             do_blocking_move_to_z( \
                 (home_all || homeZ) ? z : current_position[Z_AXIS] \
             ); \
@@ -1357,8 +1269,6 @@
     #define LULZBOT_Y_MAX_ENDSTOP_INVERTING   LULZBOT_NORMALLY_OPEN_ENDSTOP
     //#define LULZBOT_Y_MIN_ENDSTOP_INVERTING LULZBOT_NORMALLY_OPEN_ENDSTOP
 
-    #define LULZBOT_Z_MAX_ENDSTOP_INVERTING   LULZBOT_NORMALLY_CLOSED_ENDSTOP
-
     // The following does not seem to work when both
     // MAX and MIN are using Stallguard.
     // It also appears that when this is enabled
@@ -1381,10 +1291,11 @@
 
 #if defined(LULZBOT_USE_LCD_DISPLAY)
     #define LULZBOT_ADVANCED_PAUSE_FEATURE
-    #define LULZBOT_ADVANCED_PAUSE_EXTRUDE_LENGTH    20
-    #define LULZBOT_ADVANCED_PAUSE_EXTRUDE_FEEDRATE  1
+    #define LULZBOT_ADVANCED_PAUSE_PURGE_LENGTH  80
+    #define LULZBOT_ADVANCED_PAUSE_PURGE_FEEDRATE 1
     #define LULZBOT_HOME_BEFORE_FILAMENT_CHANGE
     #define LULZBOT_PARK_HEAD_ON_PAUSE
+    #define LULZBOT_EXTRUDER_STR "Extruder"
 #endif
 
 #if defined(LULZBOT_IS_MINI)
@@ -1441,9 +1352,9 @@
 #define LULZBOT_NUM_REWIPES      3
 
 #if defined(LULZBOT_IS_TAZ)
-    #define LULZBOT_BED_PROBE_MIN    0 // Limit on pushing into the bed
+    #define LULZBOT_Z_PROBE_LOW_POINT    0 // Limit on pushing into the bed
 #else defined(LULZBOT_IS_MINI)
-    #define LULZBOT_BED_PROBE_MIN   -4 // Limit on pushing into the bed
+    #define LULZBOT_Z_PROBE_LOW_POINT   -4 // Limit on pushing into the bed
 #endif
 
 #if defined(LULZBOT_USE_PRE_GLADIOLA_G29_WORKAROUND)
@@ -1490,7 +1401,7 @@
     #define LULZBOT_REWIPE_SUCCESS_GCODE \
         "M117 Probe successful\n"                 /* Status message */
 
-    #define LULZBOT_DO_PROBE_MOVE(speed) if (do_probe_move(LULZBOT_BED_PROBE_MIN, speed)) return NAN;
+    #define LULZBOT_DO_PROBE_MOVE(speed) if (do_probe_move(LULZBOT_Z_PROBE_LOW_POINT, MMM_TO_MMS(speed))) return NAN;
 
     #define LULZBOT_EXECUTE_IMMEDIATE_DECL \
         void execute_commands_immediate_P(const char *pgcode);
@@ -1550,7 +1461,7 @@
 
     #define LULZBOT_DO_PROBE_MOVE(speed) \
         /* do_probe_move returns true when it fails to hit an endstop, meaning we need to rewipe */ \
-        for(int rewipes = 0; do_probe_move(LULZBOT_BED_PROBE_MIN, speed); rewipes++) { \
+        for(int rewipes = 0; do_probe_move(LULZBOT_Z_PROBE_LOW_POINT, speed); rewipes++) { \
             if(rewipes >= LULZBOT_NUM_REWIPES) {          /* max of tries */ \
                 SERIAL_ERRORLNPGM("PROBE FAIL CLEAN NOZZLE"); /* cura listens for this message specifically */ \
                 LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);   /* use a more friendly message on the LCD */ \
@@ -1561,7 +1472,7 @@
                 current_position[E_AXIS] = 0;             /* prime nozzle at 75 mm/sec */ \
                 planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], 75./60, active_extruder); \
                 sync_plan_position_e(); \
-                stepper.synchronize(); \
+                planner.synchronize(); \
                 kill(PSTR(MSG_ERR_PROBING_FAILED));       /* stop print job */ \
                 return NAN;                               /* abort the leveling in progress */ \
             } \
@@ -1714,7 +1625,7 @@
 
 // Values for XYZ vary by printer model, values for E vary by toolhead.
 
-#if defined(LULZBOT_USE_EINSYRAMBO)
+#if defined(LULZBOT_USE_EINSY_RETRO)
     // These values specify the maximum current, but actual
     // currents may be lower when used with COOLCONF
     #if defined(LULZBOT_USE_TMC_STEALTHCHOP_XY)
@@ -1843,7 +1754,7 @@
     #define LULZBOT_MANUAL_FEEDRATE       {50*60, 50*60, LULZBOT_MANUAL_FEEDRATE_Z, 60} // (mm/min)
 #endif
 
-#if defined(LULZBOT_USE_EINSYRAMBO)
+#if defined(LULZBOT_USE_EINSY_RETRO)
     // Neither define LULZBOT_PWM_MOTOR_CURRENT nor LULZBOT_DIGIPOT_MOTOR_CURRENT,
     // as the current is set in Configuration_adv.h under the HAVE_TMC2130 block
 
@@ -1906,7 +1817,6 @@
     #define LULZBOT_SHOW_CUSTOM_BOOTSCREEN
     #define LULZBOT_ENCODER_PULSES_PER_STEP 2
     #define LULZBOT_ENCODER_STEPS_PER_MENU_ITEM 1
-    #define LULZBOT_COOLING_MESSAGES
     #if defined(LULZBOT_IS_MINI)
         // In the experimental Gladiola_MiniLCD, the encoder direction is reversed.
         #define LULZBOT_REVERSE_ENCODER_DIRECTION
@@ -1925,59 +1835,21 @@
     #define LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD
     #define LULZBOT_REORDERED_MENUS
     #define LULZBOT_ESTEP_REDUCED_LCD_PRECISION
-    #if LULZBOT_EXTRUDERS > 1
-      #define LULZBOT_CHANGE_FILAMENT_DUAL_EXTRUDER_SUPPORT
-    #endif
     #define LULZBOT_LCD_SET_PROGRESS_MANUALLY
     #define LULZBOT_SCROLL_LONG_FILENAMES
     #define LULZBOT_BABYSTEP_ZPROBE_GFX_OVERLAY
-    #define LULZBOT_THIN_OVERLAY_ARROWS
     #define LULZBOT_DISABLE_KILL_BUTTON
-    #define LULZBOT_ZOFFSET_PRECISION ftostr32
+    #define LULZBOT_ZOFFSET_PRECISION ftostr52
     #define LULZBOT_RESET_SELECTION_TO_FIRST_ON_MENU_BACK
-    #define LULZBOT_HIDE_LCD_BED_LEVELING
 #endif
-
-/* Marlin requires static PSTRs to display on the LCD display, because of this */
-/* we have to use a preprocessor trick to append the heater name on temp errors */
-/* such that an appropriate PSTR is selected depending on the value of e */
-#define LULZBOT_STRINGIFY(msg) msg
-#define LULZBOT_ENHANCED_TEMP_ERROR_MSG(msg, e) \
-    ((e == -1) ? PSTR(LULZBOT_STRINGIFY(msg) " BED") : ((e == 0) ? PSTR(LULZBOT_STRINGIFY(msg) " E0") : PSTR(LULZBOT_STRINGIFY(msg) " E1")) )
 
 #if defined(LULZBOT_LIGHTWEIGHT_UI)
-    #define LULZBOT_ABOUT_TO_DRAW_SCREEN(a,b) \
-        lcd_in_status(a == b); \
-        if(a == b) { \
-            a(); \
-            lcd_clicked = false; \
-            NOLESS(max_display_update_time, millis() - ms); \
-            return; \
-        }
     #define WELCOME_MSG _UxGT(LULZBOT_LCD_MACHINE_NAME " ready.")
     #define LULZBOT_STATUS_EXPIRE_SECONDS 0
-#else
-    #define LULZBOT_ABOUT_TO_DRAW_SCREEN(a)
 #endif
 
-#if defined(LULZBOT_USE_TOUCH_UI)
-    extern void lcd_update();
-    extern void lcd_buttons_update();
-    #if defined(LULZBOT_USE_HIGH_RES)
-        #define LCD_800x480
-    #else
-        #define LCD_480x272
-    #endif
-    #if defined(LULZBOT_USE_PORTRAIT_UI)
-      #define LCD_PORTRAIT
-      #define LCD_UPSIDE_DOWN
-      #define LCD_IS_FT810
-    #else
-      #define LCD_IS_FT800
-    #endif
-    //#define UI_FRAMEWORK_DEBUG
-    #define LULZBOT_SDSUPPORT
-    #define LULZBOT_DISABLE_SD_DETECT_INVERTED
+#if defined(LULZBOT_PRINTCOUNTER)
+    #define LULZBOT_LCD_INFO_MENU
 #endif
 
 /***************************** CUSTOM SPLASH SCREEN *****************************/
