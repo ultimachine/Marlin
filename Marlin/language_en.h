@@ -172,6 +172,9 @@
 #ifndef MSG_LEVEL_BED
   #define MSG_LEVEL_BED                       _UxGT("Level bed")
 #endif
+#ifndef MSG_REWIPE && defined(LULZBOT_PROBE_Z_WITH_REWIPE)
+  #define MSG_REWIPE                          _UxGT("Rewiping")
+#endif
 #ifndef MSG_LEVEL_CORNERS
   #define MSG_LEVEL_CORNERS                   _UxGT("Level corners")
 #endif

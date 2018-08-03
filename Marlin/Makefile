@@ -56,12 +56,12 @@
 #
 
 # This defines the board to compile for (see boards.h for your board's ID)
-HARDWARE_MOTHERBOARD ?= 11
+HARDWARE_MOTHERBOARD ?= 301
 
 # Arduino source install directory, and version number
 # On most linuxes this will be /usr/share/arduino
-ARDUINO_INSTALL_DIR  ?= ${HOME}/Arduino
-ARDUINO_VERSION      ?= 106
+ARDUINO_INSTALL_DIR  ?= ../ArduinoAddons/arduino-1.8.5
+ARDUINO_VERSION      ?= 183
 
 # You can optionally set a path to the avr-gcc tools. Requires a trailing slash. (ex: /usr/local/avr-gcc/bin)
 AVR_TOOLS_PATH ?=
@@ -87,7 +87,32 @@ U8GLIB             ?= 1
 
 # this defines whether to add a workaround for the avr-gcc relocation bug
 #	  https://www.stix.id.au/wiki/AVR_relocation_truncations_workaround
-RELOC_WORKAROUND   ?= 1
+RELOC_WORKAROUND   ?= 0
+
+# this defines whether to include the Trinamic TMC2630Stepper
+TMC2630            ?= 1
+
+############
+# Try to automatically determine whether RELOC_WORKAROUND is needed based
+# on GCC versions:
+#   http://www.avrfreaks.net/comment/1789106#comment-1789106
+
+CC_MAJ:=$(shell $(CC) -dM -E - < /dev/null | grep __GNUC__ | cut -f3 -d\ )
+CC_MIN:=$(shell $(CC) -dM -E - < /dev/null | grep __GNUC_MINOR__ | cut -f3 -d\ )
+CC_PATCHLEVEL:=$(shell $(CC) -dM -E - < /dev/null | grep __GNUC_PATCHLEVEL__ | cut -f3 -d\ )
+CC_VER:=$(shell echo $$(( $(CC_MAJ) * 10000 + $(CC_MIN) * 100 + $(CC_PATCHLEVEL) )))
+ifeq ($(shell test $(CC_VER) -lt 40901 && echo 1),1)
+	RELOC_WORKAROUND = 1
+endif
+
+############
+# The following added by AlephObjects for adjusting the name of the output
+# hex file
+VERSION=$(shell grep "define SHORT_BUILD_VERSION" Version.h | cut -d \" -f 2)
+REVISION=$(shell grep -m 1 "define LULZBOT_FW" Conditionals_LulzBot.h | cut -d \" -f 2)
+HASH = $(shell git rev-parse --verify HEAD --short)
+HEX_FILENAME=Marlin_$(MODEL)_$(TOOLHEAD)_$(VERSION)$(REVISION)_$(HASH)
+LULZBOT_EXTRAS=-DLULZBOT_$(MODEL) -DTOOLHEAD_$(TOOLHEAD) -Wfatal-errors
 
 ############################################################################
 # Below here nothing should be changed...
@@ -430,7 +455,13 @@ VPATH += $(ARDUINO_INSTALL_DIR)/libraries/Adafruit_NeoPixel
 endif
 ifeq ($(U8GLIB), 1)
 VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib
-VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib/utility
+VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib/csrc
+VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib/cppsrc
+VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib/fntsrc
+endif
+ifeq ($(TMC2630), 1)
+VPATH += $(ARDUINO_INSTALL_DIR)/libraries/TMC2130Stepper/src
+VPATH += $(ARDUINO_INSTALL_DIR)/libraries/TMC2130Stepper/src/source
 endif
 
 ifeq ($(HARDWARE_VARIANT), arduino)
@@ -470,12 +501,17 @@ CXXSRC += Wire.cpp
 endif
 
 ifeq ($(U8GLIB), 1)
-SRC += u8g_ll_api.c u8g_bitmap.c u8g_clip.c u8g_com_null.c u8g_delay.c u8g_page.c u8g_pb.c u8g_pb16h1.c u8g_rect.c u8g_state.c u8g_font.c u8g_font_data.c
+CXXSRC += U8glib.cpp
+SRC += u8g_ll_api.c u8g_bitmap.c u8g_clip.c u8g_com_null.c u8g_delay.c u8g_page.c u8g_pb.c u8g_pb16h1.c u8g_rect.c u8g_state.c u8g_font.c u8g_font_6x13.c u8g_font_04b_03.c u8g_font_5x8.c
 endif
 
 ifeq ($(RELOC_WORKAROUND), 1)
 LD_PREFIX=-nodefaultlibs
 LD_SUFFIX=-lm -lgcc -lc -lgcc -L$(ARDUINO_INSTALL_DIR)/hardware/tools/avr/avr/lib/avr6 -l$(MCU)
+endif
+
+ifeq ($(TMC2630), 1)
+CXXSRC += TMC2130Stepper.cpp TMC2130Stepper_COOLCONF.cpp TMC2130Stepper_DRV_STATUS.cpp TMC2130Stepper_IHOLD_IRUN.cpp TMC2130Stepper_CHOPCONF.cpp  TMC2130Stepper_GCONF.cpp TMC2130Stepper_PWMCONF.cpp SW_SPI.cpp
 endif
 
 #Check for Arduino 1.0.0 or higher and use the correct source files for that version
@@ -515,6 +551,20 @@ MV = mv -f
 CDEFS    = -DF_CPU=$(F_CPU) ${addprefix -D , $(DEFINES)}
 CXXDEFS  = $(CDEFS)
 
+# Disabling the timestamp and/or timestamp in the .hex file is useful for
+# binary diffing between different builds of .hex files to detect unintended
+# changes.
+ifeq ($(NO_TIMESTAMP), 1)
+CDEFS +='-D__DATE__="??? ?? ????"'
+CDEFS +='-D__TIME__="??:??:??"'
+endif
+
+#Disabling the versions is useful for diffing binaries between different
+#versions
+ifeq ($(NO_VERSION), 1)
+CDEFS +='-DLULZBOT_MASK_VERSION'
+endif
+
 ifeq ($(HARDWARE_VARIANT), Teensy)
 CDEFS  += -DUSB_SERIAL
 SRC    += usb.c pins_teensy.c
@@ -535,10 +585,11 @@ CTUNING = -funsigned-char -funsigned-bitfields -fpack-struct \
 	-flto \
 	-DARDUINO=$(ARDUINO_VERSION)
 ifneq ($(HARDWARE_MOTHERBOARD),)
-CTUNING += -DMOTHERBOARD=${HARDWARE_MOTHERBOARD}
+# LulzBot: Commented out this line since this is set by Conditionals_LulzBot.h
+#CTUNING += -DMOTHERBOARD=${HARDWARE_MOTHERBOARD}
 endif
 #CEXTRA = -Wa,-adhlns=$(<:.c=.lst)
-CEXTRA = -fno-use-cxa-atexit -fno-threadsafe-statics
+CEXTRA = -fno-use-cxa-atexit -fno-threadsafe-statics $(LULZBOT_EXTRAS)
 
 CFLAGS := $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CWARN) $(CEXTRA) $(CTUNING) $(CSTANDARD)
 CXXFLAGS :=         $(CDEFS) $(CINCS) -O$(OPT) -Wall    $(CEXTRA) $(CTUNING) $(CXXSTANDARD)
@@ -584,7 +635,32 @@ endif
 # Default target.
 all: sizeafter
 
-build: $(BUILD_DIR) elf hex
+config: $(BUILD_DIR)
+	# This build target uses the C preprocessor to output a snapshot of the
+	# "Configuration.h" and "Configuration_adv.h" for the current printer
+	# and toolhead. This is useful for when Marlin developers ask for a copy
+	# of your config files when you submit an issue.
+
+	# Dump the values defined in "Configuration.h"
+	echo '#include "Marlin.h"' > /tmp/macros.cpp
+	cat Configuration.h >> /tmp/macros.cpp
+	sed -i 's/#define *\(\w*\)/pound_defined_\1/g; s/#ifndef CONFIGURATION_H/#ifndef FOO/g' /tmp/macros.cpp
+	$(CXX) $(ALL_CXXFLAGS) -E /tmp/macros.cpp -o /tmp/preprocessed.h
+	echo "/* Configuration.h */" > $(BUILD_DIR)/$(HEX_FILENAME).config
+	grep pound_defined /tmp/preprocessed.h | sed 's/ *pound_defined_\(\w*\)/#define \1/g' >>  $(BUILD_DIR)/$(HEX_FILENAME).config
+
+	# Dump the values defined in "Configuration_adv.h"
+	echo '#include "Marlin.h"' > /tmp/macros.cpp
+	cat Configuration_adv.h >> /tmp/macros.cpp
+	sed -i 's/#define *\(\w*\)/pound_defined_\1/g; s/#ifndef CONFIGURATION_ADV_H/#ifndef FOO/g' /tmp/macros.cpp
+	$(CXX) $(ALL_CXXFLAGS) -E /tmp/macros.cpp -o /tmp/preprocessed.h
+	echo "/* Configuration_adv.h */" >>  $(BUILD_DIR)/$(HEX_FILENAME).config
+	grep pound_defined /tmp/preprocessed.h | sed 's/ *pound_defined_\(\w*\)/#define \1/g' >>  $(BUILD_DIR)/$(HEX_FILENAME).config
+
+build: $(BUILD_DIR) elf hex $(BUILD_DIR)/$(HEX_FILENAME).hex
+
+$(BUILD_DIR)/$(HEX_FILENAME).hex: $(BUILD_DIR)/$(TARGET).hex
+	mv $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(HEX_FILENAME).hex
 
 # Creates the object directory
 $(BUILD_DIR):

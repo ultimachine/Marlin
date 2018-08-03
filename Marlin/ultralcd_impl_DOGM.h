@@ -280,7 +280,13 @@ void lcd_printPGM_utf(const char *str, uint8_t n=LCD_WIDTH) {
 
 #if ENABLED(SHOW_BOOTSCREEN)
 
-  #if ENABLED(SHOW_CUSTOM_BOOTSCREEN)
+  #ifdef LULZBOT_CUSTOM_BOOTSCREEN
+    void lcd_custom_bootscreen() {
+      LULZBOT_CUSTOM_BOOTSCREEN();
+      safe_delay(CUSTOM_BOOTSCREEN_TIMEOUT);
+    }
+
+  #elif ENABLED(SHOW_CUSTOM_BOOTSCREEN)
 
     void lcd_custom_bootscreen() {
       constexpr u8g_uint_t left = (LCD_PIXEL_WIDTH  - (CUSTOM_BOOTSCREEN_BMPWIDTH)) / 2,

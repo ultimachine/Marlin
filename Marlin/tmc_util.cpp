@@ -580,9 +580,13 @@ void _tmc_say_sgt(const TMC_AxisEnum axis, const int8_t sgt) {
 #if ENABLED(SENSORLESS_HOMING)
 
   void tmc_sensorless_homing(TMC2130Stepper &st, const bool enable/*=true*/) {
-    st.coolstep_min_speed(enable ? 1024UL * 1024UL - 1UL : 0);
-    #if ENABLED(STEALTHCHOP)
-      st.stealthChop(!enable);
+    #if defined(LULZBOT_SENSORLESS_HOMING_TOGGLE)
+    LULZBOT_SENSORLESS_HOMING_TOGGLE(st, enable)
+    #else
+      st.coolstep_min_speed(enable ? 1024UL * 1024UL - 1UL : 0);
+      #if ENABLED(STEALTHCHOP)
+        st.stealthChop(!enable);
+      #endif
     #endif
     st.diag1_stall(enable ? 1 : 0);
   }

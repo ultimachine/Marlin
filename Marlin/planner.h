@@ -468,6 +468,8 @@ class Planner {
       return &block_buffer[block_buffer_head];
     }
 
+    LULZBOT_BACKLASH_COMPENSATION_DECL
+
     /**
      * Planner::_buffer_steps
      *

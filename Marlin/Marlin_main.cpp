@@ -368,6 +368,11 @@
   float coordinate_system[MAX_COORDINATE_SYSTEMS][XYZ];
 #endif
 
+LULZBOT_EXECUTE_IMMEDIATE_DECL
+LULZBOT_G29_WITH_RETRY_DECL
+LULZBOT_BED_LEVELING_DECL
+LULZBOT_BACKLASH_MEASUREMENT_DECL
+
 bool Running = true;
 
 uint8_t marlin_debug_flags = DEBUG_NONE;
@@ -729,7 +734,11 @@ void stop();
 
 void get_available_commands();
 void process_next_command();
+#if defined(LULZBOT_EXECUTE_IMMEDIATE_IMPL)
+void process_parsed_command(bool printok = true);
+#else
 void process_parsed_command();
+#endif
 
 void get_cartesian_from_steppers();
 void set_current_from_steppers_for_axis(const AxisEnum axis);
@@ -2315,7 +2324,7 @@ void clean_up_after_endstop_or_probe_move() {
     #endif
 
         // move down slowly to find bed
-        if (do_probe_move(z_probe_low_point, MMM_TO_MMS(Z_PROBE_SPEED_SLOW))) {
+        /*if (do_probe_move(z_probe_low_point, MMM_TO_MMS(Z_PROBE_SPEED_SLOW))) {
           #if ENABLED(DEBUG_LEVELING_FEATURE)
             if (DEBUGGING(LEVELING)) {
               SERIAL_ECHOLNPGM("SLOW Probe fail!");
@@ -2323,7 +2332,9 @@ void clean_up_after_endstop_or_probe_move() {
             }
           #endif
           return NAN;
-        }
+        }*/
+        LULZBOT_DO_PROBE_MOVE(Z_PROBE_SPEED_SLOW);
+        LULZBOT_BACKLASH_MEASUREMENT
 
     #if MULTIPLE_PROBING > 2
         probes_total += current_position[Z_AXIS];
@@ -2408,7 +2419,16 @@ void clean_up_after_endstop_or_probe_move() {
     feedrate_mm_s = XY_PROBE_FEEDRATE_MM_S;
 
     // Move the probe to the starting XYZ
+    #if defined(LULZBOT_Z_CLEARANCE_DEPLOY_PROBE_WORKAROUND)
+    do_probe_raise(Z_CLEARANCE_DEPLOY_PROBE);
+
+    // Move the probe to the given XY
+    do_blocking_move_to_xy(nx, ny);
+    #else
+    // Move the probe to the starting XYZ
     do_blocking_move_to(nx, ny, nz);
+    #endif
+
 
     float measured_z = NAN;
     if (!DEPLOY_PROBE()) {
@@ -4063,6 +4083,9 @@ inline void gcode_G4() {
  *
  */
 inline void gcode_G28(const bool always_home_all) {
+  #if defined(LULZBOT_HOMING_USES_PROBE_PINS)
+  LULZBOT_ENABLE_PROBE_PINS(true);
+  #endif
 
   #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) {
@@ -4253,6 +4276,8 @@ inline void gcode_G28(const bool always_home_all) {
 
   #endif // !DELTA (gcode_G28)
 
+  LULZBOT_AFTER_Z_HOME_ACTION // This must happen before endstops.not_homing()
+
   endstops.not_homing();
 
   #if ENABLED(DELTA) && ENABLED(DELTA_HOME_TO_SAFE_ZONE)
@@ -4292,6 +4317,10 @@ inline void gcode_G28(const bool always_home_all) {
 
   #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("<<< G28");
+  #endif
+
+  #if defined(LULZBOT_HOMING_USES_PROBE_PINS)
+  LULZBOT_ENABLE_PROBE_PINS(false);
   #endif
 } // G28
 
@@ -5102,7 +5131,11 @@ void home_all_axes() { gcode_G28(true); }
 
       #if ABL_GRID
 
-        bool zig = PR_OUTER_END & 1;  // Always end at RIGHT and BACK_PROBE_BED_POSITION
+        #if defined(LULZBOT_LAST_PROBE_POINT_ON_BACK_LEFT_CORNER)
+        bool zig = !(PR_OUTER_END & 1);  // Always end at LEFT and BACK_PROBE_BED_POSITION
+        #else
+        bool zig = PR_OUTER_END & 1;   // Always end at RIGHT and BACK_PROBE_BED_POSITION
+        #endif
 
         measured_z = 0;
 
@@ -5158,6 +5191,8 @@ void home_all_axes() { gcode_G28(true); }
               eqnAMatrix[abl_probe_index + 2 * abl_points] = 1;
 
               incremental_LSF(&lsf_results, xProbe, yProbe, measured_z);
+
+              LULZBOT_BED_LEVELING_POINT(abl_probe_index, xProbe, yProbe, measured_z)
 
             #elif ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
@@ -5266,6 +5301,8 @@ void home_all_axes() { gcode_G28(true); }
         mean /= abl_points;
 
         if (verbose_level) {
+          LULZBOT_BED_LEVELING_SUMMARY
+
           SERIAL_PROTOCOLPGM("Eqn coefficients: a: ");
           SERIAL_PROTOCOL_F(plane_equation_coefficients[0], 8);
           SERIAL_PROTOCOLPGM(" b: ");
@@ -6359,7 +6396,7 @@ inline void gcode_G92() {
   #endif
 
   bool didE = false;
-  #if IS_SCARA || !HAS_POSITION_SHIFT
+  #if IS_SCARA || !HAS_POSITION_SHIFT || defined(LULZBOT_G92_BACKWARDS_COMPATIBILITY)
     bool didXYZ = false;
   #else
     constexpr bool didXYZ = false;
@@ -6371,7 +6408,7 @@ inline void gcode_G92() {
                   v = i == E_AXIS ? l : LOGICAL_TO_NATIVE(l, i),
                   d = v - current_position[i];
       if (!NEAR_ZERO(d)) {
-        #if IS_SCARA || !HAS_POSITION_SHIFT
+        #if IS_SCARA || !HAS_POSITION_SHIFT || defined(LULZBOT_G92_BACKWARDS_COMPATIBILITY)
           if (i == E_AXIS) didE = true; else didXYZ = true;
           current_position[i] = v;        // Without workspaces revert to Marlin 1.0 behavior
         #elif HAS_POSITION_SHIFT
@@ -7314,6 +7351,8 @@ inline void gcode_M42() {
   if (!parser.seenval('S')) return;
   const byte pin_status = parser.value_byte();
 
+  LULZBOT_M42_TOGGLES_PROBE_PINS
+
   const pin_t pin_number = parser.byteval('P', LED_PIN);
   if (pin_number < 0) return;
 
@@ -8121,9 +8160,9 @@ inline void gcode_M109() {
       const bool heating = thermalManager.isHeatingHotend(target_extruder);
       if (heating || !no_wait_for_cooling)
         #if HOTENDS > 1
-          lcd_status_printf_P(0, heating ? PSTR("E%i " MSG_HEATING) : PSTR("E%i " MSG_COOLING), target_extruder + 1);
+          lcd_status_printf_P(0, heating ? PSTR(LULZBOT_EXTRUDER_STR "%i " MSG_HEATING) : PSTR(LULZBOT_EXTRUDER_STR "%i " MSG_COOLING), target_extruder + 1);
         #else
-          lcd_setstatusPGM(heating ? PSTR("E " MSG_HEATING) : PSTR("E " MSG_COOLING));
+          lcd_setstatusPGM(heating ? PSTR(LULZBOT_EXTRUDER_STR " " MSG_HEATING) : PSTR(LULZBOT_EXTRUDER_STR " " MSG_COOLING));
         #endif
     #endif
   }
@@ -9539,12 +9578,20 @@ inline void gcode_M226() {
   if (parser.seen('P')) {
     const int pin = parser.value_int(), pin_state = parser.intval('S', -1);
     if (WITHIN(pin_state, -1, 1) && pin > -1) {
+#if !defined(LULZBOT_NO_PIN_PROTECTION_ON_M226)
       if (pin_is_protected(pin))
         protected_pin_err();
-      else {
+      else
+#endif
+    {
         int target = LOW;
         planner.synchronize();
+#if !defined(LULZBOT_NO_PIN_PROTECTION_ON_M226)
         pinMode(pin, INPUT);
+#else
+      // Don't switch pin mode. Since we are disabling protection,
+      // we should only poll pins that already are inputs.
+#endif
         switch (pin_state) {
           case 1: target = HIGH; break;
           case 0: target = LOW; break;
@@ -10087,6 +10134,10 @@ void quickstop_stepper() {
   set_current_from_steppers_for_axis(ALL_AXES);
   SYNC_PLAN_POSITION_KINEMATIC();
 }
+
+#if defined(LULZBOT_BACKLASH_COMPENSATION_GCODE)
+  LULZBOT_BACKLASH_COMPENSATION_GCODE
+#endif
 
 #if HAS_LEVELING
 
@@ -10899,7 +10950,7 @@ inline void gcode_M502() {
 #if ENABLED(MAX7219_GCODE)
   /**
    * M7219: Control the Max7219 LED matrix
-   * 
+   *
    *  I         - Initialize (clear) the matrix
    *  F         - Fill the matrix (set all bits)
    *  P         - Dump the LEDs[] array values
@@ -10908,7 +10959,7 @@ inline void gcode_M502() {
    *  X<pos>    - X position of an LED to set or toggle
    *  Y<pos>    - Y position of an LED to set or toggle
    *  V<value>  - The potentially 32-bit value or on/off state to set
-   *              (for example: a chain of 4 Max7219 devices can have 32 bit 
+   *              (for example: a chain of 4 Max7219 devices can have 32 bit
    *               rows or columns depending upon rotation)
    */
   inline void gcode_M7219() {
@@ -12010,6 +12061,11 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
       feedrate_mm_s = fr_mm_s > 0.0 ? fr_mm_s : XY_PROBE_FEEDRATE_MM_S;
 
       if (tmp_extruder != active_extruder) {
+
+#if defined(LULZBOT_NO_MOVE_ON_TOOLHEAD_CHANGE)
+      no_move = true;
+#endif
+
         if (!no_move && axis_unhomed_error()) {
           no_move = true;
           #if ENABLED(DEBUG_LEVELING_FEATURE)
@@ -12191,7 +12247,11 @@ inline void gcode_T(const uint8_t tmp_extruder) {
 /**
  * Process the parsed command and dispatch it to its handler
  */
-void process_parsed_command() {
+void process_parsed_command(
+#if defined(LULZBOT_EXECUTE_IMMEDIATE_IMPL)
+  bool printok
+#endif
+) {
   KEEPALIVE_STATE(IN_HANDLER);
 
   // Handle a known G, M, or T
@@ -12236,6 +12296,10 @@ void process_parsed_command() {
 
       #if ENABLED(G26_MESH_VALIDATION)
         case 26: gcode_G26(); break;                              // G26: Mesh Validation Pattern
+      #elif defined(LULZBOT_G26_BACKWARDS_COMPATIBILITY)
+        case 26: // G26: LulzBot clear probe fail
+          LULZBOT_G26_RESET_ACTION;
+          break;
       #endif
 
       #if ENABLED(NOZZLE_PARK_FEATURE)
@@ -12245,7 +12309,13 @@ void process_parsed_command() {
       case 28: gcode_G28(false); break;                           // G28: Home one or more axes
 
       #if HAS_LEVELING
-        case 29: gcode_G29(); break;                              // G29: Detailed Z probe
+        case 29:                                                  // G29: Detailed Z probe
+          #if defined(LULZBOT_G29_COMMAND)
+            LULZBOT_G29_COMMAND
+          #else
+            gcode_G29();
+          #endif
+        break;
       #endif
 
       #if HAS_BED_PROBE
@@ -12409,7 +12479,11 @@ void process_parsed_command() {
       case 115: gcode_M115(); break;                              // M115: Capabilities Report
       case 117: gcode_M117(); break;                              // M117: Set LCD message text
       case 118: gcode_M118(); break;                              // M118: Print a message in the host console
-      case 119: gcode_M119(); break;                              // M119: Report Endstop states
+      case 119:                                                   // M119: Report Endstop states
+        LULZBOT_ENABLE_PROBE_PINS(true);
+        gcode_M119();
+        LULZBOT_ENABLE_PROBE_PINS(false);
+        break;
       case 120: gcode_M120(); break;                              // M120: Enable Endstops
       case 121: gcode_M121(); break;                              // M121: Disable Endstops
 
@@ -12542,6 +12616,12 @@ void process_parsed_command() {
         case 420: gcode_M420(); break;                            // M420: Set Bed Leveling Enabled / Fade
       #endif
 
+      #if defined(LULZBOT_BACKLASH_COMPENSATION_GCODE)
+        case 425: // M420: Enable/Disable Backlash Compensation
+          gcode_M425();
+          break;
+      #endif
+
       #if HAS_MESH
         case 421: gcode_M421(); break;                            // M421: Set a Mesh Z value
       #endif
@@ -12654,6 +12734,9 @@ void process_parsed_command() {
   }
 
   KEEPALIVE_STATE(NOT_BUSY);
+  #if defined(LULZBOT_EXECUTE_IMMEDIATE_IMPL)
+  if(printok)
+  #endif
   ok_to_send();
 }
 
@@ -13928,6 +14011,11 @@ void prepare_move_to_destination() {
 
       // allows digital or PWM fan output to be used (see M42 handling)
       WRITE(CONTROLLER_FAN_PIN, speed);
+      #if defined(LULZBOT_CONTROLLERFAN_SPEED_WHEN_ONLY_Z_ACTIVE)
+      if(X_ENABLE_READ != X_ENABLE_ON && Y_ENABLE_READ != Y_ENABLE_ON)
+        analogWrite(CONTROLLER_FAN_PIN, speed ? LULZBOT_CONTROLLERFAN_SPEED_WHEN_ONLY_Z_ACTIVE : 0);
+      else
+      #endif
       analogWrite(CONTROLLER_FAN_PIN, speed);
     }
   }
@@ -14656,6 +14744,8 @@ void setup() {
   #if ENABLED(USE_WATCHDOG)
     watchdog_init();
   #endif
+
+  LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP
 }
 
 /**
@@ -14754,3 +14844,7 @@ void loop() {
   endstops.event_handler();
   idle();
 }
+
+
+LULZBOT_G29_WITH_RETRY_IMPL
+LULZBOT_EXECUTE_IMMEDIATE_IMPL

@@ -589,8 +589,10 @@ uint16_t max_display_update_time = 0;
     if (screen_history_depth > 0) {
       --screen_history_depth;
       lcd_goto_screen(
-        screen_history[screen_history_depth].menu_function,
-        screen_history[screen_history_depth].encoder_position
+        screen_history[screen_history_depth].menu_function
+        #if !defined(LULZBOT_RESET_SELECTION_TO_FIRST_ON_MENU_BACK)
+        ,screen_history[screen_history_depth].encoder_position
+        #endif
       );
     }
     else
@@ -1083,6 +1085,143 @@ void lcd_quick_feedback(const bool clear_buttons) {
    *
    */
 
+  #if defined(LULZBOT_REORDERED_MENUS) && defined(LULZBOT_USE_LCD_DISPLAY)
+  void lcd_configuration_menu();
+  void lcd_movement_menu();
+  void lcd_show_custom_bootscreen();
+  void lcd_about_printer_menu();
+  static void lcd_store_settings();
+  static void lcd_load_settings();
+
+  void lcd_main_menu() {
+    START_MENU();
+    MENU_BACK(MSG_WATCH);
+
+    bool isPrinting = (planner.movesplanned() || IS_SD_PRINTING || (card.cardOK && card.isFileOpen()));
+
+    if (isPrinting) {
+      MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
+    } else {
+      MENU_ITEM(submenu, _UxGT("Movement"), lcd_movement_menu);
+      MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
+      MENU_ITEM(submenu, _UxGT("Configuration"), lcd_configuration_menu);
+    }
+
+    //
+    // Change filament
+    //
+    #if ENABLED(ADVANCED_PAUSE_FEATURE)
+      #if E_STEPPERS == 1 && !ENABLED(FILAMENT_LOAD_UNLOAD_GCODES)
+        if (thermalManager.targetHotEnoughToExtrude(active_extruder))
+          MENU_ITEM(gcode, MSG_FILAMENTCHANGE, PSTR("M600 B0"));
+        else
+          MENU_ITEM(submenu, MSG_FILAMENTCHANGE, lcd_temp_menu_e0_filament_change);
+      #else
+        MENU_ITEM(submenu, MSG_FILAMENTCHANGE, lcd_change_filament_menu);
+      #endif
+    #endif
+
+    #if ENABLED(PRINTCOUNTER)
+    MENU_ITEM(submenu, MSG_INFO_MENU, lcd_about_printer_menu);
+    #else
+    MENU_ITEM(submenu, MSG_INFO_MENU, lcd_show_custom_bootscreen);
+    #endif
+
+    #if ENABLED(SDSUPPORT)
+      if (card.cardOK) {
+        if (card.isFileOpen()) {
+          if (card.sdprinting)
+            MENU_ITEM(function, MSG_PAUSE_PRINT, lcd_sdcard_pause);
+          else
+            MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_resume);
+          MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_stop);
+        }
+        else {
+          MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
+          #if !PIN_EXISTS(SD_DETECT)
+            MENU_ITEM(gcode, MSG_CNG_SDCARD, PSTR("M21"));  // SD-card changed by user
+          #endif
+        }
+      }
+      else {
+        MENU_ITEM(submenu, MSG_NO_CARD, lcd_sdcard_menu);
+        #if !PIN_EXISTS(SD_DETECT)
+          MENU_ITEM(gcode, MSG_INIT_SDCARD, PSTR("M21")); // Manually initialize the SD-card via user interface
+        #endif
+      }
+    #endif // SDSUPPORT
+
+    END_MENU();
+  }
+
+  /**
+   *
+   * LulzBot "Movement" submenu
+   *
+   */
+  void lcd_movement_menu() {
+    START_MENU();
+    MENU_BACK(MSG_MAIN);
+    MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
+    #if defined(LULZBOT_MENU_AXIS_LEVELING_GCODE)
+      MENU_ITEM(gcode, _UxGT("Level X Axis"), PSTR(LULZBOT_MENU_AXIS_LEVELING_GCODE));
+    #endif
+    #if defined(LULZBOT_MENU_BED_LEVELING_GCODE)
+    if (thermalManager.targetHotEnoughToExtrude(active_extruder)) {
+      MENU_ITEM(gcode, MSG_BED_LEVELING, PSTR(LULZBOT_MENU_BED_LEVELING_GCODE));
+    }
+    #endif
+    MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
+    MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);
+    END_MENU();
+  }
+
+  /**
+   *
+   * LulzBot "Configuration" submenu
+   *
+   */
+
+  void lcd_configuration_menu() {
+    START_MENU();
+    MENU_BACK(MSG_MAIN);
+    MENU_ITEM(submenu, _UxGT("Advanced Settings"), lcd_control_motion_menu);
+
+    #if ENABLED(EEPROM_SETTINGS)
+      MENU_ITEM(function, MSG_STORE_EEPROM, lcd_store_settings);
+      MENU_ITEM(function, MSG_LOAD_EEPROM, lcd_load_settings);
+      MENU_ITEM(gcode, MSG_RESTORE_FAILSAFE, PSTR("M502\nM500")); // TODO: Add "Are You Sure?" step
+    #endif
+
+    END_MENU();
+  }
+
+  /**
+   *
+   * Extra menu item to show printer and firmware version
+   *
+   */
+  void lcd_about_printer_menu() {
+    START_MENU();
+    MENU_BACK(MSG_MAIN);
+    MENU_ITEM(submenu, _UxGT("Firmware Version"), lcd_show_custom_bootscreen);
+
+    #if ENABLED(PRINTCOUNTER)
+      MENU_ITEM(submenu, MSG_INFO_STATS_MENU, lcd_info_stats_menu);          // Printer Statistics >
+    #endif
+    END_MENU();
+  }
+
+  /**
+   *
+   * Extra menu item to show LulzBot firmware version
+   *
+   */
+  void lcd_show_custom_bootscreen() {
+    if (lcd_clicked) { defer_return_to_status = false; return lcd_goto_previous_menu(); }
+    lcd_custom_bootscreen();
+  }
+  #else
   void lcd_main_menu() {
     START_MENU();
     MENU_BACK(MSG_WATCH);
@@ -1150,7 +1289,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
 
     END_MENU();
   }
-
+  #endif // LULZBOT_REORDERED_MENUS
   /**
    *
    * "Tune" submenu items
@@ -1232,7 +1371,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
     #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
 
       void lcd_babystep_zoffset() {
-        if (use_click()) { return lcd_goto_previous_menu_no_defer(); }
+        if (use_click()) { LULZBOT_SAVE_ZOFFSET_TO_EEPROM; return lcd_goto_previous_menu_no_defer(); }
         defer_return_to_status = true;
         ENCODER_DIRECTION_NORMAL();
         if (encoderPosition) {
@@ -1247,7 +1386,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
           }
         }
         if (lcdDrawUpdate) {
-          lcd_implementation_drawedit(PSTR(MSG_ZPROBE_ZOFFSET), ftostr43sign(zprobe_zoffset));
+          lcd_implementation_drawedit(PSTR(MSG_ZPROBE_ZOFFSET), LULZBOT_ZOFFSET_PRECISION(zprobe_zoffset));
           #if ENABLED(BABYSTEP_ZPROBE_GFX_OVERLAY)
             _lcd_zoffset_overlay_gfx(zprobe_zoffset);
           #endif
@@ -1449,13 +1588,13 @@ void lcd_quick_feedback(const bool clear_buttons) {
           MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_EXTRA_FAN_SPEED FAN_SPEED_1_SUFFIX, &new_fanSpeeds[0], 3, 255);
         #endif
       #endif
-      #if HAS_FAN1
+      #if HAS_FAN1 && !defined(LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD)
         MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED " 2", &fanSpeeds[1], 0, 255);
         #if ENABLED(EXTRA_FAN_SPEED)
           MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_EXTRA_FAN_SPEED " 2", &new_fanSpeeds[1], 3, 255);
         #endif
       #endif
-      #if HAS_FAN2
+      #if HAS_FAN2 && !defined(LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD)
         MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED " 3", &fanSpeeds[2], 0, 255);
         #if ENABLED(EXTRA_FAN_SPEED)
           MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_EXTRA_FAN_SPEED " 3", &new_fanSpeeds[2], 3, 255);
@@ -1470,7 +1609,9 @@ void lcd_quick_feedback(const bool clear_buttons) {
     #if EXTRUDERS == 1
       MENU_ITEM_EDIT_CALLBACK(int3, MSG_FLOW, &planner.flow_percentage[0], 10, 999, _lcd_refresh_e_factor_0);
     #else // EXTRUDERS > 1
+      #if not defined(LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD)
       MENU_ITEM_EDIT_CALLBACK(int3, MSG_FLOW, &planner.flow_percentage[active_extruder], 10, 999, _lcd_refresh_e_factor);
+      #endif
       MENU_ITEM_EDIT_CALLBACK(int3, MSG_FLOW MSG_N1, &planner.flow_percentage[0], 10, 999, _lcd_refresh_e_factor_0);
       MENU_ITEM_EDIT_CALLBACK(int3, MSG_FLOW MSG_N2, &planner.flow_percentage[1], 10, 999, _lcd_refresh_e_factor_1);
       #if EXTRUDERS > 2
@@ -1504,7 +1645,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
     //
     // Change filament
     //
-    #if ENABLED(ADVANCED_PAUSE_FEATURE)
+    #if ENABLED(ADVANCED_PAUSE_FEATURE) && !defined(LULZBOT_REORDERED_MENUS)
       #if E_STEPPERS == 1 && !ENABLED(FILAMENT_LOAD_UNLOAD_GCODES)
         if (thermalManager.targetHotEnoughToExtrude(active_extruder))
           MENU_ITEM(gcode, MSG_FILAMENTCHANGE, PSTR("M600 B0"));
@@ -3210,7 +3351,12 @@ void lcd_quick_feedback(const bool clear_buttons) {
 
   void lcd_move_menu() {
     START_MENU();
+
+    #if defined(LULZBOT_REORDERED_MENUS)
+    MENU_BACK(_UxGT("Movement"));
+    #else
     MENU_BACK(MSG_PREPARE);
+    #endif
 
     #if HAS_SOFTWARE_ENDSTOPS && ENABLED(SOFT_ENDSTOPS_MENU_ITEM)
       MENU_ITEM_EDIT(bool, MSG_LCD_SOFT_ENDSTOPS, &soft_endstops_enabled);
@@ -3277,7 +3423,9 @@ void lcd_quick_feedback(const bool clear_buttons) {
     #else
 
       // Independent extruders with one E-stepper per hotend
+      #if E_MANUAL == 1 || not defined(LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD)
       MENU_ITEM(submenu, MSG_MOVE_E, lcd_move_get_e_amount);
+      #endif
       #if E_MANUAL > 1
         MENU_ITEM(submenu, MSG_MOVE_E MSG_MOVE_E1, lcd_move_get_e0_amount);
         MENU_ITEM(submenu, MSG_MOVE_E MSG_MOVE_E2, lcd_move_get_e1_amount);
@@ -3462,7 +3610,11 @@ void lcd_quick_feedback(const bool clear_buttons) {
     //
     // ^ Control
     //
+    #if defined(LULZBOT_REORDERED_MENUS)
+    MENU_BACK(MSG_MAIN);
+    #else
     MENU_BACK(MSG_CONTROL);
+    #endif
 
     //
     // Nozzle:
@@ -3501,13 +3653,13 @@ void lcd_quick_feedback(const bool clear_buttons) {
           MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_EXTRA_FAN_SPEED FAN_SPEED_1_SUFFIX, &new_fanSpeeds[0], 3, 255);
         #endif
       #endif
-      #if HAS_FAN1
+      #if HAS_FAN1 && !defined(LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD)
         MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED " 2", &fanSpeeds[1], 0, 255);
         #if ENABLED(EXTRA_FAN_SPEED)
           MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_EXTRA_FAN_SPEED " 2", &new_fanSpeeds[1], 3, 255);
         #endif
       #endif
-      #if HAS_FAN2
+      #if HAS_FAN2 && !defined(LULZBOT_HIDE_EXTRA_FAN_CONFIG_IN_LCD)
         MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED " 3", &fanSpeeds[2], 0, 255);
         #if ENABLED(EXTRA_FAN_SPEED)
           MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_EXTRA_FAN_SPEED " 3", &new_fanSpeeds[2], 3, 255);
@@ -3533,7 +3685,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
     // PID-P E4, PID-I E4, PID-D E4, PID-C E4, PID Autotune E4
     // PID-P E5, PID-I E5, PID-D E5, PID-C E5, PID Autotune E5
     //
-    #if ENABLED(PIDTEMP)
+    #if ENABLED(PIDTEMP) && not defined(LULZBOT_HIDE_PID_CONFIG_IN_LCD)
 
       #define _PID_BASE_MENU_ITEMS(ELABEL, eindex) \
         raw_Ki = unscalePID_i(PID_PARAM(Ki, eindex)); \
@@ -3576,7 +3728,9 @@ void lcd_quick_feedback(const bool clear_buttons) {
 
     #endif // PIDTEMP
 
-    #if DISABLED(SLIM_LCD_MENUS)
+    #if defined(LULZBOT_REORDERED_MENUS)
+    MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
+    #elif DISABLED(SLIM_LCD_MENUS)
       //
       // Preheat Material 1 conf
       //
@@ -3687,7 +3841,9 @@ void lcd_quick_feedback(const bool clear_buttons) {
       MENU_MULTIPLIER_ITEM_EDIT(float3, MSG_VMAX MSG_C, &planner.max_feedrate_mm_s[C_AXIS], 1, 999);
 
       #if ENABLED(DISTINCT_E_FACTORS)
+        #if not defined(LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD)
         MENU_MULTIPLIER_ITEM_EDIT(float3, MSG_VMAX MSG_E, &planner.max_feedrate_mm_s[E_AXIS + active_extruder], 1, 999);
+        #endif
         MENU_MULTIPLIER_ITEM_EDIT(float3, MSG_VMAX MSG_E1, &planner.max_feedrate_mm_s[E_AXIS], 1, 999);
         MENU_MULTIPLIER_ITEM_EDIT(float3, MSG_VMAX MSG_E2, &planner.max_feedrate_mm_s[E_AXIS + 1], 1, 999);
         #if E_STEPPERS > 2
@@ -3732,7 +3888,9 @@ void lcd_quick_feedback(const bool clear_buttons) {
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_C, &planner.max_acceleration_mm_per_s2[C_AXIS], 10, 99000, _reset_acceleration_rates);
 
       #if ENABLED(DISTINCT_E_FACTORS)
+        #if not defined(LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD)
         MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_E, &planner.max_acceleration_mm_per_s2[E_AXIS + active_extruder], 100, 99000, _reset_acceleration_rates);
+        #endif
         MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_E1, &planner.max_acceleration_mm_per_s2[E_AXIS], 100, 99000, _reset_e0_acceleration_rate);
         MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_E2, &planner.max_acceleration_mm_per_s2[E_AXIS + 1], 100, 99000, _reset_e1_acceleration_rate);
         #if E_STEPPERS > 2
@@ -3782,9 +3940,16 @@ void lcd_quick_feedback(const bool clear_buttons) {
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float62, MSG_CSTEPS, &planner.axis_steps_per_mm[C_AXIS], 5, 9999, _planner_refresh_positioning);
 
       #if ENABLED(DISTINCT_E_FACTORS)
+        #if not defined(LULZBOT_HIDE_ACTIVE_NOZZLE_IN_LCD)
         MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float62, MSG_ESTEPS, &planner.axis_steps_per_mm[E_AXIS + active_extruder], 5, 9999, _planner_refresh_positioning);
+        #endif
+        #if defined(LULZBOT_ESTEP_REDUCED_LCD_PRECISION)
+        MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float3, MSG_E1STEPS, &planner.axis_steps_per_mm[E_AXIS], 5, 9999, _planner_refresh_e0_positioning);
+        MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float3, MSG_E2STEPS, &planner.axis_steps_per_mm[E_AXIS + 1], 5, 9999, _planner_refresh_e1_positioning);
+        #else
         MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float62, MSG_E1STEPS, &planner.axis_steps_per_mm[E_AXIS], 5, 9999, _planner_refresh_e0_positioning);
         MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float62, MSG_E2STEPS, &planner.axis_steps_per_mm[E_AXIS + 1], 5, 9999, _planner_refresh_e1_positioning);
+        #endif
         #if E_STEPPERS > 2
           MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float62, MSG_E3STEPS, &planner.axis_steps_per_mm[E_AXIS + 2], 5, 9999, _planner_refresh_e2_positioning);
           #if E_STEPPERS > 3
@@ -3795,7 +3960,11 @@ void lcd_quick_feedback(const bool clear_buttons) {
           #endif // E_STEPPERS > 3
         #endif // E_STEPPERS > 2
       #else
+        #if defined(LULZBOT_ESTEP_REDUCED_LCD_PRECISION)
+        MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float3, MSG_ESTEPS, &planner.axis_steps_per_mm[E_AXIS], 5, 9999, _planner_refresh_positioning);
+        #else
         MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float62, MSG_ESTEPS, &planner.axis_steps_per_mm[E_AXIS], 5, 9999, _planner_refresh_positioning);
+        #endif
       #endif
 
       END_MENU();
@@ -3811,7 +3980,11 @@ void lcd_quick_feedback(const bool clear_buttons) {
 
   void lcd_control_motion_menu() {
     START_MENU();
+    #if defined(LULZBOT_REORDERED_MENUS)
+    MENU_BACK(_UxGT("Advanced Settings"));
+    #else
     MENU_BACK(MSG_CONTROL);
+    #endif
 
     #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
       MENU_ITEM(submenu, MSG_ZPROBE_ZOFFSET, lcd_babystep_zoffset);
@@ -4052,7 +4225,6 @@ void lcd_quick_feedback(const bool clear_buttons) {
   #endif // SDSUPPORT
 
   #if ENABLED(LCD_INFO_MENU)
-
     #if ENABLED(PRINTCOUNTER)
       /**
        *

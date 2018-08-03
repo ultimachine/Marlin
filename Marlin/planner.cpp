@@ -85,6 +85,8 @@
 // fewer movements. The delay is measured in milliseconds, and must be less than 250ms
 #define BLOCK_DELAY_FOR_1ST_MOVE 100
 
+LULZBOT_BACKLASH_MEASUREMENT_EXTERN
+
 Planner planner;
 
   // public:
@@ -1522,6 +1524,8 @@ float Planner::get_axis_position_mm(const AxisEnum axis) {
  */
 void Planner::synchronize() { while (has_blocks_queued() || cleaning_buffer_counter) idle(); }
 
+LULZBOT_BACKLASH_COMPENSATION_IMPL
+
 /**
  * Planner::_buffer_steps
  *
@@ -1706,6 +1710,77 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     block->steps[C_AXIS] = ABS(dc);
   #endif
 
+  #if defined(LULZBOT_USE_Z_BACKLASH_COMPENSATION)
+    #if IS_CORE
+      #error Backlash compensation not supported on CORE printers
+    #endif
+
+    /* NOTE: >>>> The following code was repositioned from below, so that we can use the values it computes */
+
+   /**
+     * This part of the code calculates the total length of the movement.
+     * For cartesian bots, the X_AXIS is the real X movement and same for Y_AXIS.
+     * But for corexy bots, that is not true. The "X_AXIS" and "Y_AXIS" motors (that should be named to A_AXIS
+     * and B_AXIS) cannot be used for X and Y length, because A=X+Y and B=X-Y.
+     * So we need to create other 2 "AXIS", named X_HEAD and Y_HEAD, meaning the real displacement of the Head.
+     * Having the real displacement of the head, we can calculate the total movement length and apply the desired speed.
+     */
+    #if IS_CORE
+      float delta_mm[Z_HEAD + 1];
+      #if CORE_IS_XY
+        delta_mm[X_HEAD] = da * steps_to_mm[A_AXIS];
+        delta_mm[Y_HEAD] = db * steps_to_mm[B_AXIS];
+        delta_mm[Z_AXIS] = dc * steps_to_mm[Z_AXIS];
+        delta_mm[A_AXIS] = (da + db) * steps_to_mm[A_AXIS];
+        delta_mm[B_AXIS] = CORESIGN(da - db) * steps_to_mm[B_AXIS];
+      #elif CORE_IS_XZ
+        delta_mm[X_HEAD] = da * steps_to_mm[A_AXIS];
+        delta_mm[Y_AXIS] = db * steps_to_mm[Y_AXIS];
+        delta_mm[Z_HEAD] = dc * steps_to_mm[C_AXIS];
+        delta_mm[A_AXIS] = (da + dc) * steps_to_mm[A_AXIS];
+        delta_mm[C_AXIS] = CORESIGN(da - dc) * steps_to_mm[C_AXIS];
+      #elif CORE_IS_YZ
+        delta_mm[X_AXIS] = da * steps_to_mm[X_AXIS];
+        delta_mm[Y_HEAD] = db * steps_to_mm[B_AXIS];
+        delta_mm[Z_HEAD] = dc * steps_to_mm[C_AXIS];
+        delta_mm[B_AXIS] = (db + dc) * steps_to_mm[B_AXIS];
+        delta_mm[C_AXIS] = CORESIGN(db - dc) * steps_to_mm[C_AXIS];
+      #endif
+    #else
+      float delta_mm[ABCE];
+      delta_mm[A_AXIS] = da * steps_to_mm[A_AXIS];
+      delta_mm[B_AXIS] = db * steps_to_mm[B_AXIS];
+      delta_mm[C_AXIS] = dc * steps_to_mm[C_AXIS];
+    #endif
+    delta_mm[E_AXIS] = esteps_float * steps_to_mm[E_AXIS_N];
+
+    if (block->steps[A_AXIS] < MIN_STEPS_PER_SEGMENT && block->steps[B_AXIS] < MIN_STEPS_PER_SEGMENT && block->steps[C_AXIS] < MIN_STEPS_PER_SEGMENT) {
+      block->millimeters = ABS(delta_mm[E_AXIS]);
+    }
+    else {
+      if(millimeters)
+        block->millimeters = millimeters;
+      else
+        block->millimeters = SQRT(
+          #if CORE_IS_XY
+            sq(delta_mm[X_HEAD]) + sq(delta_mm[Y_HEAD]) + sq(delta_mm[Z_AXIS])
+          #elif CORE_IS_XZ
+            sq(delta_mm[X_HEAD]) + sq(delta_mm[Y_AXIS]) + sq(delta_mm[Z_HEAD])
+          #elif CORE_IS_YZ
+            sq(delta_mm[X_AXIS]) + sq(delta_mm[Y_HEAD]) + sq(delta_mm[Z_HEAD])
+          #else
+            sq(delta_mm[X_AXIS]) + sq(delta_mm[Y_AXIS]) + sq(delta_mm[Z_AXIS])
+          #endif
+        );
+
+      // If we make it here, at least one of the axes has more steps than
+      // MIN_STEPS_PER_SEGMENT, so the segment won't get dropped by Marlin
+      // and it is safe to apply the backlash compensation.
+      backlash_compensation(dm, dc, block, delta_mm);
+    }
+    /* NOTE: <<<< The following code was repositioned from below, so that we can use the values it computes */
+  #endif
+
   block->steps[E_AXIS] = esteps;
   block->step_event_count = MAX4(block->steps[A_AXIS], block->steps[B_AXIS], block->steps[C_AXIS], esteps);
 
@@ -1872,7 +1947,8 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
   else
     NOLESS(fr_mm_s, min_travel_feedrate_mm_s);
 
-  /**
+  #if !defined(LULZBOT_USE_Z_BACKLASH_COMPENSATION)
+/**
    * This part of the code calculates the total length of the movement.
    * For cartesian bots, the X_AXIS is the real X movement and same for Y_AXIS.
    * But for corexy bots, that is not true. The "X_AXIS" and "Y_AXIS" motors (that should be named to A_AXIS
@@ -1927,6 +2003,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
   }
   else
     block->millimeters = millimeters;
+  #endif // !defined(LULZBOT_USE_Z_BACKLASH_COMPENSATION)
 
   const float inverse_millimeters = 1.0f / block->millimeters;  // Inverse millimeters to remove multiple divides
 

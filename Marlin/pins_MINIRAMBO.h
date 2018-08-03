@@ -142,7 +142,7 @@
 //
 #if ENABLED(ULTRA_LCD)
 
-  #if !MB(MINIRAMBO_10A)
+  #if !MB(MINIRAMBO_10A) && !defined(LULZBOT_DISABLE_KILL_BUTTON)
     #define KILL_PIN       32
   #endif
 
