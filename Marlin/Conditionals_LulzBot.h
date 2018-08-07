@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".2" // Change this with each update
+#define LULZBOT_FW_VERSION ".3" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1293,9 +1293,17 @@
     #define LULZBOT_ADVANCED_PAUSE_FEATURE
     #define LULZBOT_ADVANCED_PAUSE_PURGE_LENGTH  80
     #define LULZBOT_ADVANCED_PAUSE_PURGE_FEEDRATE 1
+    #define LULZBOT_PAUSE_PARK_RETRACT_FEEDRATE  10
     #define LULZBOT_HOME_BEFORE_FILAMENT_CHANGE
     #define LULZBOT_PARK_HEAD_ON_PAUSE
     #define LULZBOT_EXTRUDER_STR "Extruder"
+
+    // In Marlin 1.1.9, the filament unload sequence makes no sense
+    // All we want is a slow purge for the Aerostruder, followed by
+    // a retract.
+    #define LULZBOT_AEROSTRUDER_UNLOAD_WORKAROUND
+    #define LULZBOT_AEROSTRUDER_UNLOAD_PURGE_LENGTH   6
+    #define LULZBOT_AEROSTRUDER_UNLOAD_PURGE_FEEDRATE 1
 #endif
 
 #if defined(LULZBOT_IS_MINI)
@@ -1461,7 +1469,7 @@
 
     #define LULZBOT_DO_PROBE_MOVE(speed) \
         /* do_probe_move returns true when it fails to hit an endstop, meaning we need to rewipe */ \
-        for(int rewipes = 0; do_probe_move(LULZBOT_Z_PROBE_LOW_POINT, speed); rewipes++) { \
+        for(int rewipes = 0; do_probe_move(LULZBOT_Z_PROBE_LOW_POINT, MMM_TO_MMS(speed)); rewipes++) { \
             if(rewipes >= LULZBOT_NUM_REWIPES) {          /* max of tries */ \
                 SERIAL_ERRORLNPGM("PROBE FAIL CLEAN NOZZLE"); /* cura listens for this message specifically */ \
                 LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);   /* use a more friendly message on the LCD */ \

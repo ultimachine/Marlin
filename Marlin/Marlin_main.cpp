@@ -2283,8 +2283,8 @@ void clean_up_after_endstop_or_probe_move() {
 
     // Double-probing does a fast probe followed by a slow probe
     #if MULTIPLE_PROBING == 2
-
       // Do a first probe at the fast speed
+      #ifndef LULZBOT_DO_PROBE_MOVE
       if (do_probe_move(z_probe_low_point, MMM_TO_MMS(Z_PROBE_SPEED_FAST))) {
         #if ENABLED(DEBUG_LEVELING_FEATURE)
           if (DEBUGGING(LEVELING)) {
@@ -2294,6 +2294,9 @@ void clean_up_after_endstop_or_probe_move() {
         #endif
         return NAN;
       }
+      #else
+      LULZBOT_DO_PROBE_MOVE(Z_PROBE_SPEED_FAST);
+      #endif
 
       float first_probe_z = current_position[Z_AXIS];
 
@@ -2324,7 +2327,8 @@ void clean_up_after_endstop_or_probe_move() {
     #endif
 
         // move down slowly to find bed
-        /*if (do_probe_move(z_probe_low_point, MMM_TO_MMS(Z_PROBE_SPEED_SLOW))) {
+        #ifndef LULZBOT_DO_PROBE_MOVE
+        if (do_probe_move(z_probe_low_point, MMM_TO_MMS(Z_PROBE_SPEED_SLOW))) {
           #if ENABLED(DEBUG_LEVELING_FEATURE)
             if (DEBUGGING(LEVELING)) {
               SERIAL_ECHOLNPGM("SLOW Probe fail!");
@@ -2332,8 +2336,10 @@ void clean_up_after_endstop_or_probe_move() {
             }
           #endif
           return NAN;
-        }*/
+        }
+        #else
         LULZBOT_DO_PROBE_MOVE(Z_PROBE_SPEED_SLOW);
+        #endif
         LULZBOT_BACKLASH_MEASUREMENT
 
     #if MULTIPLE_PROBING > 2
@@ -6849,6 +6855,10 @@ inline void gcode_M17() {
         lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_UNLOAD, mode);
     #endif
 
+    #if defined(LULZBOT_AEROSTRUDER_UNLOAD_WORKAROUND)
+    // Retract filament
+    do_pause_e_move(LULZBOT_AEROSTRUDER_UNLOAD_PURGE_LENGTH, LULZBOT_AEROSTRUDER_UNLOAD_PURGE_FEEDRATE);
+    #else
     // Retract filament
     do_pause_e_move(-FILAMENT_UNLOAD_RETRACT_LENGTH, PAUSE_PARK_RETRACT_FEEDRATE);
 
@@ -6857,6 +6867,7 @@ inline void gcode_M17() {
 
     // Quickly purge
     do_pause_e_move(FILAMENT_UNLOAD_RETRACT_LENGTH + FILAMENT_UNLOAD_PURGE_LENGTH, planner.max_feedrate_mm_s[E_AXIS]);
+    #endif
 
     // Unload filament
     #if FILAMENT_CHANGE_FAST_LOAD_ACCEL > 0
