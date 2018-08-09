@@ -805,6 +805,8 @@
 #define LULZBOT_THERMAL_PROTECTION_BED_PERIOD     15     // Seconds
 #define LULZBOT_THERMAL_PROTECTION_BED_HYSTERESIS 10     // Degrees Celsius
 
+#define LULZBOT_PREHEAT_1_TEMP_HOTEND 200            // PLA
+
 #if defined(LULZBOT_IS_MINI)
     // Heater current: 24V/5.5 Ohms = 4.4A
     #define LULZBOT_MAX_BED_POWER      255  // limits duty cycle to bed; 255=full current
@@ -1304,8 +1306,6 @@
     #define LULZBOT_HOME_BEFORE_FILAMENT_CHANGE
     #define LULZBOT_PARK_HEAD_ON_PAUSE
     #define LULZBOT_EXTRUDER_STR "Extruder"
-
-    #define LULZBOT_PREHEAT_1_TEMP_HOTEND 200 // PLA
 
     // Clarify some of the status messages
     #define MSG_FILAMENT_CHANGE_HEADER_PAUSE  _UxGT("Changing Filament")
