@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".3" // Change this with each update
+#define LULZBOT_FW_VERSION ".4" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -175,6 +175,11 @@
 
 // Q&A wants to be able to use M226 on endstops switches
 #define LULZBOT_NO_PIN_PROTECTION_ON_M226
+
+// Often Marlin shows the "Home XYZ first" message, but
+// never clears that message. The following causes
+// Marlin to print a new message when the axis are homed
+#define LULZBOT_HOMING_MESSAGE_WORKAROUND
 
 /************************* EXPERIMENTAL FEATURES ******************************/
 
@@ -1293,10 +1298,22 @@
     #define LULZBOT_ADVANCED_PAUSE_FEATURE
     #define LULZBOT_ADVANCED_PAUSE_PURGE_LENGTH  80
     #define LULZBOT_ADVANCED_PAUSE_PURGE_FEEDRATE 1
-    #define LULZBOT_PAUSE_PARK_RETRACT_FEEDRATE  10
+    #define LULZBOT_PAUSE_PARK_RETRACT_FEEDRATE   10  // mm/s
+    #define LULZBOT_FILAMENT_CHANGE_UNLOAD_LENGTH 60
+    #define LULZBOT_FILAMENT_CHANGE_UNLOAD_FEEDRATE 5 // mm/s
     #define LULZBOT_HOME_BEFORE_FILAMENT_CHANGE
     #define LULZBOT_PARK_HEAD_ON_PAUSE
     #define LULZBOT_EXTRUDER_STR "Extruder"
+
+    #define LULZBOT_PREHEAT_1_TEMP_HOTEND 200 // PLA
+
+    // Clarify some of the status messages
+    #define MSG_FILAMENT_CHANGE_HEADER_PAUSE  _UxGT("Changing Filament")
+    #define MSG_FILAMENT_CHANGE_RESUME_1      _UxGT("")
+    #define MSG_FILAMENT_CHANGE_RESUME_2      _UxGT("Please wait.")
+    #define LULZBOT_FILAMENT_CHANGE_MSG_BACK  MSG_MAIN
+
+    #define MSG_FILAMENT_CHANGE_OPTION_HEADER _UxGT("")
 
     // In Marlin 1.1.9, the filament unload sequence makes no sense
     // All we want is a slow purge for the Aerostruder, followed by
