@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".4" // Change this with each update
+#define LULZBOT_FW_VERSION ".5" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1081,6 +1081,8 @@
     #else
         #define LULZBOT_E1_DRIVER_TYPE A4988
     #endif
+
+    #define LULZBOT_TMC_DEBUG
 #else
     #define LULZBOT_X_DRIVER_TYPE  A4988
     #define LULZBOT_Y_DRIVER_TYPE  A4988
