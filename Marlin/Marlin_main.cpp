@@ -14798,6 +14798,9 @@ void loop() {
         #if ENABLED(POWER_LOSS_RECOVERY)
           card.removeJobRecoveryFile();
         #endif
+        #if defined(LULZBOT_AFTER_ABORT_PRINT_ACTION)
+          LULZBOT_AFTER_ABORT_PRINT_ACTION
+        #endif
       }
     #endif
 

@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".5" // Change this with each update
+#define LULZBOT_FW_VERSION ".6" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -27,6 +27,8 @@
     !defined(TOOLHEAD_Finch_Aerostruder) && \
     !defined(TOOLHEAD_Finch_AerostruderV2) && \
     !defined(TOOLHEAD_Achemon_AeroMicroV2) && \
+    !defined(TOOLHEAD_BandedTiger_SomeMoarStruder) && \
+    !defined(TOOLHEAD_DingyCutworm_MoarstruderV2) && \
     !defined(TOOLHEAD_Tilapia_SingleExtruder) && \
     !defined(TOOLHEAD_Kanyu_Flexystruder) && \
     !defined(TOOLHEAD_Opah_Moarstruder) && \
@@ -535,7 +537,8 @@
 
 /**************************** MINI TOOLHEADS ***********************************/
 
-#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aerostruder) || defined(TOOLHEAD_Finch_AerostruderV2) || defined(TOOLHEAD_Achemon_AeroMicroV2)
+#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aerostruder) || defined(TOOLHEAD_Finch_AerostruderV2) || defined(TOOLHEAD_Achemon_AeroMicroV2) || defined(TOOLHEAD_BandedTiger_SomeMoarStruder) || defined(TOOLHEAD_DingyCutworm_MoarstruderV2)
+
     #define LULZBOT_EXTRUDERS                  1
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         0
     #define LULZBOT_TOOLHEAD_X_MIN_ADJ         0
@@ -601,7 +604,26 @@
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero
     #define LULZBOT_E_STEPS                        420
+    #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER   -1.24
 #endif /* TOOLHEAD_Achemon_AeroMicroV2 */
+
+#if defined(TOOLHEAD_BandedTiger_SomeMoarStruder)
+    #define LULZBOT_LCD_TOOLHEAD_NAME              "someMOARstruder"
+//          16 chars max                            ^^^^^^^^^^^^^^^
+    #define LULZBOT_M115_EXTRUDER_TYPE             "someMOARstruder"
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
+    #define LULZBOT_E3D_Titan_Aero
+    #define LULZBOT_E_STEPS                        420
+#endif /* TOOLHEAD_BandedTiger_SomeMoarStruder */
+
+#if defined(TOOLHEAD_DingyCutworm_MoarstruderV2)
+    #define LULZBOT_LCD_TOOLHEAD_NAME              "Moarstruder v2"
+//          16 chars max                            ^^^^^^^^^^^^^^^
+    #define LULZBOT_M115_EXTRUDER_TYPE             "AeroMoarstuderV2"
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
+    #define LULZBOT_E3D_Titan_Aero
+    #define LULZBOT_E_STEPS                        420
+#endif /* TOOLHEAD_DingyCutworm_MoarstruderV2 */
 
 /******************************** TAZ TOOLHEADS ********************************/
 
@@ -1316,6 +1338,7 @@
     #define LULZBOT_FILAMENT_CHANGE_MSG_BACK  MSG_MAIN
 
     #define MSG_FILAMENT_CHANGE_OPTION_HEADER _UxGT("")
+    #define MSG_FILAMENT_CHANGE_OPTION_RESUME _UxGT("End filament change")
 
     // In Marlin 1.1.9, the filament unload sequence makes no sense
     // All we want is a slow purge for the Aerostruder, followed by
@@ -1333,6 +1356,10 @@
 #endif
 
 #define LULZBOT_ACTION_ON_PAUSE_AND_RESUME
+
+#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
+    #define LULZBOT_AFTER_ABORT_PRINT_ACTION execute_commands_immediate_P(PSTR("G28 Z\nG0 Y190 X80 F3000\nM117 Print aborted."));
+#endif
 
 /*********************************** WIPER PAD **********************************/
 
@@ -1711,10 +1738,12 @@
     #define LULZBOT_DEFAULT_YJERK                 12.0
     #define LULZBOT_DEFAULT_ZJERK                  0.4
 
-    #if defined(LULZBOT_USE_Z_BELT)
-        #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.1
-    #else
-        #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.375
+    #if not defined(LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER)
+        #if defined(LULZBOT_USE_Z_BELT)
+            #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.1
+        #else
+            #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER  -1.375
+        #endif
     #endif
 
 #elif defined(LULZBOT_IS_TAZ)
@@ -1728,7 +1757,9 @@
         #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION 500
     #endif
 
-    #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER -1.200
+    #if not defined(LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER)
+        #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER -1.200
+    #endif
 #endif
 
 #if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_SCREW)
