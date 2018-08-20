@@ -8174,7 +8174,7 @@ inline void gcode_M109() {
       const bool heating = thermalManager.isHeatingHotend(target_extruder);
       if (heating || !no_wait_for_cooling)
         #if HOTENDS > 1
-          lcd_status_printf_P(0, heating ? PSTR(LULZBOT_EXTRUDER_STR "%i " MSG_HEATING) : PSTR(LULZBOT_EXTRUDER_STR "%i " MSG_COOLING), target_extruder + 1);
+          lcd_status_printf_P(0, heating ? PSTR(LULZBOT_EXTRUDER_STR " %i " MSG_HEATING) : PSTR(LULZBOT_EXTRUDER_STR "%i " MSG_COOLING), target_extruder + 1);
         #else
           lcd_setstatusPGM(heating ? PSTR(LULZBOT_EXTRUDER_STR " " MSG_HEATING) : PSTR(LULZBOT_EXTRUDER_STR " " MSG_COOLING));
         #endif

@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".6" // Change this with each update
+#define LULZBOT_FW_VERSION ".7" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1352,7 +1352,7 @@
     #define LULZBOT_NOZZLE_PARK_POINT {  10, (LULZBOT_Y_MAX_POS - 10), 20 }
 #else
     // Match the purge location of the v3 dual so a single tray can be used.
-    #define LULZBOT_NOZZLE_PARK_POINT { 100, 300, 20 }
+    #define LULZBOT_NOZZLE_PARK_POINT { 100, LULZBOT_Y_MAX_POS-1, 20 }
 #endif
 
 #define LULZBOT_ACTION_ON_PAUSE_AND_RESUME
