@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".8" // Change this with each update
+#define LULZBOT_FW_VERSION ".9" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -27,7 +27,7 @@
     !defined(TOOLHEAD_Finch_Aerostruder) && \
     !defined(TOOLHEAD_Finch_AerostruderV2) && \
     !defined(TOOLHEAD_Achemon_AeroMicroV2) && \
-    !defined(TOOLHEAD_BandedTiger_SomeMoarStruder) && \
+    !defined(TOOLHEAD_BandedTiger_AeroMacroV2) && \
     !defined(TOOLHEAD_DingyCutworm_MoarstruderV2) && \
     !defined(TOOLHEAD_Tilapia_SingleExtruder) && \
     !defined(TOOLHEAD_Kanyu_Flexystruder) && \
@@ -537,7 +537,7 @@
 
 /**************************** MINI TOOLHEADS ***********************************/
 
-#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aerostruder) || defined(TOOLHEAD_Finch_AerostruderV2) || defined(TOOLHEAD_Achemon_AeroMicroV2) || defined(TOOLHEAD_BandedTiger_SomeMoarStruder) || defined(TOOLHEAD_DingyCutworm_MoarstruderV2)
+#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aerostruder) || defined(TOOLHEAD_Finch_AerostruderV2) || defined(TOOLHEAD_Achemon_AeroMicroV2) || defined(TOOLHEAD_BandedTiger_AeroMacroV2) || defined(TOOLHEAD_DingyCutworm_MoarstruderV2)
 
     #define LULZBOT_EXTRUDERS                  1
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         0
@@ -582,7 +582,7 @@
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_M115_EXTRUDER_TYPE             "Aerostruder"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_OPEN_ENDSTOP
-    #define LULZBOT_E3D_Titan_Aero
+    #define LULZBOT_E3D_Titan_Aero_V6
     #define LULZBOT_E_STEPS                        420
 #endif /* TOOLHEAD_Finch_Aerostruder */
 
@@ -593,7 +593,7 @@
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_M115_EXTRUDER_TYPE             "Aerostruder"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
-    #define LULZBOT_E3D_Titan_Aero
+    #define LULZBOT_E3D_Titan_Aero_V6
     #define LULZBOT_E_STEPS                        420
 #endif /* TOOLHEAD_Finch_AerostruderV2 */
 
@@ -602,26 +602,26 @@
 //          16 chars max                            ^^^^^^^^^^^^^^^
     #define LULZBOT_M115_EXTRUDER_TYPE             "AerostruderMicro"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
-    #define LULZBOT_E3D_Titan_Aero
+    #define LULZBOT_E3D_Titan_Aero_V6
     #define LULZBOT_E_STEPS                        420
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER   -1.24
 #endif /* TOOLHEAD_Achemon_AeroMicroV2 */
 
-#if defined(TOOLHEAD_BandedTiger_SomeMoarStruder)
-    #define LULZBOT_LCD_TOOLHEAD_NAME              "someMOARstruder"
+#if defined(TOOLHEAD_BandedTiger_AeroMacroV2)
+    #define LULZBOT_LCD_TOOLHEAD_NAME              "Aero v2 Macro"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_M115_EXTRUDER_TYPE             "someMOARstruder"
+    #define LULZBOT_M115_EXTRUDER_TYPE             "AerostruderMacro"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
-    #define LULZBOT_E3D_Titan_Aero
+    #define LULZBOT_E3D_Titan_Aero_Volcano
     #define LULZBOT_E_STEPS                        420
-#endif /* TOOLHEAD_BandedTiger_SomeMoarStruder */
+#endif /* TOOLHEAD_BandedTiger_AeroMacroV2 */
 
 #if defined(TOOLHEAD_DingyCutworm_MoarstruderV2)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "Moarstruder v2"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_M115_EXTRUDER_TYPE             "AeroMoarstuderV2"
+    #define LULZBOT_M115_EXTRUDER_TYPE             "AeroMoarstuder"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
-    #define LULZBOT_E3D_Titan_Aero
+    #define LULZBOT_E3D_Titan_Aero_Volcano
     #define LULZBOT_E_STEPS                        420
 #endif /* TOOLHEAD_DingyCutworm_MoarstruderV2 */
 
@@ -658,7 +658,7 @@
     #define LULZBOT_M115_EXTRUDER_TYPE         "Aerostruder"
     #define LULZBOT_MOTOR_CURRENT_E            875 // mA
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING    LULZBOT_NORMALLY_CLOSED_ENDSTOP
-    #define LULZBOT_E3D_Titan_Aero
+    #define LULZBOT_E3D_Titan_Aero_V6
     #define LULZBOT_E_STEPS                    420
 #endif /* TOOLHEAD_Angelfish_Aerostruder */
 
@@ -865,32 +865,39 @@
 // Hotend variants
 
 #if defined(LULZBOT_Moarstruder)
-    // LulzBot MOARstruder (40v)
+    // LulzBot MOARstruder (40w)
     #define LULZBOT_DEFAULT_Kp 55.64
     #define LULZBOT_DEFAULT_Ki 6.79
     #define LULZBOT_DEFAULT_Kd 113.94
 #endif /* LULZBOT_Moarstruder */
 
 #if defined(LULZBOT_E3D_SOMEstruder_x2)
-    // Side-by-side LulzBot E3D SOMEstruder (24v) on Yellowfin Dual
+    // Side-by-side LulzBot E3D SOMEstruder on Yellowfin Dual
     #define LULZBOT_DEFAULT_Kp 47.45
     #define LULZBOT_DEFAULT_Ki 4.83
     #define LULZBOT_DEFAULT_Kd 116.63
 #endif /* LULZBOT_E3D_SOMEstruder_x2 */
 
 #if defined(LULZBOT_AO_Hexagon)
-    // LulzBot AO-Hexagon (24v)
+    // LulzBot AO-Hexagon (30w)
     #define LULZBOT_DEFAULT_Kp 28.79
     #define LULZBOT_DEFAULT_Ki 1.91
     #define LULZBOT_DEFAULT_Kd 108.51
 #endif /* LULZBOT_AO_Hexagon */
 
-#if defined(LULZBOT_E3D_Titan_Aero)
-    // LulzBot V6 block with E3D Titan Aero
+#if defined(LULZBOT_E3D_Titan_Aero_V6)
+    // E3D Titan Aero with LulzBot V6 block
     #define LULZBOT_DEFAULT_Kp 21.00
     #define LULZBOT_DEFAULT_Ki  1.78
     #define LULZBOT_DEFAULT_Kd 61.93
 #endif /* LULZBOT_E3D_Titan_Aero */
+
+#if defined(LULZBOT_E3D_Titan_Aero_Volcano)
+    // E3D Titan Aero with Volcano block
+    #define LULZBOT_DEFAULT_Kp 37.55
+    #define LULZBOT_DEFAULT_Ki  5.39
+    #define LULZBOT_DEFAULT_Kd 65.36
+#endif
 
 // Heated bed variants
 

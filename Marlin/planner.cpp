@@ -236,7 +236,6 @@ void Planner::init() {
 }
 
 #if ENABLED(S_CURVE_ACCELERATION)
-
   /**
    * This routine returns 0x1000000 / d, getting the inverse as fast as possible.
    * A fast-converging iterative Newton-Raphson method can reach full precision in
