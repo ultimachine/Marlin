@@ -586,7 +586,7 @@
  * (This feature is not required for common micro-switches mounted on PCBs
  * based on the Makerbot design, since they already include the 100nF capacitor.)
  */
-//#define ENDSTOP_NOISE_FILTER
+#define ENDSTOP_NOISE_FILTER LULZBOT_ENDSTOP_NOISE_FILTER
 
 //=============================================================================
 //============================== Movement Settings ============================
@@ -793,7 +793,7 @@
 #define Z_PROBE_OFFSET_FROM_EXTRUDER LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER   // Z offset: -below +above  [the nozzle]
 
 // Certain types of probes need to stay away from edges
-#define MIN_PROBE_EDGE 10
+//#define MIN_PROBE_EDGE LULZBOT_MIN_PROBE_EDGE_DISABLED
 
 // X and Y axis travel speed (mm/m) between probes
 #define XY_PROBE_SPEED LULZBOT_XY_PROBE_SPEED

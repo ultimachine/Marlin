@@ -44,8 +44,6 @@
       const float ix = current_position[X_AXIS], iy = current_position[Y_AXIS], iz = current_position[Z_AXIS];
     #endif
 
-    LULZBOT_REHOME_BEFORE_REWIPE
-
     // Move to the starting point
     do_blocking_move_to(start.x, start.y, start.z);
 

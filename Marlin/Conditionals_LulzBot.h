@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".9" // Change this with each update
+#define LULZBOT_FW_VERSION ".10" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -51,6 +51,7 @@
     #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
+    #define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
     #define LULZBOT_USE_Z_SCREW
     #define LULZBOT_BACKLASH_COMPENSATION
     #define LULZBOT_BAUDRATE 250000
@@ -60,7 +61,7 @@
 
 #if defined(LULZBOT_Gladiola_MiniLCD)
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot Mini LCD"
-    #define LULZBOT_LCD_MACHINE_NAME "Mini LCD"
+    #define LULZBOT_LCD_MACHINE_NAME "Mini"
     #define LULZBOT_IS_MINI
     #define LULZBOT_MINI_BED
     #define LULZBOT_USE_LCD_DISPLAY
@@ -68,6 +69,7 @@
     #define LULZBOT_USE_MIN_ENDSTOPS
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_NORMALLY_OPEN_ENDSTOPS
+    #define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
     #define LULZBOT_USE_Z_SCREW
     #define LULZBOT_BACKLASH_COMPENSATION
     #define LULZBOT_BAUDRATE 250000
@@ -101,6 +103,7 @@
     #define LULZBOT_USE_MAX_ENDSTOPS
     #define LULZBOT_USE_HOME_BUTTON
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
+    #define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
     #define LULZBOT_USE_Z_SCREW
     #define LULZBOT_BACKLASH_COMPENSATION
     #define LULZBOT_BAUDRATE 250000
@@ -129,7 +132,6 @@
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
     #define LULZBOT_LIGHTWEIGHT_UI
     #define LULZBOT_USE_EXPERIMENTAL_FEATURES
-    #define LULZBOT_REPROBE_EXTENDED_RECOVERY
 #endif
 
 /****************************** DEBUGGING OPTIONS *******************************/
@@ -238,7 +240,7 @@
 #if defined(LULZBOT_IS_MINI)
     #define LULZBOT_X_HOME_DIR             -1 // Home left
     #define LULZBOT_Y_HOME_DIR              1 // Home bed forward
-    #define LULZBOT_Z_HOME_DIR          1 // Home to top
+    #define LULZBOT_Z_HOME_DIR              1 // Home to top
     #define LULZBOT_QUICKHOME
 
 #elif defined(LULZBOT_Juniper_TAZ5)
@@ -300,25 +302,47 @@
     #define LULZBOT_Z_HOMING_HEIGHT               4
 #endif  // LULZBOT_USE_HOME_BUTTON
 
-#define LULZBOT_G92_Z(z) \
-      planner.synchronize(); \
-      current_position[Z_AXIS] = z; \
-      SYNC_PLAN_POSITION_KINEMATIC();
+#if defined(LULZBOT_USE_HOME_BUTTON) || defined(LULZBOT_SENSORLESS_HOMING) || defined(LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT)
+    /* Leaving the toolhead resting on the endstops with sensorless homing
+     * will likely cause chatter if the machine is immediately re-homed, so
+     * don't leave the head sitting on the endstops after homing. */
+    #define LULZBOT_BACKOFF_FEEDRATE 5
+    #define LULZBOT_BACKOFF_DIST_XY  5
+    #define LULZBOT_BACKOFF_DIST_Z   2
 
-#define LULZBOT_G0_Z(z) \
-      do_blocking_move_to_z(z);
+    #if defined(LULZBOT_USE_HOME_BUTTON)
+        /* On a TAZ, we need to raise the print head after homing to clear the button */
+        #undef  LULZBOT_BACKOFF_DIST_Z
+        #define LULZBOT_BACKOFF_DIST_Z LULZBOT_AFTER_Z_HOME_Z_RAISE
+        #define LULZBOT_BACKOFF_X_POS  LULZBOT_Z_SAFE_HOMING_X_POINT
+        #define LULZBOT_BACKOFF_Y_POS  LULZBOT_Z_SAFE_HOMING_Y_POINT
+        /* On yellowfin we need to reset the origin to account for the Z home riser. */
+        #define LULZBOT_BACKOFF_Z_POS_ADJUSTMENT \
+            planner.synchronize(); \
+            current_position[Z_AXIS] = LULZBOT_AFTER_Z_HOME_Z_ORIGIN; \
+            SYNC_PLAN_POSITION_KINEMATIC();
+    #else
+        #define LULZBOT_BACKOFF_Z_POS_ADJUSTMENT
+        #define LULZBOT_BACKOFF_X_POS (LULZBOT_X_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_XY : LULZBOT_X_MAX_POS - LULZBOT_BACKOFF_DIST_XY)
+        #define LULZBOT_BACKOFF_Y_POS (LULZBOT_Y_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_XY : LULZBOT_Y_MAX_POS - LULZBOT_BACKOFF_DIST_XY)
+    #endif
+    #define     LULZBOT_BACKOFF_Z_POS (LULZBOT_Z_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_Z  : LULZBOT_Z_MAX_POS - LULZBOT_BACKOFF_DIST_Z)
 
-// On a TAZ, we need to raise the print head after homing to clear the button;
-// On the yellowfin we also need to reset the origin to account for the Z home riser.
-
-#if defined(LULZBOT_USE_HOME_BUTTON)
-    #define LULZBOT_AFTER_Z_HOME_ACTION \
-        if(home_all || homeZ) { \
-          LULZBOT_G92_Z(LULZBOT_AFTER_Z_HOME_Z_ORIGIN); \
-          LULZBOT_G0_Z(LULZBOT_AFTER_Z_HOME_Z_RAISE); \
+    #define LULZBOT_BACKOFF_AFTER_HOME \
+        { \
+            LULZBOT_BACKOFF_Z_POS_ADJUSTMENT \
+            constexpr int x = LULZBOT_BACKOFF_X_POS; \
+            constexpr int y = LULZBOT_BACKOFF_Y_POS; \
+            constexpr int z = LULZBOT_BACKOFF_Z_POS; \
+            const bool saved_endstop_state = Endstops::enabled_globally; \
+            Endstops::enable_globally(false); \
+            do_blocking_move_to_z  ((home_all || homeZ) ? z : current_position[Z_AXIS], LULZBOT_BACKOFF_FEEDRATE); \
+            do_blocking_move_to_xy ((home_all || homeX) ? x : current_position[X_AXIS], \
+                                    (home_all || homeY) ? y : current_position[Y_AXIS], LULZBOT_BACKOFF_FEEDRATE); \
+            Endstops::enable_globally(saved_endstop_state); \
         }
 #else
-    #define LULZBOT_AFTER_Z_HOME_ACTION
+    #define LULZBOT_BACKOFF_AFTER_HOME
 #endif
 
 // Enable NO_MOTION_BEFORE_HOMING on newer printers that have no MAX endstops,
@@ -335,12 +359,14 @@
 
 #if defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_DISABLE_INACTIVE_Z false
-    #define LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP enable_Z();
+    #define LULZBOT_SD_FINISHED_STEPPERRELEASE false
     #define LULZBOT_SD_FINISHED_RELEASECOMMAND "M84 X Y E"
+    #define LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP enable_Z();
 #else
     #define LULZBOT_DISABLE_INACTIVE_Z true
-    #define LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP
+    #define LULZBOT_SD_FINISHED_STEPPERRELEASE true
     #define LULZBOT_SD_FINISHED_RELEASECOMMAND "M84 X Y Z E"
+    #define LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP
 #endif
 
 /*********************** AUTOLEVELING / BED PROBE *******************************/
@@ -445,6 +471,7 @@
 #define LULZBOT_Z_CLEARANCE_DEPLOY_PROBE_WORKAROUND
 #define LULZBOT_Z_CLEARANCE_DEPLOY_PROBE      5
 #define LULZBOT_Z_CLEARANCE_BETWEEN_PROBES    5
+#define LULZBOT_MIN_PROBE_EDGE_DISABLED
 
 /* We need to disable the extruder motor during probing as
    it causes noise on the probe line of some Minis.
@@ -531,6 +558,14 @@
         "M117 Leveling done."    /* Set LCD status */
 #endif
 
+#if defined(LULZBOT_USE_Z_SCREW)
+    // The older Minis seem succeptible to noise in the probe lines.
+    // This restores the sampling of endstops as it existed in previous
+    // version of Marlin.
+    #define LULZBOT_ENDSTOP_NOISE_FILTER
+    #define LULZBOT_ENDSTOP_NOISE_FILTER_SAMPLES 2
+#endif
+
 /*************************** COMMON TOOLHEADS PARAMETERS ***********************/
 
 #define LULZBOT_DEFAULT_EJERK                10.0
@@ -595,6 +630,7 @@
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero_V6
     #define LULZBOT_E_STEPS                        420
+    #define LULZBOT_MAY_USE_V2_ADAPTER
 #endif /* TOOLHEAD_Finch_AerostruderV2 */
 
 #if defined(TOOLHEAD_Achemon_AeroMicroV2)
@@ -605,6 +641,7 @@
     #define LULZBOT_E3D_Titan_Aero_V6
     #define LULZBOT_E_STEPS                        420
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER   -1.24
+    #define LULZBOT_MAY_USE_V2_ADAPTER
 #endif /* TOOLHEAD_Achemon_AeroMicroV2 */
 
 #if defined(TOOLHEAD_BandedTiger_AeroMacroV2)
@@ -614,6 +651,7 @@
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero_Volcano
     #define LULZBOT_E_STEPS                        420
+    #define LULZBOT_MAY_USE_V2_ADAPTER
 #endif /* TOOLHEAD_BandedTiger_AeroMacroV2 */
 
 #if defined(TOOLHEAD_DingyCutworm_MoarstruderV2)
@@ -623,7 +661,28 @@
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero_Volcano
     #define LULZBOT_E_STEPS                        420
+    #define LULZBOT_MAY_USE_V2_ADAPTER
 #endif /* TOOLHEAD_DingyCutworm_MoarstruderV2 */
+
+// Using the V2 toolheads on the TAZ and older Minis requires an
+// adapter plate that shifts the coordinate system
+#if defined(LULZBOT_MAY_USE_V2_ADAPTER) && defined(LULZBOT_USE_Z_SCREW)
+    #define LULZBOT_X_MAX_ENDSTOP_INVERTING LULZBOT_NO_ENDSTOP
+    #define LULZBOT_NO_MOTION_BEFORE_HOMING
+
+    #if defined(LULZBOT_IS_TAZ)
+        #define LULZBOT_TOOLHEAD_Y_OFFSET -2.0
+    #else
+        #define LULZBOT_TOOLHEAD_Y_OFFSET -7.2
+    #endif
+    #if LULZBOT_Y_HOME_DIR > 0
+        #undef  LULZBOT_TOOLHEAD_Y_MAX_ADJ
+        #define LULZBOT_TOOLHEAD_Y_MAX_ADJ LULZBOT_TOOLHEAD_Y_OFFSET
+    #else
+        #undef  LULZBOT_TOOLHEAD_Y_MIN_ADJ
+        #define LULZBOT_TOOLHEAD_Y_MIN_ADJ LULZBOT_TOOLHEAD_Y_OFFSET
+    #endif
+#endif
 
 /******************************** TAZ TOOLHEADS ********************************/
 
@@ -973,8 +1032,8 @@
     #define LULZBOT_STANDARD_Y_MAX_POS         190
     #define LULZBOT_STANDARD_Y_MIN_POS          -7
 
-    #define LULZBOT_X_BED_SIZE                 155
-    #define LULZBOT_Y_BED_SIZE                 155
+    #define LULZBOT_STANDARD_X_BED_SIZE         155
+    #define LULZBOT_STANDARD_Y_BED_SIZE         155
 
 #elif defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_STANDARD_X_MAX_POS         163
@@ -982,8 +1041,8 @@
     #define LULZBOT_STANDARD_Y_MAX_POS         192
     #define LULZBOT_STANDARD_Y_MIN_POS          -5
 
-    #define LULZBOT_X_BED_SIZE                 157
-    #define LULZBOT_Y_BED_SIZE                 157
+    #define LULZBOT_STANDARD_X_BED_SIZE         157
+    #define LULZBOT_STANDARD_Y_BED_SIZE         157
 
 #elif defined(LULZBOT_Juniper_TAZ5)
     #define LULZBOT_STANDARD_X_MAX_POS         298
@@ -991,8 +1050,8 @@
     #define LULZBOT_STANDARD_Y_MAX_POS         276
     #define LULZBOT_STANDARD_Y_MIN_POS           0
 
-    #define LULZBOT_X_BED_SIZE                 288
-    #define LULZBOT_Y_BED_SIZE                 275
+    #define LULZBOT_STANDARD_X_BED_SIZE         288
+    #define LULZBOT_STANDARD_Y_BED_SIZE         275
 
 #elif defined(LULZBOT_IS_TAZ) && defined(LULZBOT_USE_Z_BELT)
     #define LULZBOT_STANDARD_X_MAX_POS         300
@@ -1000,8 +1059,8 @@
     #define LULZBOT_STANDARD_Y_MAX_POS         303
     #define LULZBOT_STANDARD_Y_MIN_POS         -20
 
-    #define LULZBOT_X_BED_SIZE                 280
-    #define LULZBOT_Y_BED_SIZE                 280
+    #define LULZBOT_STANDARD_X_BED_SIZE         280
+    #define LULZBOT_STANDARD_Y_BED_SIZE         280
 
 #elif defined(LULZBOT_IS_TAZ) && defined(LULZBOT_USE_Z_SCREW)
     #define LULZBOT_STANDARD_X_MAX_POS         300
@@ -1009,8 +1068,8 @@
     #define LULZBOT_STANDARD_Y_MAX_POS         303
     #define LULZBOT_STANDARD_Y_MIN_POS         -20
 
-    #define LULZBOT_X_BED_SIZE                 280
-    #define LULZBOT_Y_BED_SIZE                 280
+    #define LULZBOT_STANDARD_X_BED_SIZE        280
+    #define LULZBOT_STANDARD_Y_BED_SIZE        280
 #endif
 
 #if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_SCREW)
@@ -1034,12 +1093,15 @@
     #define LULZBOT_STANDARD_Z_MAX_POS         299
 #endif
 
-#define LULZBOT_X_MAX_POS (LULZBOT_STANDARD_X_MAX_POS + LULZBOT_TOOLHEAD_X_MAX_ADJ)
-#define LULZBOT_X_MIN_POS (LULZBOT_STANDARD_X_MIN_POS + LULZBOT_TOOLHEAD_X_MIN_ADJ)
-#define LULZBOT_Y_MAX_POS (LULZBOT_STANDARD_Y_MAX_POS + LULZBOT_TOOLHEAD_Y_MAX_ADJ)
-#define LULZBOT_Y_MIN_POS (LULZBOT_STANDARD_Y_MIN_POS + LULZBOT_TOOLHEAD_Y_MIN_ADJ)
-#define LULZBOT_Z_MAX_POS (LULZBOT_STANDARD_Z_MAX_POS + LULZBOT_TOOLHEAD_Z_MAX_ADJ)
-#define LULZBOT_Z_MIN_POS (LULZBOT_STANDARD_Z_MIN_POS + LULZBOT_TOOLHEAD_Z_MIN_ADJ)
+#define LULZBOT_X_MAX_POS  (LULZBOT_STANDARD_X_MAX_POS + LULZBOT_TOOLHEAD_X_MAX_ADJ)
+#define LULZBOT_X_MIN_POS  (LULZBOT_STANDARD_X_MIN_POS + LULZBOT_TOOLHEAD_X_MIN_ADJ)
+#define LULZBOT_Y_MAX_POS  (LULZBOT_STANDARD_Y_MAX_POS + LULZBOT_TOOLHEAD_Y_MAX_ADJ)
+#define LULZBOT_Y_MIN_POS  (LULZBOT_STANDARD_Y_MIN_POS + LULZBOT_TOOLHEAD_Y_MIN_ADJ)
+#define LULZBOT_Z_MAX_POS  (LULZBOT_STANDARD_Z_MAX_POS + LULZBOT_TOOLHEAD_Z_MAX_ADJ)
+#define LULZBOT_Z_MIN_POS  (LULZBOT_STANDARD_Z_MIN_POS + LULZBOT_TOOLHEAD_Z_MIN_ADJ)
+
+#define LULZBOT_X_BED_SIZE min(LULZBOT_X_MAX_POS, LULZBOT_STANDARD_X_BED_SIZE)
+#define LULZBOT_Y_BED_SIZE min(LULZBOT_Y_MAX_POS, LULZBOT_STANDARD_Y_BED_SIZE)
 
 /**************************** ENDSTOP CONFIGURATION ****************************/
 
@@ -1056,7 +1118,6 @@
     #define LULZBOT_USE_ZMAX_PLUG
 #endif
 
-#define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
 #define LULZBOT_ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
 
 // Workaround for bug in Marlin 1.1.5 where motion is stopped a X or Y = 0,
@@ -1270,28 +1331,6 @@
         } else { \
             LULZBOT_DEFAULT_OPERATING_MODE_XY(st) \
         }
-
-    /* Leaving the toolhead resting on the endstops will likely cause
-     * chatter if the machine is immediately re-homed, so don't leave
-     * the head sitting on the endstops after homing. */
-    #define LULZBOT_BACKOFF_DIST_XY  5
-    #define LULZBOT_BACKOFF_DIST_Z   2
-    #define LULZBOT_BACKOFF_FEEDRATE 5
-
-    #define LULZBOT_AFTER_Z_HOME_ACTION \
-        { \
-            int x = (LULZBOT_X_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_XY : LULZBOT_STANDARD_X_MAX_POS - LULZBOT_BACKOFF_DIST_XY); \
-            int y = (LULZBOT_Y_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_XY : LULZBOT_STANDARD_Y_MAX_POS - LULZBOT_BACKOFF_DIST_XY); \
-            int z = (LULZBOT_Z_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_Z  : LULZBOT_STANDARD_Z_MAX_POS - LULZBOT_BACKOFF_DIST_Z); \
-            do_blocking_move_to_z( \
-                (home_all || homeZ) ? z : current_position[Z_AXIS] \
-            ); \
-            do_blocking_move_to_xy( \
-                (home_all || homeX) ? x : current_position[X_AXIS], \
-                (home_all || homeY) ? y : current_position[Y_AXIS], \
-                LULZBOT_BACKOFF_FEEDRATE \
-            ); \
-        }
 #endif
 
 #if defined(LULZBOT_SENSORLESS_HOMING)
@@ -1312,10 +1351,6 @@
     // It also appears that when this is enabled
     // stallguard is never cleared.
     //#define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
-
-    // ENDSTOPS_ALWAYS_ON_DEFAULT causes false positives
-    // with stallguard.
-    #undef LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
 
     // According to Jason at UltiMachine, setting the lower the
     // stealth freq the cooler the motor drivers will operate.
@@ -1410,29 +1445,14 @@
 
 /*************************** REWIPE FUNCTIONALITY *******************************/
 
-#define LULZBOT_NUM_REWIPES      3
+#if defined(LULZBOT_USE_AUTOLEVELING)
+    #define LULZBOT_NUM_REWIPES      3
 
-#if defined(LULZBOT_IS_TAZ)
-    #define LULZBOT_Z_PROBE_LOW_POINT    0 // Limit on pushing into the bed
-#else defined(LULZBOT_IS_MINI)
-    #define LULZBOT_Z_PROBE_LOW_POINT   -4 // Limit on pushing into the bed
-#endif
-
-#if defined(LULZBOT_USE_PRE_GLADIOLA_G29_WORKAROUND)
-    // workaround for older minis where G29 shifts the coordinate system
-    #define LULZBOT_REHOME_BEFORE_REWIPE \
-        do_blocking_move_to_xy(X_MIN_POS + 5, Y_MAX_POS - 5); /* Approach home */ \
-        do_blocking_move_to_xy(X_MIN_POS + 5, Y_MAX_POS);     /* Trigger Y_MAX */ \
-        do_blocking_move_to_xy(X_MIN_POS + 5, Y_MAX_POS - 5); /* Clear endstops */ \
-        do_blocking_move_to_xy(X_MIN_POS,     Y_MAX_POS - 5); /* Trigger X_MIN */ \
-        do_blocking_move_to_xy(X_MIN_POS + 5, Y_MAX_POS - 5); /* Clear endstops */
-#else
-    #define LULZBOT_REHOME_BEFORE_REWIPE
-#endif
-
-#if defined(LULZBOT_REPROBE_EXTENDED_RECOVERY)
-    /* New style reprobe recovery that can perform a more
-       complex recovery sequence */
+    #if defined(LULZBOT_IS_TAZ)
+        #define LULZBOT_Z_PROBE_LOW_POINT    0 // Limit on pushing into the bed
+    #else defined(LULZBOT_IS_MINI)
+        #define LULZBOT_Z_PROBE_LOW_POINT   -4 // Limit on pushing into the bed
+    #endif
 
     #if defined(LULZBOT_USE_Z_BELT)
         #define LULZBOT_REWIPE_RECOVER_GCODE \
@@ -1440,6 +1460,17 @@
             "M117 Rewiping nozzle\n"              /* Status message */ \
             "G12 P0 S12 T0\n"                     /* Wipe nozzle */ \
             "M117 Probing bed"                    /* Status message */
+
+    #elif defined(LULZBOT_USE_PRE_GLADIOLA_G29_WORKAROUND)
+        #define LULZBOT_REWIPE_RECOVER_GCODE \
+            "M117 Rewiping nozzle\n"              /* Status message */ \
+            "M121\n"                              /* Turn off endstops so we can move */ \
+            "G0 Z10\n"                            /* Raise nozzle */ \
+            "G28 X0 Y0\n"                         /* G29 on older minis shifts the coordinate system */ \
+            "G12 P0 S12 T0\n"                     /* Wipe nozzle */ \
+            "M120\n"                              /* Restore endstops */ \
+            "M117 Probing bed"                    /* Status message */
+
     #else
         #define LULZBOT_REWIPE_RECOVER_GCODE \
             "M117 Rewiping nozzle\n"              /* Status message */ \
@@ -1513,43 +1544,7 @@
         }
 
     #define LULZBOT_G29_COMMAND gcode_G29_with_retry();
-
 #else
-    /* Old style rewipe recovery that repeats only the failed probe
-       point after a simple nozzle wipe. */
-
-    #define LULZBOT_NOZZLE_CLEAN_GOBACK
-
-    #define LULZBOT_DO_PROBE_MOVE(speed) \
-        /* do_probe_move returns true when it fails to hit an endstop, meaning we need to rewipe */ \
-        for(int rewipes = 0; do_probe_move(LULZBOT_Z_PROBE_LOW_POINT, MMM_TO_MMS(speed)); rewipes++) { \
-            if(rewipes >= LULZBOT_NUM_REWIPES) {          /* max of tries */ \
-                SERIAL_ERRORLNPGM("PROBE FAIL CLEAN NOZZLE"); /* cura listens for this message specifically */ \
-                LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);   /* use a more friendly message on the LCD */ \
-                BUZZ(25, 880); BUZZ(50, 0);               /* play tone */ \
-                BUZZ(25, 880); BUZZ(50, 0); \
-                BUZZ(25, 880); BUZZ(50, 0); \
-                do_blocking_move_to_z(100, MMM_TO_MMS(Z_PROBE_SPEED_FAST)); /* raise head */ \
-                current_position[E_AXIS] = 0;             /* prime nozzle at 75 mm/sec */ \
-                planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], 75./60, active_extruder); \
-                sync_plan_position_e(); \
-                planner.synchronize(); \
-                kill(PSTR(MSG_ERR_PROBING_FAILED));       /* stop print job */ \
-                return NAN;                               /* abort the leveling in progress */ \
-            } \
-            SERIAL_ERRORLNPGM(MSG_REWIPE); \
-            LCD_MESSAGEPGM(MSG_REWIPE); \
-            do_blocking_move_to_z(10, MMM_TO_MMS(speed)); /* raise nozzle */ \
-            Nozzle::clean(0, 12, 0, 0);                   /* wipe nozzle */ \
-        }
-
-    #define LULZBOT_G29_COMMAND \
-        { \
-            LULZBOT_ENABLE_PROBE_PINS(true); \
-            gcode_G29(); \
-            LULZBOT_ENABLE_PROBE_PINS(false); \
-        }
-
     #define LULZBOT_EXECUTE_IMMEDIATE_DECL
     #define LULZBOT_EXECUTE_IMMEDIATE_IMPL
     #define LULZBOT_G29_WITH_RETRY_DECL
@@ -1574,7 +1569,6 @@
     #define LULZBOT_BED_LEVELING_POINT(i,x,y,z)
     #define LULZBOT_BED_LEVELING_SUMMARY
 #endif
-
 
 /****************************** BACKLASH COMPENSATION **************************/
 
@@ -1912,6 +1906,8 @@
 #if defined(LULZBOT_LIGHTWEIGHT_UI)
     #define WELCOME_MSG _UxGT(LULZBOT_LCD_MACHINE_NAME " ready.")
     #define LULZBOT_STATUS_EXPIRE_SECONDS 0
+#else
+    #define WELCOME_MSG _UxGT("Lulzbot " LULZBOT_LCD_MACHINE_NAME " ready.")
 #endif
 
 #if defined(LULZBOT_PRINTCOUNTER)
