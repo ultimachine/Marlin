@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".11" // Change this with each update
+#define LULZBOT_FW_VERSION ".12" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1903,6 +1903,7 @@
     #define LULZBOT_ZOFFSET_PRECISION ftostr52
     #define LULZBOT_RESET_SELECTION_TO_FIRST_ON_MENU_BACK
     #define LULZBOT_SHOW_TEMPERATURE_ADJUSTMENT_IN_PREHEAT_MENU
+    #define LULZBOT_CPU_ST7920_DELAY_2 300 // Increase delay from 250 to 300 to avoid display lock ups
 #endif
 
 #if defined(LULZBOT_LIGHTWEIGHT_UI)
