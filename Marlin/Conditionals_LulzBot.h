@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".12" // Change this with each update
+#define LULZBOT_FW_VERSION ".13" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1204,6 +1204,10 @@
     #define LULZBOT_R_SENSE         0.12
     #define LULZBOT_HOLD_MULTIPLIER 0.5
 
+    // According to Jason at UltiMachine, setting the lower the
+    // stealth freq the cooler the motor drivers will operate.
+    #define LULZBOT_STEALTH_FREQ 0
+
     // If true, use STEALTHCHOP, otherwise use COOLSTEP
     #if defined(LULZBOT_USE_TMC_STEALTHCHOP_XY) || defined(LULZBOT_USE_TMC_STEALTHCHOP_Z)
         #define LULZBOT_STEALTHCHOP LULZBOT_USE_TMC_STEALTHCHOP
@@ -1352,10 +1356,6 @@
     // stallguard is never cleared.
     //#define LULZBOT_ENDSTOP_INTERRUPTS_FEATURE
 
-    // According to Jason at UltiMachine, setting the lower the
-    // stealth freq the cooler the motor drivers will operate.
-    #define LULZBOT_STEALTH_FREQ 0
-
     // Quickhome does not work with sensorless homing
     #undef LULZBOT_QUICKHOME
 #endif
@@ -1401,8 +1401,14 @@
 
 #define LULZBOT_ACTION_ON_PAUSE_AND_RESUME
 
-#if defined(LULZBOT_IS_MINI) && defined(LULZBOT_USE_Z_BELT)
-    #define LULZBOT_AFTER_ABORT_PRINT_ACTION execute_commands_immediate_P(PSTR("G28 Z\nG0 Y190 X80 F3000\nM117 Print aborted."));
+#if defined(LULZBOT_IS_MINI)
+    #define LULZBOT_AFTER_ABORT_PRINT_ACTION execute_commands_immediate_P(PSTR("G28 Z\nG0 X80 Y190 F3000\nM117 Print aborted."));
+
+#elif defined(LULZBOT_Juniper_TAZ5)
+    #define LULZBOT_AFTER_ABORT_PRINT_ACTION execute_commands_immediate_P(PSTR("G0 X170 Y290 F3000\nM117 Print aborted."));
+
+#elif defined(LULZBOT_IS_TAZ)
+    #define LULZBOT_AFTER_ABORT_PRINT_ACTION execute_commands_immediate_P(PSTR("G91\nG0 Z15 F600\nG90\nG0 X170 Y290 F3000\nM117 Print aborted."));
 #endif
 
 /*********************************** WIPER PAD **********************************/
@@ -1497,31 +1503,6 @@
 
     #define LULZBOT_DO_PROBE_MOVE(speed) if (do_probe_move(LULZBOT_Z_PROBE_LOW_POINT, MMM_TO_MMS(speed))) return NAN;
 
-    #define LULZBOT_EXECUTE_IMMEDIATE_DECL \
-        void execute_commands_immediate_P(const char *pgcode);
-
-    #define LULZBOT_EXECUTE_IMMEDIATE_IMPL \
-        void execute_commands_immediate_P(const char *pgcode) { \
-            /* Save the parser state */ \
-            char *saved_cmd = parser.command_ptr; \
-            /* Process individual commands in string */ \
-            while(pgm_read_byte_near(pgcode) != '\0') { \
-                /* Break up string at '\n' delimiters */ \
-                const char *delim = strchr_P(pgcode, '\n'); \
-                size_t len = delim ? delim - pgcode : strlen_P(pgcode); \
-                char cmd[len+1]; \
-                strncpy_P(cmd, pgcode, len); \
-                cmd[len] = '\0'; \
-                pgcode += len; \
-                if(delim) pgcode++; \
-                /* Parse the next command in the string */ \
-                parser.parse(cmd); \
-                process_parsed_command(false); \
-            } \
-            /* Restore the parser state */ \
-            parser.parse(saved_cmd); \
-        }
-
     #define LULZBOT_G29_WITH_RETRY_DECL \
         void gcode_G29_with_retry();
 
@@ -1547,11 +1528,36 @@
 
     #define LULZBOT_G29_COMMAND gcode_G29_with_retry();
 #else
-    #define LULZBOT_EXECUTE_IMMEDIATE_DECL
-    #define LULZBOT_EXECUTE_IMMEDIATE_IMPL
     #define LULZBOT_G29_WITH_RETRY_DECL
     #define LULZBOT_G29_WITH_RETRY_IMPL
 #endif
+
+/******************************* EXECUTE IMMEDIATE *************************/
+
+#define LULZBOT_EXECUTE_IMMEDIATE_DECL \
+    void execute_commands_immediate_P(const char *pgcode);
+
+#define LULZBOT_EXECUTE_IMMEDIATE_IMPL \
+    void execute_commands_immediate_P(const char *pgcode) { \
+        /* Save the parser state */ \
+        char *saved_cmd = parser.command_ptr; \
+        /* Process individual commands in string */ \
+        while(pgm_read_byte_near(pgcode) != '\0') { \
+            /* Break up string at '\n' delimiters */ \
+            const char *delim = strchr_P(pgcode, '\n'); \
+            size_t len = delim ? delim - pgcode : strlen_P(pgcode); \
+            char cmd[len+1]; \
+            strncpy_P(cmd, pgcode, len); \
+            cmd[len] = '\0'; \
+            pgcode += len; \
+            if(delim) pgcode++; \
+            /* Parse the next command in the string */ \
+            parser.parse(cmd); \
+            process_parsed_command(false); \
+        } \
+        /* Restore the parser state */ \
+        parser.parse(saved_cmd); \
+    }
 
 /******************************** PROBE QUALITY CHECK *************************/
 
