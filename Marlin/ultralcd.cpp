@@ -472,6 +472,10 @@ uint16_t max_display_update_time = 0;
     constexpr bool processing_manual_move = false;
   #endif
 
+  #if defined(LULZBOT_LCD_MANUAL_EXTRUDE_RELATIVE)
+    float manual_move_e_origin = 0;
+  #endif
+
   #if PIN_EXISTS(SD_DETECT)
     uint8_t lcd_sd_status;
   #endif
@@ -3252,6 +3256,9 @@ void lcd_quick_feedback(const bool clear_buttons) {
         #if IS_KINEMATIC
           + manual_move_offset
         #endif
+        #if defined(LULZBOT_LCD_MANUAL_EXTRUDE_RELATIVE)
+          - manual_move_e_origin
+        #endif
       ));
     }
   }
@@ -3300,7 +3307,11 @@ void lcd_quick_feedback(const bool clear_buttons) {
         case Z_AXIS:
           STATIC_ITEM(MSG_MOVE_Z, true, true); break;
         default:
-          STATIC_ITEM(MSG_MOVE_E, true, true); break;
+          STATIC_ITEM(MSG_MOVE_E, true, true);
+          #if defined(LULZBOT_LCD_MANUAL_EXTRUDE_RELATIVE)
+            manual_move_e_origin = current_position[E_AXIS];
+          #endif
+          break;
       }
     }
     MENU_BACK(MSG_MOVE_AXIS);

@@ -1904,6 +1904,8 @@
     #define LULZBOT_RESET_SELECTION_TO_FIRST_ON_MENU_BACK
     #define LULZBOT_SHOW_TEMPERATURE_ADJUSTMENT_IN_PREHEAT_MENU
     #define LULZBOT_CPU_ST7920_DELAY_2 300 // Increase delay from 250 to 300 to avoid display lock ups
+    #define LULZBOT_LCD_MANUAL_EXTRUDE_RELATIVE
+    #define MSG_MOVE_E _UxGT("Extruder ") // Add space to extruder string
 #endif
 
 #if defined(LULZBOT_LIGHTWEIGHT_UI)
