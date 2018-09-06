@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".13" // Change this with each update
+#define LULZBOT_FW_VERSION ".14" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -569,6 +569,7 @@
 /*************************** COMMON TOOLHEADS PARAMETERS ***********************/
 
 #define LULZBOT_DEFAULT_EJERK                10.0
+#define LULZBOT_MANUAL_FEEDRATE_E             1.0 // mm/sec
 
 /**************************** MINI TOOLHEADS ***********************************/
 
@@ -641,6 +642,8 @@
     #define LULZBOT_E3D_Titan_Aero_V6
     #define LULZBOT_E_STEPS                        420
     #define LULZBOT_Z_PROBE_OFFSET_FROM_EXTRUDER   -1.24
+    #undef  LULZBOT_MANUAL_FEEDRATE_E
+    #define LULZBOT_MANUAL_FEEDRATE_E               0.7 // mm/sec
     #define LULZBOT_MAY_USE_V2_ADAPTER
 #endif /* TOOLHEAD_Achemon_AeroMicroV2 */
 
@@ -1364,10 +1367,10 @@
 
 #if defined(LULZBOT_USE_LCD_DISPLAY)
     #define LULZBOT_ADVANCED_PAUSE_FEATURE
-    #define LULZBOT_FILAMENT_CHANGE_FAST_LOAD_FEEDRATE .8
+    #define LULZBOT_FILAMENT_CHANGE_FAST_LOAD_FEEDRATE LULZBOT_MANUAL_FEEDRATE_E
     #define LULZBOT_FILAMENT_CHANGE_FAST_LOAD_LENGTH 40
     #define LULZBOT_ADVANCED_PAUSE_PURGE_LENGTH  20
-    #define LULZBOT_ADVANCED_PAUSE_PURGE_FEEDRATE .8
+    #define LULZBOT_ADVANCED_PAUSE_PURGE_FEEDRATE LULZBOT_MANUAL_FEEDRATE_E
     #define LULZBOT_PAUSE_PARK_RETRACT_FEEDRATE   10  // mm/s
     #define LULZBOT_FILAMENT_CHANGE_UNLOAD_LENGTH 80
     #define LULZBOT_FILAMENT_CHANGE_UNLOAD_FEEDRATE 5 // mm/s
@@ -1389,7 +1392,7 @@
     // a retract.
     #define LULZBOT_AEROSTRUDER_UNLOAD_WORKAROUND
     #define LULZBOT_AEROSTRUDER_UNLOAD_PURGE_LENGTH   6
-    #define LULZBOT_AEROSTRUDER_UNLOAD_PURGE_FEEDRATE 1
+    #define LULZBOT_AEROSTRUDER_UNLOAD_PURGE_FEEDRATE LULZBOT_MANUAL_FEEDRATE_E
 #endif
 
 #if defined(LULZBOT_IS_MINI)
@@ -1816,9 +1819,9 @@
 #endif
 
 #if LULZBOT_EXTRUDERS == 2
-    #define LULZBOT_MANUAL_FEEDRATE       {50*60, 50*60, LULZBOT_MANUAL_FEEDRATE_Z, 60, 60} // (mm/min)
+    #define LULZBOT_MANUAL_FEEDRATE       {50*60, 50*60, LULZBOT_MANUAL_FEEDRATE_Z, LULZBOT_MANUAL_FEEDRATE_E * 60, LULZBOT_MANUAL_FEEDRATE_E *  60} // (mm/min)
 #else
-    #define LULZBOT_MANUAL_FEEDRATE       {50*60, 50*60, LULZBOT_MANUAL_FEEDRATE_Z, 60} // (mm/min)
+    #define LULZBOT_MANUAL_FEEDRATE       {50*60, 50*60, LULZBOT_MANUAL_FEEDRATE_Z, LULZBOT_MANUAL_FEEDRATE_E * 60} // (mm/min)
 #endif
 
 #if defined(LULZBOT_USE_EINSY_RETRO)
