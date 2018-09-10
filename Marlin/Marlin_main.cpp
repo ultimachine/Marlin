@@ -7070,7 +7070,11 @@ inline void gcode_M17() {
    * - Send host action for resume, if configured
    * - Resume the current SD print job, if any
    */
+  #if defined(LULZBOT_ADVANCED_PAUSE_PURGE_WORKAROUND)
+  static void resume_print(const float &slow_load_length=0, const float &fast_load_length=0, const float &purge_length=0, const int8_t max_beep_count=0) {
+  #else
   static void resume_print(const float &slow_load_length=0, const float &fast_load_length=0, const float &purge_length=ADVANCED_PAUSE_PURGE_LENGTH, const int8_t max_beep_count=0) {
+  #endif
     if (!did_pause_print) return;
 
     // Re-enable the heaters if they timed out
@@ -7080,6 +7084,9 @@ inline void gcode_M17() {
       thermalManager.reset_heater_idle_timer(e);
     }
 
+    #if defined(LULZBOT_ADVANCED_PAUSE_PURGE_WORKAROUND)
+    if(purge_length)
+    #endif
     if (nozzle_timed_out || thermalManager.hotEnoughToExtrude(active_extruder)) {
       // Load the new filament
       load_filament(slow_load_length, fast_load_length, purge_length, max_beep_count, true, nozzle_timed_out);
@@ -7130,6 +7137,10 @@ inline void gcode_M17() {
         card.startFileprint();
         --did_pause_print;
       }
+    #endif
+
+    #if ENABLED(ULTRA_LCD) && defined(LULZBOT_PAUSED_MESSAGE_WORKAROUND)
+      lcd_setstatusPGM(PSTR(_UxGT("")));
     #endif
   }
 

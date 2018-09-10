@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".15" // Change this with each update
+#define LULZBOT_FW_VERSION ".16" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1380,12 +1380,12 @@
     #define LULZBOT_PARK_HEAD_ON_PAUSE
     #define LULZBOT_EXTRUDER_STR "Extruder"
 
-    // Clarify some of the status messages
-    #define MSG_FILAMENT_CHANGE_HEADER_PAUSE  _UxGT("Changing Filament")
+    // The following shows up both while pausing and changing filament, better to not be specific.
     #define MSG_FILAMENT_CHANGE_RESUME_1      _UxGT("")
     #define MSG_FILAMENT_CHANGE_RESUME_2      _UxGT("Please wait.")
     #define LULZBOT_FILAMENT_CHANGE_MSG_BACK  MSG_MAIN
 
+    // The following shows up even when no print is happening, better to leave blank.
     #define MSG_FILAMENT_CHANGE_OPTION_HEADER _UxGT("")
     #define MSG_FILAMENT_CHANGE_OPTION_RESUME _UxGT("End filament change")
 
@@ -1395,6 +1395,12 @@
     #define LULZBOT_AEROSTRUDER_UNLOAD_WORKAROUND
     #define LULZBOT_AEROSTRUDER_UNLOAD_PURGE_LENGTH   6
     #define LULZBOT_AEROSTRUDER_UNLOAD_PURGE_FEEDRATE LULZBOT_MANUAL_FEEDRATE_E
+
+    // In Marlin 1.1.9, an unnecessary purge is happening after a resume from a pause.
+    #define LULZBOT_ADVANCED_PAUSE_PURGE_WORKAROUND
+
+    // Hide the status message after a resume
+    #define LULZBOT_PAUSED_MESSAGE_WORKAROUND
 #endif
 
 #if defined(LULZBOT_IS_MINI)
