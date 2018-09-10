@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".14" // Change this with each update
+#define LULZBOT_FW_VERSION ".15" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -318,9 +318,11 @@
         #define LULZBOT_BACKOFF_Y_POS  LULZBOT_Z_SAFE_HOMING_Y_POINT
         /* On yellowfin we need to reset the origin to account for the Z home riser. */
         #define LULZBOT_BACKOFF_Z_POS_ADJUSTMENT \
-            planner.synchronize(); \
-            current_position[Z_AXIS] = LULZBOT_AFTER_Z_HOME_Z_ORIGIN; \
-            SYNC_PLAN_POSITION_KINEMATIC();
+            if((home_all || homeZ)) { \
+                planner.synchronize(); \
+                current_position[Z_AXIS] = LULZBOT_AFTER_Z_HOME_Z_ORIGIN; \
+                SYNC_PLAN_POSITION_KINEMATIC(); \
+            }
     #else
         #define LULZBOT_BACKOFF_Z_POS_ADJUSTMENT
         #define LULZBOT_BACKOFF_X_POS (LULZBOT_X_HOME_DIR < 0 ? LULZBOT_BACKOFF_DIST_XY : LULZBOT_X_MAX_POS - LULZBOT_BACKOFF_DIST_XY)
