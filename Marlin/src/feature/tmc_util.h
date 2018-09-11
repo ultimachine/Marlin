@@ -117,6 +117,17 @@ class TMCMarlin : public TMC, public TMCStorage {
       this->val_mA = mA;
       TMC::rms_current(mA, mult);
     }
+
+    #if ENABLED(SOFTWARE_DRIVER_ENABLE)
+      public:
+        void toff(uint8_t B) {
+          if (B>0) saved_toff = B;
+          TMC::toff(B);
+        }
+        uint8_t savedToff() { return saved_toff; }
+      private:
+        uint8_t saved_toff = 0;
+    #endif
 };
 template<>
 class TMCMarlin<TMC2208Stepper> : public TMC2208Stepper, public TMCStorage {

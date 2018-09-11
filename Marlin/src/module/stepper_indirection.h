@@ -106,7 +106,11 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
     #define X_ENABLE_READ stepperX.isEnabled()
   #else
     #define X_ENABLE_INIT SET_OUTPUT(X_ENABLE_PIN)
-    #define X_ENABLE_WRITE(STATE) WRITE(X_ENABLE_PIN,STATE)
+    #if ENABLED(SOFTWARE_DRIVER_ENABLE)
+      #define X_ENABLE_WRITE(STATE) stepperX.toff((STATE)==X_ENABLE_ON ? stepperX.savedToff() : 0)
+    #else
+      #define X_ENABLE_WRITE(STATE) WRITE(X_ENABLE_PIN,STATE)
+    #endif
     #define X_ENABLE_READ READ(X_ENABLE_PIN)
   #endif
   #define X_DIR_INIT SET_OUTPUT(X_DIR_PIN)
@@ -141,7 +145,11 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
     #define Y_ENABLE_READ stepperY.isEnabled()
   #else
     #define Y_ENABLE_INIT SET_OUTPUT(Y_ENABLE_PIN)
-    #define Y_ENABLE_WRITE(STATE) WRITE(Y_ENABLE_PIN,STATE)
+    #if ENABLED(SOFTWARE_DRIVER_ENABLE)
+      #define Y_ENABLE_WRITE(STATE) stepperY.toff((STATE)==Y_ENABLE_ON ? stepperY.savedToff() : 0)
+    #else
+      #define Y_ENABLE_WRITE(STATE) WRITE(Y_ENABLE_PIN,STATE)
+    #endif
     #define Y_ENABLE_READ READ(Y_ENABLE_PIN)
   #endif
   #define Y_DIR_INIT SET_OUTPUT(Y_DIR_PIN)
@@ -176,7 +184,11 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
     #define Z_ENABLE_READ stepperZ.isEnabled()
   #else
     #define Z_ENABLE_INIT SET_OUTPUT(Z_ENABLE_PIN)
-    #define Z_ENABLE_WRITE(STATE) WRITE(Z_ENABLE_PIN,STATE)
+    #if ENABLED(SOFTWARE_DRIVER_ENABLE)
+      #define Z_ENABLE_WRITE(STATE) stepperZ.toff((STATE)==Z_ENABLE_ON ? stepperZ.savedToff() : 0)
+    #else
+      #define Z_ENABLE_WRITE(STATE) WRITE(Z_ENABLE_PIN,STATE)
+    #endif
     #define Z_ENABLE_READ READ(Z_ENABLE_PIN)
   #endif
   #define Z_DIR_INIT SET_OUTPUT(Z_DIR_PIN)
@@ -212,7 +224,11 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
       #define X2_ENABLE_READ stepperX2.isEnabled()
     #else
       #define X2_ENABLE_INIT SET_OUTPUT(X2_ENABLE_PIN)
-      #define X2_ENABLE_WRITE(STATE) WRITE(X2_ENABLE_PIN,STATE)
+      #if ENABLED(SOFTWARE_DRIVER_ENABLE)
+        #define X2_ENABLE_WRITE(STATE) stepperX2.toff((STATE)==X2_ENABLE_ON ? stepperX2.savedToff() : 0)
+      #else
+        #define X2_ENABLE_WRITE(STATE) WRITE(X2_ENABLE_PIN,STATE)
+      #endif
       #define X2_ENABLE_READ READ(X2_ENABLE_PIN)
     #endif
     #define X2_DIR_INIT SET_OUTPUT(X2_DIR_PIN)
@@ -249,7 +265,11 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
       #define Y2_ENABLE_READ stepperY2.isEnabled()
     #else
       #define Y2_ENABLE_INIT SET_OUTPUT(Y2_ENABLE_PIN)
-      #define Y2_ENABLE_WRITE(STATE) WRITE(Y2_ENABLE_PIN,STATE)
+      #if ENABLED(SOFTWARE_DRIVER_ENABLE)
+        #define Y2_ENABLE_WRITE(STATE) stepperY2.toff((STATE)==Y2_ENABLE_ON ? stepperY2.savedToff() : 0)
+      #else
+        #define Y2_ENABLE_WRITE(STATE) WRITE(Y2_ENABLE_PIN,STATE)
+      #endif
       #define Y2_ENABLE_READ READ(Y2_ENABLE_PIN)
     #endif
     #define Y2_DIR_INIT SET_OUTPUT(Y2_DIR_PIN)
@@ -286,7 +306,11 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
       #define Z2_ENABLE_READ stepperZ2.isEnabled()
     #else
       #define Z2_ENABLE_INIT SET_OUTPUT(Z2_ENABLE_PIN)
-      #define Z2_ENABLE_WRITE(STATE) WRITE(Z2_ENABLE_PIN,STATE)
+      #if ENABLED(SOFTWARE_DRIVER_ENABLE)
+        #define Z2_ENABLE_WRITE(STATE) stepperZ2.toff((STATE)==Z2_ENABLE_ON ? stepperZ2.savedToff() : 0)
+      #else
+        #define Z2_ENABLE_WRITE(STATE) WRITE(Z2_ENABLE_PIN,STATE)
+      #endif
       #define Z2_ENABLE_READ READ(Z2_ENABLE_PIN)
     #endif
     #define Z2_DIR_INIT SET_OUTPUT(Z2_DIR_PIN)
@@ -359,7 +383,11 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
     #define E0_ENABLE_READ stepperE0.isEnabled()
   #else
     #define E0_ENABLE_INIT SET_OUTPUT(E0_ENABLE_PIN)
-    #define E0_ENABLE_WRITE(STATE) WRITE(E0_ENABLE_PIN,STATE)
+    #if ENABLED(SOFTWARE_DRIVER_ENABLE)
+      #define E0_ENABLE_WRITE(STATE) stepperE0.toff((STATE)==E0_ENABLE_ON ? stepperE0.savedToff() : 0)
+    #else
+      #define E0_ENABLE_WRITE(STATE) WRITE(E0_ENABLE_PIN,STATE)
+    #endif
     #define E0_ENABLE_READ READ(E0_ENABLE_PIN)
   #endif
   #define E0_DIR_INIT SET_OUTPUT(E0_DIR_PIN)
@@ -394,7 +422,11 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
     #define E1_ENABLE_READ stepperE1.isEnabled()
   #else
     #define E1_ENABLE_INIT SET_OUTPUT(E1_ENABLE_PIN)
-    #define E1_ENABLE_WRITE(STATE) WRITE(E1_ENABLE_PIN,STATE)
+    #if ENABLED(SOFTWARE_DRIVER_ENABLE)
+      #define E1_ENABLE_WRITE(STATE) stepperE1.toff((STATE)==E1_ENABLE_ON ? stepperE1.savedToff() : 0)
+    #else
+      #define E1_ENABLE_WRITE(STATE) WRITE(E1_ENABLE_PIN,STATE)
+    #endif
     #define E1_ENABLE_READ READ(E1_ENABLE_PIN)
   #endif
   #define E1_DIR_INIT SET_OUTPUT(E1_DIR_PIN)
@@ -429,7 +461,11 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
     #define E2_ENABLE_READ stepperE2.isEnabled()
   #else
     #define E2_ENABLE_INIT SET_OUTPUT(E2_ENABLE_PIN)
-    #define E2_ENABLE_WRITE(STATE) WRITE(E2_ENABLE_PIN,STATE)
+    #if ENABLED(SOFTWARE_DRIVER_ENABLE)
+      #define E2_ENABLE_WRITE(STATE) stepperE2.toff((STATE)==E2_ENABLE_ON ? stepperE2.savedToff() : 0)
+    #else
+      #define E2_ENABLE_WRITE(STATE) WRITE(E2_ENABLE_PIN,STATE)
+    #endif
     #define E2_ENABLE_READ READ(E2_ENABLE_PIN)
   #endif
   #define E2_DIR_INIT SET_OUTPUT(E2_DIR_PIN)
@@ -464,7 +500,11 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
     #define E3_ENABLE_READ stepperE3.isEnabled()
   #else
     #define E3_ENABLE_INIT SET_OUTPUT(E3_ENABLE_PIN)
-    #define E3_ENABLE_WRITE(STATE) WRITE(E3_ENABLE_PIN,STATE)
+    #if ENABLED(SOFTWARE_DRIVER_ENABLE)
+      #define E3_ENABLE_WRITE(STATE) stepperE3.toff((STATE)==E3_ENABLE_ON ? stepperE3.savedToff() : 0)
+    #else
+      #define E3_ENABLE_WRITE(STATE) WRITE(E3_ENABLE_PIN,STATE)
+    #endif
     #define E3_ENABLE_READ READ(E3_ENABLE_PIN)
   #endif
   #define E3_DIR_INIT SET_OUTPUT(E3_DIR_PIN)
@@ -499,7 +539,11 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
     #define E4_ENABLE_READ stepperE4.isEnabled()
   #else
     #define E4_ENABLE_INIT SET_OUTPUT(E4_ENABLE_PIN)
-    #define E4_ENABLE_WRITE(STATE) WRITE(E4_ENABLE_PIN,STATE)
+    #if ENABLED(SOFTWARE_DRIVER_ENABLE)
+      #define E4_ENABLE_WRITE(STATE) stepperE4.toff((STATE)==E4_ENABLE_ON ? stepperE4.savedToff() : 0)
+    #else
+      #define E4_ENABLE_WRITE(STATE) WRITE(E4_ENABLE_PIN,STATE)
+    #endif
     #define E4_ENABLE_READ READ(E4_ENABLE_PIN)
   #endif
   #define E4_DIR_INIT SET_OUTPUT(E4_DIR_PIN)

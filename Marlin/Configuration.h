@@ -598,6 +598,14 @@
 //#define E4_DRIVER_TYPE A4988
 //#define E5_DRIVER_TYPE A4988
 
+/**
+ * Software enable
+ *
+ * Use for drivers that do not use a dedicated enable pin, but rather handle the same
+ * function through a communication line such as SPI or UART.
+ */
+//#define SOFTWARE_DRIVER_ENABLE
+
 // Enable this feature if all enabled endstop pins are interrupt-capable.
 // This will remove the need to poll the interrupt pins, saving many CPU cycles.
 //#define ENDSTOP_INTERRUPTS_FEATURE
