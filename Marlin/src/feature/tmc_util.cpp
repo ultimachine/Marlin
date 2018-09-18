@@ -810,17 +810,29 @@
 #endif
 
 #if ENABLED(SENSORLESS_HOMING)
+  bool tmc_enable_sensorless_homing(TMC2130Stepper &st) {
+    bool stealthChop_was_enabled = st.en_pwm_mode();
 
-  void tmc_sensorless_homing(TMC2130Stepper &st, const bool enable/*=true*/) {
-    st.TCOOLTHRS(enable ? 0xFFFFF : 0);
-    #if ENABLED(STEALTHCHOP)
-      st.en_pwm_mode(!enable);
+    st.TCOOLTHRS(0xFFFFF);
+    #if STEALTHCHOP_ENABLED
+      st.en_pwm_mode(false);
     #endif
-    st.diag1_stall(enable ? 1 : 0);
+    st.diag1_stall(true);
+
+    return stealthChop_was_enabled;
   }
-  void tmc_sensorless_homing(TMC2660Stepper &st, const bool enable) {
+  void tmc_disable_sensorless_homing(TMC2130Stepper &st, const bool restore_stealth) {
+    st.TCOOLTHRS(0);
+    #if STEALTHCHOP_ENABLED
+      st.en_pwm_mode(restore_stealth);
+    #endif
+    st.diag1_stall(false);
+  }
+  bool tmc_enable_sensorless_homing(TMC2660Stepper) {
     // TODO
+    return false;
   }
+  void tmc_disable_sensorless_homing(TMC2660Stepper, const bool) {};
 
 #endif // SENSORLESS_HOMING
 
@@ -1029,15 +1041,12 @@ void test_tmc_connection() {
       #endif
     #endif
 
-    #if ENABLED(STEALTHCHOP)
+    #if ENABLED(XY_STEALTHCHOP)
       #if AXIS_HAS_STEALTHCHOP(X)
         stepperX.stored.stealthChop_enabled = get_stealthChop(stepperX);
       #endif
       #if AXIS_HAS_STEALTHCHOP(Y)
         stepperY.stored.stealthChop_enabled = get_stealthChop(stepperY);
-      #endif
-      #if AXIS_HAS_STEALTHCHOP(Z)
-        stepperZ.stored.stealthChop_enabled = get_stealthChop(stepperZ);
       #endif
       #if AXIS_HAS_STEALTHCHOP(X2)
         stepperX2.stored.stealthChop_enabled = get_stealthChop(stepperX2);
@@ -1045,12 +1054,21 @@ void test_tmc_connection() {
       #if AXIS_HAS_STEALTHCHOP(Y2)
         stepperY2.stored.stealthChop_enabled = get_stealthChop(stepperY2);
       #endif
+    #endif
+
+    #if ENABLED(Z_STEALTHCHOP)
+      #if AXIS_HAS_STEALTHCHOP(Z)
+        stepperZ.stored.stealthChop_enabled = get_stealthChop(stepperZ);
+      #endif
       #if AXIS_HAS_STEALTHCHOP(Z2)
         stepperZ2.stored.stealthChop_enabled = get_stealthChop(stepperZ2);
       #endif
       #if AXIS_HAS_STEALTHCHOP(Z3)
         stepperZ3.stored.stealthChop_enabled = get_stealthChop(stepperZ3);
       #endif
+    #endif
+
+    #if ENABLED(E_STEALTHCHOP)
       #if AXIS_HAS_STEALTHCHOP(E0)
         stepperE0.stored.stealthChop_enabled = get_stealthChop(stepperE0);
       #endif
@@ -1122,7 +1140,7 @@ void test_tmc_connection() {
       st.en_spreadCycle(!enable_stealthChop);
     }
   #endif
-  #if ENABLED(STEALTHCHOP)
+  #if STEALTHCHOP_ENABLED
     void set_tmc_stepping_mode() {
       SERIAL_ECHOPGM("set_tmc_stepping_mode=");
       SERIAL_ECHO_F(stepperX.stored.stealthChop_enabled, DEC);

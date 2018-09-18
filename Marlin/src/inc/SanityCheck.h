@@ -1707,7 +1707,7 @@ static_assert(X_MAX_LENGTH >= X_BED_SIZE && Y_MAX_LENGTH >= Y_BED_SIZE,
   // is necessary in order to reset the stallGuard indication between the initial movement of all three
   // towers to +Z and the individual homing of each tower. This restriction can be removed once a means of
   // clearing the stallGuard activated status is found.
-  #if ENABLED(DELTA) && DISABLED(STEALTHCHOP)
+  #if ENABLED(DELTA) && !STEALTHCHOP_ENABLED
     #error "SENSORLESS_HOMING on DELTA currently requires STEALTHCHOP."
   #elif X_SENSORLESS && X_HOME_DIR == -1 && (DISABLED(X_MIN_ENDSTOP_INVERTING) || DISABLED(ENDSTOPPULLUP_XMIN))
     #error "SENSORLESS_HOMING requires X_MIN_ENDSTOP_INVERTING and ENDSTOPPULLUP_XMIN when homing to X_MIN."
@@ -1735,7 +1735,7 @@ static_assert(X_MAX_LENGTH >= X_BED_SIZE && Y_MAX_LENGTH >= Y_BED_SIZE,
   #error "CoreYZ requires both Y and Z to use sensorless homing if either does."
 #endif
 
-#if ENABLED(HYBRID_THRESHOLD) && DISABLED(STEALTHCHOP)
+#if ENABLED(HYBRID_THRESHOLD) && !STEALTHCHOP_ENABLED
   #error "Enable STEALTHCHOP to use HYBRID_THRESHOLD."
 #endif
 #if ENABLED(TMC_Z_CALIBRATION) && !AXIS_IS_TMC(Z) && !AXIS_IS_TMC(Z2) && !AXIS_IS_TMC(Z3)
@@ -1745,7 +1745,7 @@ static_assert(X_MAX_LENGTH >= X_BED_SIZE && Y_MAX_LENGTH >= Y_BED_SIZE,
 #if ENABLED(SENSORLESS_HOMING) && !HAS_STALLGUARD
   #error "SENSORLESS_HOMING requires TMC2130 or TMC5160 or TMC2660 stepper drivers."
 #endif
-#if ENABLED(STEALTHCHOP) && !HAS_STEALTHCHOP
+#if STEALTHCHOP_ENABLED && !HAS_STEALTHCHOP
   #error "STEALTHCHOP requires TMC2130 or TMC5160 or TMC2208 stepper drivers."
  #endif
 

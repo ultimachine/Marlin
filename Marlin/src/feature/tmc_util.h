@@ -227,8 +227,11 @@ void test_tmc_connection();
  * Defined here because of limitations with templates and headers.
  */
 #if ENABLED(SENSORLESS_HOMING)
-  void tmc_sensorless_homing(TMC2130Stepper &st, const bool enable=true);
-  void tmc_sensorless_homing(TMC2660Stepper &st, const bool enable=true);
+  bool tmc_enable_sensorless_homing(TMC2130Stepper &st);
+  void tmc_disable_sensorless_homing(TMC2130Stepper &st, const bool restore_stealth);
+
+  bool tmc_enable_sensorless_homing(TMC2660Stepper);
+  void tmc_disable_sensorless_homing(TMC2660Stepper, const bool);
 #endif
 
 #if HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC2660) || HAS_DRIVER(TMC5160)

@@ -1864,7 +1864,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
       #if ENABLED(SENSORLESS_HOMING)
         MENU_ITEM(submenu, MSG_TMC_HOMING_THRS, lcd_tmc_homing_thrs);
       #endif
-      #if ENABLED(STEALTHCHOP)
+      #if STEALTHCHOP_ENABLED
         MENU_ITEM_EDIT_CALLBACK(bool, MSG_TMC_USE_STEALTHCHOP, &stepperX.stored.stealthChop_enabled, set_tmc_stepping_mode);
       #endif
       MENU_ITEM(submenu, MSG_TMC_STATUS, lcd_tmc_info_menu);

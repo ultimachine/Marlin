@@ -972,40 +972,82 @@ inline float get_homing_bump_feedrate(const AxisEnum axis) {
 }
 
 #if ENABLED(SENSORLESS_HOMING)
+  // Track enabled status of stealthChop and only re-enable where applicable
+  struct sensorless_t {
+    bool x, y, z;
+  };
 
   /**
    * Set sensorless homing if the axis has it, accounting for Core Kinematics.
    */
-  void sensorless_homing_per_axis(const AxisEnum axis, const bool enable/*=true*/) {
+  sensorless_t start_sensorless_homing_per_axis(const AxisEnum axis) {
+    sensorless_t stealth_states{false, false, false};
+
     switch (axis) {
       default: break;
       #if X_SENSORLESS
         case X_AXIS:
-          tmc_sensorless_homing(stepperX, enable);
+          stealth_states.x = tmc_enable_sensorless_homing(stepperX);
           #if CORE_IS_XY && Y_SENSORLESS
-            tmc_sensorless_homing(stepperY, enable);
+            stealth_states.y = tmc_enable_sensorless_homing(stepperY);
           #elif CORE_IS_XZ && Z_SENSORLESS
-            tmc_sensorless_homing(stepperZ, enable);
+            stealth_states.z = tmc_enable_sensorless_homing(stepperZ);
           #endif
           break;
       #endif
       #if Y_SENSORLESS
         case Y_AXIS:
-          tmc_sensorless_homing(stepperY, enable);
+          stealth_states.y = tmc_enable_sensorless_homing(stepperY);
           #if CORE_IS_XY && X_SENSORLESS
-            tmc_sensorless_homing(stepperX, enable);
+            stealth_states.x = tmc_enable_sensorless_homing(stepperX);
           #elif CORE_IS_YZ && Z_SENSORLESS
-            tmc_sensorless_homing(stepperZ, enable);
+            stealth_states.z = tmc_enable_sensorless_homing(stepperZ);
           #endif
           break;
       #endif
       #if Z_SENSORLESS
         case Z_AXIS:
-          tmc_sensorless_homing(stepperZ, enable);
+          stealth_states.z = tmc_enable_sensorless_homing(stepperZ);
           #if CORE_IS_XZ && X_SENSORLESS
-            tmc_sensorless_homing(stepperX, enable);
+            stealth_states.x = tmc_enable_sensorless_homing(stepperX);
           #elif CORE_IS_YZ && Y_SENSORLESS
-            tmc_sensorless_homing(stepperY, enable);
+            stealth_states.y = tmc_enable_sensorless_homing(stepperY);
+          #endif
+          break;
+      #endif
+    }
+    return stealth_states;
+  }
+  void end_sensorless_homing_per_axis(const AxisEnum axis, sensorless_t enable_stealth) {
+    switch (axis) {
+      default: break;
+      #if X_SENSORLESS
+        case X_AXIS:
+           tmc_disable_sensorless_homing(stepperX, enable_stealth.x);
+          #if CORE_IS_XY && Y_SENSORLESS
+             tmc_disable_sensorless_homing(stepperY, enable_stealth.y);
+          #elif CORE_IS_XZ && Z_SENSORLESS
+             tmc_disable_sensorless_homing(stepperZ, enable_stealth.z);
+          #endif
+          break;
+      #endif
+      #if Y_SENSORLESS
+        case Y_AXIS:
+           tmc_disable_sensorless_homing(stepperY, enable_stealth.y);
+          #if CORE_IS_XY && X_SENSORLESS
+             tmc_disable_sensorless_homing(stepperX, enable_stealth.x);
+          #elif CORE_IS_YZ && Z_SENSORLESS
+             tmc_disable_sensorless_homing(stepperZ, enable_stealth.z);
+          #endif
+          break;
+      #endif
+      #if Z_SENSORLESS
+        case Z_AXIS:
+           tmc_disable_sensorless_homing(stepperZ, enable_stealth.z);
+          #if CORE_IS_XZ && X_SENSORLESS
+             tmc_disable_sensorless_homing(stepperX, enable_stealth.x);
+          #elif CORE_IS_YZ && Y_SENSORLESS
+             tmc_disable_sensorless_homing(stepperY, enable_stealth.y);
           #endif
           break;
       #endif
@@ -1052,6 +1094,10 @@ void do_homing_move(const AxisEnum axis, const float distance, const float fr_mm
     home_dir(axis);
   const bool is_home_dir = (axis_home_dir > 0) == (distance > 0);
 
+  #if ENABLED(SENSORLESS_HOMING)
+    sensorless_t stealth_states;
+  #endif
+
   if (is_home_dir) {
 
     #if HOMING_Z_WITH_PROBE && QUIET_PROBING
@@ -1060,7 +1106,7 @@ void do_homing_move(const AxisEnum axis, const float distance, const float fr_mm
 
     // Disable stealthChop if used. Enable diag1 pin on driver.
     #if ENABLED(SENSORLESS_HOMING)
-      sensorless_homing_per_axis(axis);
+      stealth_states = start_sensorless_homing_per_axis(axis);
     #endif
   }
 
@@ -1101,7 +1147,7 @@ void do_homing_move(const AxisEnum axis, const float distance, const float fr_mm
 
     // Re-enable stealthChop if used. Disable diag1 pin on driver.
     #if ENABLED(SENSORLESS_HOMING)
-      sensorless_homing_per_axis(axis, false);
+      end_sensorless_homing_per_axis(axis, stealth_states);
     #endif
   }
 
