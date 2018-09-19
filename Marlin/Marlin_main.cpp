@@ -4283,7 +4283,7 @@ inline void gcode_G28(const bool always_home_all) {
   #endif // !DELTA (gcode_G28)
 
   #if ENABLED(ULTRA_LCD) && defined(LULZBOT_HOMING_MESSAGE_WORKAROUND)
-    lcd_setstatusPGM(PSTR(_UxGT("")));
+    lcd_reset_status();
   #endif
 
   LULZBOT_BACKOFF_AFTER_HOME // This must happen before endstops.not_homing()
@@ -7140,7 +7140,7 @@ inline void gcode_M17() {
     #endif
 
     #if ENABLED(ULTRA_LCD) && defined(LULZBOT_PAUSED_MESSAGE_WORKAROUND)
-      lcd_setstatusPGM(PSTR(_UxGT("")));
+      lcd_reset_status();
     #endif
   }
 
