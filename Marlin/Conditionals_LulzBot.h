@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".17" // Change this with each update
+#define LULZBOT_FW_VERSION ".18" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -123,7 +123,6 @@
     #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
     #define LULZBOT_USE_TMC_STEALTHCHOP_Z
-    //#define LULZBOT_USE_TMC_HYBRID_THRESHOLD
     #define LULZBOT_USE_Z_BELT
     #define LULZBOT_USE_Z_BACKLASH_COMPENSATION
     #define LULZBOT_BAUDRATE 250000
@@ -131,7 +130,6 @@
     #define LULZBOT_USE_32_MICROSTEPS_ON_Z
     #define LULZBOT_UUID "e5502411-d46d-421d-ba3a-a20126d7930f"
     #define LULZBOT_LIGHTWEIGHT_UI
-    #define LULZBOT_USE_EXPERIMENTAL_FEATURES
 #endif
 
 /****************************** DEBUGGING OPTIONS *******************************/
@@ -188,11 +186,14 @@
 /************************* EXPERIMENTAL FEATURES ******************************/
 
 #if defined(LULZBOT_USE_EXPERIMENTAL_FEATURES)
-    // Enable linear advance, but leave K at zero so
-    // it is not used unless the user requests it.
-    #define LULZBOT_LIN_ADVANCE
-    #define LULZBOT_LIN_ADVANCE_K 0
 #endif
+
+/**************************** LINEAR ADVANCE **********************************/
+
+// Enable linear advance, but leave K at zero so
+// it is not used unless the user requests it.
+#define LULZBOT_LIN_ADVANCE
+#define LULZBOT_LIN_ADVANCE_K 0
 
 /******************** MOTHERBOARD AND PIN CONFIGURATION ***********************/
 
