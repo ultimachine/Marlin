@@ -129,6 +129,7 @@ class TMCMarlin : public TMC, public TMCStorage {
         uint8_t saved_toff = 0;
     #endif
 };
+/*
 template<>
 class TMCMarlin<TMC2208Stepper> : public TMC2208Stepper, public TMCStorage {
   void abstract() override {};
@@ -151,6 +152,7 @@ class TMCMarlin<TMC2208Stepper> : public TMC2208Stepper, public TMCStorage {
       TMC2208Stepper::rms_current(mA, mult);
     }
 };
+*/
 
 constexpr uint16_t _tmc_thrs(const uint16_t msteps, const int32_t thrs, const uint32_t spmm) {
   return 12650000UL * msteps / (256 * thrs * spmm);
