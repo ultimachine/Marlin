@@ -110,16 +110,29 @@
 
 //
 
+#define BOB_EN   94 
+//PB1
+#define BOB_DIR  95 
+//REFR PB0
+#define BOB_STEP 93 
+//REFL PB2
+#define BOB_CS   77 
+//PA28
+
 // Steppers
 //
-#define X_STEP_PIN         38   
+#define X_STEP_PIN         BOB_STEP
+//38   
 // PC6 X-STEP *
-#define X_DIR_PIN          37   
+#define X_DIR_PIN          BOB_DIR
+//37   
 // PC5 X-DIR *
-#define X_ENABLE_PIN       41   
+#define X_ENABLE_PIN       BOB_EN
+//41   
 // PC9 EN1
 #ifndef X_CS_PIN
-  #define X_CS_PIN         39   
+  #define X_CS_PIN         BOB_CS
+  //39   
 // PC7 X_nCS
 #endif
 
