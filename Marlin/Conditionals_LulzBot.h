@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".20" // Change this with each update
+#define LULZBOT_FW_VERSION ".21" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1476,26 +1476,32 @@
 
     #if defined(LULZBOT_USE_Z_BELT)
         #define LULZBOT_REWIPE_RECOVER_GCODE \
-            LULZBOT_MENU_AXIS_LEVELING_GCODE "\n" /* Level X axis */ \
+            LULZBOT_MENU_AXIS_LEVELING_GCODE      /* Level X axis */ \
+            "M109 R170\n"                         /* Setting wipe temp and wait */ \
             "M117 Rewiping nozzle\n"              /* Status message */ \
             "G12 P0 S12 T0\n"                     /* Wipe nozzle */ \
+            "M109 R160\n"                         /* Setting probe temp and wait*/ \
             "M117 Probing bed"                    /* Status message */
 
     #elif defined(LULZBOT_USE_PRE_GLADIOLA_G29_WORKAROUND)
         #define LULZBOT_REWIPE_RECOVER_GCODE \
+            "M109 R170\n"                         /* Setting wipe temp and wait */ \
             "M117 Rewiping nozzle\n"              /* Status message */ \
             "M121\n"                              /* Turn off endstops so we can move */ \
             "G0 Z10\n"                            /* Raise nozzle */ \
             "G28 X0 Y0\n"                         /* G29 on older minis shifts the coordinate system */ \
             "G12 P0 S12 T0\n"                     /* Wipe nozzle */ \
             "M120\n"                              /* Restore endstops */ \
+            "M109 R160\n"                         /* Setting probing temperature */ \
             "M117 Probing bed"                    /* Status message */
 
     #else
         #define LULZBOT_REWIPE_RECOVER_GCODE \
+            "M109 R170\n"                         /* Setting wipe temperature and wait */ \
             "M117 Rewiping nozzle\n"              /* Status message */ \
             "G0 Z10\n"                            /* Raise nozzle */ \
             "G12 P0 S12 T0\n"                     /* Wipe nozzle */ \
+            "M109 R160\n"                         /* Set probing temperature */ \
             "M117 Probing bed"                    /* Status message */
     #endif
 
