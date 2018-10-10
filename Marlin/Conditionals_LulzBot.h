@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".22" // Change this with each update
+#define LULZBOT_FW_VERSION ".23" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1474,26 +1474,42 @@
         #define LULZBOT_Z_PROBE_LOW_POINT   -4 // Limit on pushing into the bed
     #endif
 
+    #define LULZBOT_ENHANCED_WIPE
+
+    #if defined(LULZBOT_ENHANCED_WIPE)
+        #define LULZBOT_WIPE_SEQUENCE_GCODE \
+            "M109 R170\n"                         /* Wait for wipe temp */ \
+            "M117 Rewiping nozzle\n"              /* Status message */ \
+            "G12 P0 S4 T0\n"                      /* Wipe nozzle while hot */ \
+            "M104 S160\n"                         /* Drop to probe temp during wipe */ \
+            "M106 S255\n"                         /* Turn on fan to aid with cooling */ \
+            "G4 S5\n"                             /* Wait for temperature to drop */ \
+            "G12 P0 S4 T0\n"                      /* Wipe nozzle while cooling */ \
+            "G4 S5\n"                             /* Wait for temperature to drop */ \
+            "G12 P0 S4 T0\n"                      /* Wipe nozzle while cooling */ \
+            "M107\n"                              /* Turn off fan */
+    #else
+        #define LULZBOT_WIPE_SEQUENCE_GCODE \
+            "M117 Rewiping nozzle\n"              /* Status message */ \
+            "G12 P0 S12 T0\n"                     /* Wipe nozzle */
+    #endif
+
     #if defined(LULZBOT_USE_Z_BELT)
         #define LULZBOT_REWIPE_RECOVER_GCODE \
-            "M104 S170\n"                         /* Start heating to wipe temp */ \
+            "M104 S170\n"                         /* Begin heating to wipe temp */ \
             LULZBOT_MENU_AXIS_LEVELING_GCODE      /* Level X axis */ \
-            "M109 R170\n"                         /* Setting wipe temp and wait */ \
-            "M117 Rewiping nozzle\n"              /* Status message */ \
-            "G12 P0 S12 T0\n"                     /* Wipe nozzle */ \
-            "M109 R160\n"                         /* Setting probe temp and wait*/ \
+            LULZBOT_WIPE_SEQUENCE_GCODE           /* Perform wipe sequence */ \
             "M117 Probing bed"                    /* Status message */
 
     #elif defined(LULZBOT_USE_PRE_GLADIOLA_G29_WORKAROUND)
         #define LULZBOT_REWIPE_RECOVER_GCODE \
-            "M109 R170\n"                         /* Setting wipe temp and wait */ \
+            "M104 S170\n"                         /* Begin heating to wipe temp */ \
             "M117 Rewiping nozzle\n"              /* Status message */ \
             "M121\n"                              /* Turn off endstops so we can move */ \
             "G0 Z10\n"                            /* Raise nozzle */ \
             "G28 X0 Y0\n"                         /* G29 on older minis shifts the coordinate system */ \
-            "G12 P0 S12 T0\n"                     /* Wipe nozzle */ \
+            LULZBOT_WIPE_SEQUENCE_GCODE           /* Perform wipe sequence */ \
             "M120\n"                              /* Restore endstops */ \
-            "M109 R160\n"                         /* Setting probing temperature */ \
             "M117 Probing bed"                    /* Status message */
 
     #else
@@ -1501,8 +1517,7 @@
             "M109 R170\n"                         /* Setting wipe temperature and wait */ \
             "M117 Rewiping nozzle\n"              /* Status message */ \
             "G0 Z10\n"                            /* Raise nozzle */ \
-            "G12 P0 S12 T0\n"                     /* Wipe nozzle */ \
-            "M109 R160\n"                         /* Set probing temperature */ \
+            LULZBOT_WIPE_SEQUENCE_GCODE           /* Perform wipe sequence */ \
             "M117 Probing bed"                    /* Status message */
     #endif
 
