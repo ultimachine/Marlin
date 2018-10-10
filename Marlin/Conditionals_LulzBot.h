@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".21" // Change this with each update
+#define LULZBOT_FW_VERSION ".22" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -558,7 +558,7 @@
         "M211 S1\n"              /* Turn soft endstops back on */ \
         "M400\n"                 /* Finish moves */ \
         "G28\n"                  /* Rehome */ \
-        "M117 Leveling done."    /* Set LCD status */
+        "M117 Leveling done.\n"  /* Set LCD status */
 #endif
 
 #if defined(LULZBOT_USE_Z_SCREW)
@@ -1476,6 +1476,7 @@
 
     #if defined(LULZBOT_USE_Z_BELT)
         #define LULZBOT_REWIPE_RECOVER_GCODE \
+            "M104 S170\n"                         /* Start heating to wipe temp */ \
             LULZBOT_MENU_AXIS_LEVELING_GCODE      /* Level X axis */ \
             "M109 R170\n"                         /* Setting wipe temp and wait */ \
             "M117 Rewiping nozzle\n"              /* Status message */ \
