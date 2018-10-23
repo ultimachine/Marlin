@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".23" // Change this with each update
+#define LULZBOT_FW_VERSION ".24" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -25,10 +25,10 @@
     !defined(TOOLHEAD_Gladiola_SingleExtruder) && \
     !defined(TOOLHEAD_Albatross_Flexystruder) && \
     !defined(TOOLHEAD_Finch_Aerostruder) && \
-    !defined(TOOLHEAD_CecropiaSilk_AerostruderV2) && \
-    !defined(TOOLHEAD_Achemon_AeroMicroV2) && \
-    !defined(TOOLHEAD_BandedTiger_AeroMacroV2) && \
-    !defined(TOOLHEAD_DingyCutworm_MoarstruderV2) && \
+    !defined(TOOLHEAD_CecropiaSilk_SingleExtruderAeroV2) && \
+    !defined(TOOLHEAD_AchemonSphinx_SmallLayer) && \
+    !defined(TOOLHEAD_BandedTiger_HardenedSteel) && \
+    !defined(TOOLHEAD_DingyCutworm_HardenedSteelPlus) && \
     !defined(TOOLHEAD_Tilapia_SingleExtruder) && \
     !defined(TOOLHEAD_Kanyu_Flexystruder) && \
     !defined(TOOLHEAD_Opah_Moarstruder) && \
@@ -576,7 +576,7 @@
 
 /**************************** MINI TOOLHEADS ***********************************/
 
-#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aerostruder) || defined(TOOLHEAD_CecropiaSilk_AerostruderV2) || defined(TOOLHEAD_Achemon_AeroMicroV2) || defined(TOOLHEAD_BandedTiger_AeroMacroV2) || defined(TOOLHEAD_DingyCutworm_MoarstruderV2)
+#if defined(TOOLHEAD_Gladiola_SingleExtruder) || defined(TOOLHEAD_Albatross_Flexystruder) || defined(TOOLHEAD_Finch_Aerostruder) || defined(TOOLHEAD_CecropiaSilk_SingleExtruderAeroV2) || defined(TOOLHEAD_AchemonSphinx_SmallLayer) || defined(TOOLHEAD_BandedTiger_HardenedSteel) || defined(TOOLHEAD_DingyCutworm_HardenedSteelPlus)
 
     #define LULZBOT_EXTRUDERS                  1
     #define LULZBOT_TOOLHEAD_X_MAX_ADJ         0
@@ -627,20 +627,20 @@
 
 /******************************** Mini 2 / TAZ 7 TOOLHEADS *********************/
 
-#if defined(TOOLHEAD_CecropiaSilk_AerostruderV2)
-    #define LULZBOT_LCD_TOOLHEAD_NAME              "Aerostruder v2"
+#if defined(TOOLHEAD_CecropiaSilk_SingleExtruderAeroV2)
+    #define LULZBOT_LCD_TOOLHEAD_NAME              "SE 0.5mm AeroV2"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_M115_EXTRUDER_TYPE             "AerostruderV2"
+    #define LULZBOT_M115_EXTRUDER_TYPE             "SE | 0.5 mm (Aero v2)"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero_V6
     #define LULZBOT_E_STEPS                        420
     #define LULZBOT_MAY_USE_V2_ADAPTER
-#endif /* TOOLHEAD_CecropiaSilk_AerostruderV2 */
+#endif /* TOOLHEAD_CecropiaSilk_SingleExtruderAeroV2 */
 
-#if defined(TOOLHEAD_Achemon_AeroMicroV2)
-    #define LULZBOT_LCD_TOOLHEAD_NAME              "Aero v2 Micro"
+#if defined(TOOLHEAD_AchemonSphinx_SmallLayer)
+    #define LULZBOT_LCD_TOOLHEAD_NAME              "SL 0.25mm Micro"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_M115_EXTRUDER_TYPE             "AerostruderMicro"
+    #define LULZBOT_M115_EXTRUDER_TYPE             "SL | 0.25 mm (Micro)"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero_V6
     #define LULZBOT_E_STEPS                        420
@@ -648,27 +648,27 @@
     #undef  LULZBOT_MANUAL_FEEDRATE_E
     #define LULZBOT_MANUAL_FEEDRATE_E               0.7 // mm/sec
     #define LULZBOT_MAY_USE_V2_ADAPTER
-#endif /* TOOLHEAD_Achemon_AeroMicroV2 */
+#endif /* TOOLHEAD_AchemonSphinx_SmallLayer */
 
-#if defined(TOOLHEAD_BandedTiger_AeroMacroV2)
-    #define LULZBOT_LCD_TOOLHEAD_NAME              "Aero v2 Macro"
+#if defined(TOOLHEAD_BandedTiger_HardenedSteel)
+    #define LULZBOT_LCD_TOOLHEAD_NAME              "HS 0.8mm"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_M115_EXTRUDER_TYPE             "AerostruderMacro"
+    #define LULZBOT_M115_EXTRUDER_TYPE             "HS | 0.8 mm"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero_Volcano
     #define LULZBOT_E_STEPS                        420
     #define LULZBOT_MAY_USE_V2_ADAPTER
-#endif /* TOOLHEAD_BandedTiger_AeroMacroV2 */
+#endif /* TOOLHEAD_BandedTiger_HardenedSteel */
 
-#if defined(TOOLHEAD_DingyCutworm_MoarstruderV2)
-    #define LULZBOT_LCD_TOOLHEAD_NAME              "Aero v2 Moar"
+#if defined(TOOLHEAD_DingyCutworm_HardenedSteelPlus)
+    #define LULZBOT_LCD_TOOLHEAD_NAME              "HS+ 1.2mm"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_M115_EXTRUDER_TYPE             "AerostruderMoar"
+    #define LULZBOT_M115_EXTRUDER_TYPE             "HS+ | 1.2 mm"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero_Volcano
     #define LULZBOT_E_STEPS                        420
     #define LULZBOT_MAY_USE_V2_ADAPTER
-#endif /* TOOLHEAD_DingyCutworm_MoarstruderV2 */
+#endif /* TOOLHEAD_DingyCutworm_HardenedSteelPlus */
 
 // Using the V2 toolheads on the TAZ and older Minis requires an
 // adapter plate that shifts the coordinate system
@@ -1773,8 +1773,8 @@
         #define LULZBOT_DEFAULT_ACCELERATION          500
         #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION   500
     #else
-        #define LULZBOT_DEFAULT_ACCELERATION          2000
-        #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION   2000
+        #define LULZBOT_DEFAULT_ACCELERATION          1000
+        #define LULZBOT_DEFAULT_TRAVEL_ACCELERATION   1000
     #endif
 
     #define LULZBOT_DEFAULT_XJERK                 12.0
