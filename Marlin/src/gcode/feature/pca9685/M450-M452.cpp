@@ -19,7 +19,7 @@ void pca9685_init() {
 	SERIAL_ECHOLNPGM("LED driver init");
 	pwm.begin();
 	pwm.setPWMFreq(1526);  // This is the maximum PWM frequency
-	  for(int i=1;i<=11;i++) //Cycle through channels 1-11
+	  for(int i=1;i<=15;i++) //Cycle through channels 1-15
 		pwm.setPin(i, 0, 0);
 }
 
@@ -44,7 +44,7 @@ void GcodeSuite::M452() { //M452 P<channel> S<dutycycle>  // Set LED Driver duty
 	  int channel = parser.value_byte();
 	  pwm.setPin(channel, dutycycle, 0);
 	} else {
-	  for(int i=1;i<=11;i++) //Cycle through channels 1-11
+	  for(int i=1;i<=15;i++) //Cycle through channels 1-15
 		pwm.setPin(i, dutycycle, 0);
 	}
 }
