@@ -46,6 +46,8 @@
 // Defines
 // --------------------------------------------------------------------------
 
+#define HAL_SERVO_LIB Servo
+
 #if SERIAL_PORT == -1
   #define MYSERIAL SerialUSB
 #elif SERIAL_PORT == 0
