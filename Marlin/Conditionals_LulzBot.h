@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".25" // Change this with each update
+#define LULZBOT_FW_VERSION ".26" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1952,7 +1952,7 @@
     #define WELCOME_MSG _UxGT(LULZBOT_LCD_MACHINE_NAME " ready.")
     #define LULZBOT_STATUS_EXPIRE_SECONDS 0
 #else
-    #define WELCOME_MSG _UxGT("Lulzbot " LULZBOT_LCD_MACHINE_NAME " ready.")
+    #define WELCOME_MSG _UxGT("LulzBot " LULZBOT_LCD_MACHINE_NAME " ready.")
 #endif
 
 #if defined(LULZBOT_PRINTCOUNTER)
@@ -1966,15 +1966,16 @@
     do { \
         u8g.drawBitmapP(0,0,CEILING(CUSTOM_BOOTSCREEN_BMPWIDTH, 8),CUSTOM_BOOTSCREEN_BMPHEIGHT,custom_start_bmp); \
         u8g.setFont(u8g_font_6x13); \
-        u8g.drawStr(61,17,LULZBOT_LCD_MACHINE_NAME); \
+        u8g.drawStr(57,17,LULZBOT_LCD_MACHINE_NAME); \
         u8g.setFont(u8g_font_04b_03); \
-        u8g.drawStr(62,28,LULZBOT_LCD_TOOLHEAD_NAME); \
+        u8g.drawStr(58,28,LULZBOT_LCD_TOOLHEAD_NAME); \
         u8g.setFont(u8g_font_5x8); \
-        u8g.drawStr(63,41,"LulzBot.com"); \
+        u8g.drawStr(59,41,"LulzBot.com"); \
         u8g.setFont(u8g_font_5x8); \
-        u8g.drawStr(62,62,"v"); \
-        u8g.drawStr(67,62,SHORT_BUILD_VERSION LULZBOT_FW_VERSION); \
-    } while( u8g.nextPage() );
+        u8g.drawStr(61,62,"v"); \
+        u8g.drawStr(66,62,SHORT_BUILD_VERSION LULZBOT_FW_VERSION); \
+    } while( u8g.nextPage() ); \
+    u8g.setFont(FONT_MENU_NAME);
 
 /*************************** Z-OFFSET AUTO-SAVE  ********************************/
 
