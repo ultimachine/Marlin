@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".24" // Change this with each update
+#define LULZBOT_FW_VERSION ".25" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -630,7 +630,7 @@
 #if defined(TOOLHEAD_CecropiaSilk_SingleExtruderAeroV2)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "SE 0.5mm AeroV2"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_M115_EXTRUDER_TYPE             "SE | 0.5 mm (Aero v2)"
+    #define LULZBOT_M115_EXTRUDER_TYPE             "SingleExtruderAeroV2"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero_V6
     #define LULZBOT_E_STEPS                        420
@@ -640,7 +640,7 @@
 #if defined(TOOLHEAD_AchemonSphinx_SmallLayer)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "SL 0.25mm Micro"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_M115_EXTRUDER_TYPE             "SL | 0.25 mm (Micro)"
+    #define LULZBOT_M115_EXTRUDER_TYPE             "SmallLayer"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero_V6
     #define LULZBOT_E_STEPS                        420
@@ -653,7 +653,7 @@
 #if defined(TOOLHEAD_BandedTiger_HardenedSteel)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "HS 0.8mm"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_M115_EXTRUDER_TYPE             "HS | 0.8 mm"
+    #define LULZBOT_M115_EXTRUDER_TYPE             "HardenedSteel"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero_Volcano
     #define LULZBOT_E_STEPS                        420
@@ -663,7 +663,7 @@
 #if defined(TOOLHEAD_DingyCutworm_HardenedSteelPlus)
     #define LULZBOT_LCD_TOOLHEAD_NAME              "HS+ 1.2mm"
 //          16 chars max                            ^^^^^^^^^^^^^^^
-    #define LULZBOT_M115_EXTRUDER_TYPE             "HS+ | 1.2 mm"
+    #define LULZBOT_M115_EXTRUDER_TYPE             "HardenedSteelPlus"
     #define LULZBOT_X_MAX_ENDSTOP_INVERTING        LULZBOT_NORMALLY_CLOSED_ENDSTOP
     #define LULZBOT_E3D_Titan_Aero_Volcano
     #define LULZBOT_E_STEPS                        420
