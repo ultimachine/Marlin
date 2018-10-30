@@ -87,7 +87,7 @@ void GcodeSuite::M482() {
   SERIAL_ECHOLN( thermalManager.analog2temp(OVERSAMPLENR * analogRead(CURRAX_COOLANT_TEMP_PIN),0) );
 
   SERIAL_ECHOPGM("lcd_temp: ");
-  SERIAL_ECHOLN( thermalManager.analog2temp(OVERSAMPLENR * analogRead(CURRAX_LCD_TEMP_PIN),0) );
+  SERIAL_ECHOLN( thermalManager.analog2tempBed(OVERSAMPLENR * analogRead(CURRAX_LCD_TEMP_PIN)) );
 
   SERIAL_ECHOPGM("resin_temp: ");
   SERIAL_ECHOLN( thermalManager.analog2temp(OVERSAMPLENR * analogRead(CURRAX_RESIN_TEMP_PIN),0) );
