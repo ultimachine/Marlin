@@ -83,20 +83,30 @@ void GcodeSuite::M482() {
     # CURRAX_PUMP_TEMP_PIN
     # CURRAX_CASE_TEMP_PIN
   */
+#if PIN_EXISTS(CURRAX_COOLANT_TEMP)
   SERIAL_ECHOPGM("coolant_temp: ");
   SERIAL_ECHOLN( thermalManager.analog2temp(OVERSAMPLENR * analogRead(CURRAX_COOLANT_TEMP_PIN),0) );
+#endif
 
+#if PIN_EXISTS(CURRAX_LCD_TEMP)
   SERIAL_ECHOPGM("lcd_temp: ");
   SERIAL_ECHOLN( thermalManager.analog2tempBed(OVERSAMPLENR * analogRead(CURRAX_LCD_TEMP_PIN)) );
+#endif
 
+#if PIN_EXISTS(CURRAX_RESIN_TEMP)
   SERIAL_ECHOPGM("resin_temp: ");
   SERIAL_ECHOLN( thermalManager.analog2temp(OVERSAMPLENR * analogRead(CURRAX_RESIN_TEMP_PIN),0) );
+#endif
 
+#if PIN_EXISTS(CURRAX_PUMP_TEMP)
   SERIAL_ECHOPGM("pump_temp: ");
   SERIAL_ECHOLN( thermalManager.analog2temp(OVERSAMPLENR * analogRead(CURRAX_PUMP_TEMP_PIN),0) );
+#endif
 
+#if PIN_EXISTS(CURRAX_CASE_TEMP)
   SERIAL_ECHOPGM("case_temp: ");
   SERIAL_ECHOLN( thermalManager.analog2temp(OVERSAMPLENR * analogRead(CURRAX_CASE_TEMP_PIN),0) );
+#endif
 }
 
 void GcodeSuite::M483() {
