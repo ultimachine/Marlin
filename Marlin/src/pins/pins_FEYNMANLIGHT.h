@@ -25,33 +25,35 @@
 #undef E1_MS2_PIN
 
 #define CAB_LED_PIN         28
-#define X_STEP_PIN          -1 //PB11 S2_STEP
-#define X_DIR_PIN           -1 //PB10 S2_DIR
-#define X_ENABLE_PIN        -1
-#define X_MIN_PIN           -1
-#define X_MAX_PIN           -1   //J12 PA25
-#define X_TMC2130_CS        -1 //PA30 S2_nCS
-#define X_CS_PIN            -1 //PA30 S2_nCS
+#define SERVO0_PIN        	 1 //PA1 SERVO_OUT (Pump Servo J24)
 
-#define Y_STEP_PIN          43 //PB11 S2_STEP
-#define Y_DIR_PIN           42 //PB10 S2_DIR
+#define X_STEP_PIN          43 //PB11 S2_STEP
+#define X_DIR_PIN           42 //PB10 S2_DIR
+#define X_ENABLE_PIN         5 //PA5 STEP_EN
+#define X_MIN_PIN           33 //PB1  ENDSTOP2 (X Endstop J15)
+#define X_MAX_PIN           27 //PA27 ENDSTOP1 (Z2 Endstop J13)
+#define X_TMC2130_CS        30 //PA30 S2_nCS
+#define X_CS_PIN            30 //PA30 S2_nCS
+
+#define Y_STEP_PIN          -1 
+#define Y_DIR_PIN           -1 
 #define Y_ENABLE_PIN        -1
 #define Y_MIN_PIN           -1
 #define Y_MAX_PIN           -1
-#define Y_TMC2130_CS        30 //PA30 S2_nCS
-#define Y_CS_PIN            30 //PA30 S2_nCS
+#define Y_TMC2130_CS        -1
+#define Y_CS_PIN            -1
 
-#define Z_STEP_PIN         23 //PA23 S0_STEP
+#define Z_STEP_PIN         34 //PB2  S0_STEP
 #define Z_DIR_PIN          46 //PB14 S0_DIR
 #define Z_ENABLE_PIN        5 //PA5 STEP_EN
-#define Z_MIN_PIN          27 //PA27 ENDSTOP1 (Z Endstop)
-#define Z_MAX_PIN          -1
+#define Z_MIN_PIN          25 //PA25 ENDSTOP0 (Z1 Endstop J12)
+#define Z_MAX_PIN          26 //PA26 ENDSTOP3 (G38.3 Endstop J17)
 #define Z_TMC2130_CS       45 //PB13 S0_nCS
 #define Z_CS_PIN           45 //PB13 S0_nCS
 
 #define E0_STEP_PIN        -1 //PB11 S2_STEP
 #define E0_DIR_PIN         -1 //PB10 S2_DIR
-#define E0_ENABLE_PIN       1 //PA1 CAB_LED //TODO allow and test a -1 value. Need to define this pin for now to prevent compiler a error.
+#define E0_ENABLE_PIN      -1
 #define E0_TMC2130_CS      -1 //PA30 S2_nCS
 #define E0_CS_PIN          -1 //PA30 S2_nCS
 
@@ -82,24 +84,24 @@
 
 #define LED_PIN            -1
 #define PS_ON_PIN          -1
-//#define Z_PROBE_PIN      -1
+//#define Z_PROBE_PIN      26 //PA26 ENDSTOP3 (G38.3 Endstop J17)
 //#define CONTROLLERFAN_PIN  -1 //Marlin1
 #define CONTROLLER_FAN_PIN -1 //Marlin2.0
 
 #define FAN_PIN             -1 //15 //PA15 S_FAN_12V //"You cannot set E0_AUTO_FAN_PIN equal to FAN_PIN."
 #define FAN2_PIN            -1
 
-#define HEATER_0_PIN        16
+#define HEATER_0_PIN        40 //PB8 FCOM4_TX (Dummy Assignment)
 #define HEATER_1_PIN        -1
 #define HEATER_2_PIN        -1
 #define HEATER_BED_PIN      38 //PB6 SWDIO, Used as a dummy pin to prevent compile error if BED thermistor is used. It will not actually output unless reconfigured in CCFG_SYSIO.
 
 
 
-#define TEMP_0_PIN          17
-#define TEMP_1_PIN          -1
-#define TEMP_BED_PIN        18
-#define TEMP_2_PIN          -1
+#define TEMP_0_PIN          18 //PA18 RESIN_THERM (Vat Thermistor J11)
+#define TEMP_1_PIN          20 //PA20 AIR_THERM (Internal Air Temp J16)
+#define TEMP_BED_PIN        32 //PB0 ARRAY_THERM (H2O Temp J14)
+#define TEMP_2_PIN          19 //PA19 RES_B_THERM (LED Array Temp Internal/J18)
 
 #ifdef Z_PROBE_SLED
   #define SLED_PIN         -1

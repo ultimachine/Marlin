@@ -213,16 +213,16 @@
  * the fan will turn on when any selected extruder is above the threshold.
  */
 #if MB(FEYNMANLIGHT)
-#define E0_AUTO_FAN_PIN 15 //PA15 S_FAN_12V (FeynmanLight)
+#define E0_AUTO_FAN_PIN 23 //PA23 LED_FAN_24V (FeynmanLight)
 #else
-#define E0_AUTO_FAN_PIN 9
+#define E0_AUTO_FAN_PIN -1
 #endif
 
 #define E1_AUTO_FAN_PIN -1
 #define E2_AUTO_FAN_PIN -1
 #define E3_AUTO_FAN_PIN -1
 #define E4_AUTO_FAN_PIN -1
-#define EXTRUDER_AUTO_FAN_TEMPERATURE 24
+#define EXTRUDER_AUTO_FAN_TEMPERATURE 23
 #define EXTRUDER_AUTO_FAN_SPEED   255  // == full speed
 
 /**
@@ -768,7 +768,7 @@
 
 // G38.2 and G38.3 Probe Target
 // Enable PROBE_DOUBLE_TOUCH if you want G38 to double touch
-//#define G38_PROBE_TARGET
+#define G38_PROBE_TARGET
 #if ENABLED(G38_PROBE_TARGET)
   #define G38_MINIMUM_MOVE 0.0275 // minimum distance in mm that will produce a move (determined using the print statement in check_move)
 #endif
@@ -1018,9 +1018,9 @@
 #if ENABLED(HAVE_TMC2130)
 
   // CHOOSE YOUR MOTORS HERE, THIS IS MANDATORY
-  //#define X_IS_TMC2130
+  #define X_IS_TMC2130
   //#define X2_IS_TMC2130
-  #define Y_IS_TMC2130
+  //#define Y_IS_TMC2130
   //#define Y2_IS_TMC2130
   #define Z_IS_TMC2130
   #define Z2_IS_TMC2130
@@ -1148,7 +1148,7 @@
    *   stepperX.interpolate(0); \
    * }
    */
-  #define  TMC2130_ADV() { stepperY.interpolate(1); stepperY.double_edge_step(1); }
+  #define  TMC2130_ADV() { } //stepperY.interpolate(1); stepperY.double_edge_step(1); }
 
 #endif // HAVE_TMC2130
 
