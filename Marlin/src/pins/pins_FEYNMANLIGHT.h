@@ -24,6 +24,7 @@
 #undef E1_MS1_PIN
 #undef E1_MS2_PIN
 
+#define CAB_LED_PIN         28
 #define X_STEP_PIN          -1 //PB11 S2_STEP
 #define X_DIR_PIN           -1 //PB10 S2_DIR
 #define X_ENABLE_PIN        -1

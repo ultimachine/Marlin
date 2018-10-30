@@ -648,7 +648,7 @@ void stop() {
  *    • Z probe sled
  *    • status LEDs
  */
-void feynmanlight_init_chipselects() {
+void board_feynmanlight_init() {
   #if MB(FEYNMANLIGHT)
 	#define S0_NCS_PIN  45 //PB13
 	#define S1_NCS_PIN  47 //PB15
@@ -662,6 +662,9 @@ void feynmanlight_init_chipselects() {
 	pinMode(S2_NCS_PIN,OUTPUT);
 	digitalWrite(S2_NCS_PIN,HIGH);
   #endif
+
+  pinMode(CAB_LED_PIN,OUTPUT);
+  digitalWrite(CAB_LED_PIN,HIGH);
 }
 
 #if ENABLED(HAVE_PCA9685)
@@ -677,7 +680,7 @@ void currax_init_endstops(); //In src/gcode/feature/currax
 #endif
 
 void setup() {
-    feynmanlight_init_chipselects();
+    board_feynmanlight_init();
 
   #if ENABLED(HAVE_CURRAX)
     currax_init_endstops();
