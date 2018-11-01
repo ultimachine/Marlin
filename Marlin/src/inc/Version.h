@@ -38,7 +38,7 @@
   /**
    * Marlin release version identifier
    */
-  #define SHORT_BUILD_VERSION "bugfix-2.0.x" LULZBOT_FW_VERSION
+  #define SHORT_BUILD_VERSION "bugfix-2.0.0" LULZBOT_FW_VERSION
 
   /**
    * Verbose version identifier which should contain a reference to the location
