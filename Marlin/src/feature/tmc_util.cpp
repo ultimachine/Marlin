@@ -632,7 +632,9 @@
 
   void tmc_stallguard(TMC2130Stepper &st, const bool enable/*=true*/) {
     st.TCOOLTHRS(enable ? 0xFFFFF : 0);
-    #if ENABLED(STEALTHCHOP)
+    #if !defined(LULZBOT_USE_TMC_STEALTHCHOP_XY)
+      st.en_pwm_mode(false);
+    #elif ENABLED(STEALTHCHOP)
       st.en_pwm_mode(!enable);
     #endif
     st.diag1_stall(enable ? 1 : 0);

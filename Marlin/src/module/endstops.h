@@ -70,6 +70,10 @@ class Endstops {
       typedef uint8_t esbits_t;
     #endif
 
+    #if defined(LULZBOT_BACKOFF_AFTER_HOME)
+      static bool are_endstops_enabled_globally() {return enabled_globally;}
+    #endif
+
   private:
     static bool enabled, enabled_globally;
     static esbits_t live_state;

@@ -287,6 +287,10 @@ bool unload_filament(const float &unload_length, const bool show_lcd/*=false*/,
       lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_UNLOAD, mode);
   #endif
 
+  #if defined(LULZBOT_AEROSTRUDER_UNLOAD_WORKAROUND)
+    // Retract filament
+    do_pause_e_move(LULZBOT_AEROSTRUDER_UNLOAD_PURGE_LENGTH, LULZBOT_AEROSTRUDER_UNLOAD_PURGE_FEEDRATE);
+  #else
   // Retract filament
   do_pause_e_move(-FILAMENT_UNLOAD_RETRACT_LENGTH, PAUSE_PARK_RETRACT_FEEDRATE);
 
@@ -295,6 +299,7 @@ bool unload_filament(const float &unload_length, const bool show_lcd/*=false*/,
 
   // Quickly purge
   do_pause_e_move(FILAMENT_UNLOAD_RETRACT_LENGTH + FILAMENT_UNLOAD_PURGE_LENGTH, planner.settings.max_feedrate_mm_s[E_AXIS]);
+  #endif
 
   // Unload filament
   #if FILAMENT_CHANGE_UNLOAD_ACCEL > 0
@@ -547,6 +552,9 @@ void resume_print(const float &slow_load_length/*=0*/, const float &fast_load_le
     thermalManager.reset_heater_idle_timer(e);
   }
 
+  #if defined(LULZBOT_ADVANCED_PAUSE_PURGE_WORKAROUND)
+  if(purge_length)
+  #endif
   if (nozzle_timed_out || thermalManager.hotEnoughToExtrude(active_extruder)) // Load the new filament
     load_filament(slow_load_length, fast_load_length, purge_length, max_beep_count, true, nozzle_timed_out, ADVANCED_PAUSE_MODE_PAUSE_PRINT DXC_PASS);
 

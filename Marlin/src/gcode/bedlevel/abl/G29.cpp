@@ -36,6 +36,10 @@
 #include "../../../module/probe.h"
 #include "../../queue.h"
 
+#if defined(LULZBOT_BED_LEVELING_DECL)
+  LULZBOT_BED_LEVELING_DECL
+#endif
+
 #if ENABLED(LCD_BED_LEVELING) && ENABLED(PROBE_MANUALLY)
   #include "../../../lcd/ultralcd.h"
 #endif
@@ -665,7 +669,11 @@ G29_TYPE GcodeSuite::G29() {
 
     #if ABL_GRID
 
-      bool zig = PR_OUTER_END & 1;  // Always end at RIGHT and BACK_PROBE_BED_POSITION
+      #if defined(LULZBOT_LAST_PROBE_POINT_ON_BACK_LEFT_CORNER)
+      bool zig = !(PR_OUTER_END & 1);  // Always end at LEFT and BACK_PROBE_BED_POSITION
+      #else
+      bool zig = PR_OUTER_END & 1;   // Always end at RIGHT and BACK_PROBE_BED_POSITION
+      #endif
 
       measured_z = 0;
 
@@ -721,6 +729,10 @@ G29_TYPE GcodeSuite::G29() {
             eqnAMatrix[abl_probe_index + 2 * abl_points] = 1;
 
             incremental_LSF(&lsf_results, xProbe, yProbe, measured_z);
+
+            #if defined(LULZBOT_BED_LEVELING_POINT)
+              LULZBOT_BED_LEVELING_POINT(abl_probe_index, xProbe, yProbe, measured_z)
+            #endif
 
           #elif ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
@@ -829,6 +841,10 @@ G29_TYPE GcodeSuite::G29() {
       mean /= abl_points;
 
       if (verbose_level) {
+        #if defined(LULZBOT_BED_LEVELING_SUMMARY)
+          LULZBOT_BED_LEVELING_SUMMARY
+        #endif
+
         SERIAL_PROTOCOLPGM("Eqn coefficients: a: ");
         SERIAL_PROTOCOL_F(plane_equation_coefficients[0], 8);
         SERIAL_PROTOCOLPGM(" b: ");

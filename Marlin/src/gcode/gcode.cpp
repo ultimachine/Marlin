@@ -38,6 +38,13 @@ GcodeSuite gcode;
 
 #include "../Marlin.h" // for idle() and suspend_auto_report
 
+#if defined(LULZBOT_G29_RETRY_AND_RECOVER)
+  #include "../module/endstops.h"
+  #include "../module/stepper.h"
+  #include "../lcd/ultralcd.h"
+  #include "../libs/buzzer.h"
+#endif
+
 uint8_t GcodeSuite::target_extruder;
 millis_t GcodeSuite::previous_move_ms;
 
@@ -133,6 +140,9 @@ void GcodeSuite::dwell(millis_t time) {
 
   void GcodeSuite::G29_with_retry() {
     uint8_t retries = G29_MAX_RETRIES;
+    #if defined(LULZBOT_ENABLE_PROBE_PINS)
+      LULZBOT_ENABLE_PROBE_PINS(true);
+    #endif
     while (G29()) { // G29 should return true for failed probes ONLY
       if (retries--) {
         #ifdef G29_ACTION_ON_RECOVER
@@ -143,6 +153,9 @@ void GcodeSuite::dwell(millis_t time) {
         #endif
       }
       else {
+        #if defined(LULZBOT_ENABLE_PROBE_PINS)
+          LULZBOT_ENABLE_PROBE_PINS(false);
+        #endif
         #ifdef G29_FAILURE_COMMANDS
           process_subcommands_now_P(PSTR(G29_FAILURE_COMMANDS));
         #endif
@@ -155,6 +168,9 @@ void GcodeSuite::dwell(millis_t time) {
         return;
       }
     }
+    #if defined(LULZBOT_ENABLE_PROBE_PINS)
+      LULZBOT_ENABLE_PROBE_PINS(false);
+    #endif
     #ifdef G29_SUCCESS_COMMANDS
       process_subcommands_now_P(PSTR(G29_SUCCESS_COMMANDS));
     #endif
@@ -274,6 +290,14 @@ void GcodeSuite::process_parsed_command(
 
       #if HAS_MESH
         case 42: G42(); break;                                    // G42: Coordinated move to a mesh point
+      #endif
+
+      #if ENABLED(LULZBOT_CALIBRATION_GCODE)
+        case 425:
+          LULZBOT_ENABLE_PROBE_PINS(true);
+          G425();                                                 // G425: Perform calibration with calibration cube
+          LULZBOT_ENABLE_PROBE_PINS(false);
+          break;
       #endif
 
       #if ENABLED(DEBUG_GCODE_PARSER)
@@ -423,7 +447,15 @@ void GcodeSuite::process_parsed_command(
       case 115: M115(); break;                                    // M115: Report capabilities
       case 117: M117(); break;                                    // M117: Set LCD message text, if possible
       case 118: M118(); break;                                    // M118: Display a message in the host console
-      case 119: M119(); break;                                    // M119: Report endstop states
+      case 119: // M119: Report endstop states
+        #if defined(LULZBOT_ENABLE_PROBE_PINS)
+          LULZBOT_ENABLE_PROBE_PINS(true);
+        #endif
+        M119();
+        #if defined(LULZBOT_ENABLE_PROBE_PINS)
+          LULZBOT_ENABLE_PROBE_PINS(false);
+        #endif
+        break;
       case 120: M120(); break;                                    // M120: Enable endstops
       case 121: M121(); break;                                    // M121: Disable endstops
 
@@ -572,6 +604,10 @@ void GcodeSuite::process_parsed_command(
 
       #if HAS_MESH
         case 421: M421(); break;                                  // M421: Set a Mesh Bed Leveling Z coordinate
+      #endif
+
+      #if ENABLED(BACKLASH_GCODE)
+        case 425: M425(); break;                                  // M425: Tune backlash compensation
       #endif
 
       #if HAS_M206_COMMAND

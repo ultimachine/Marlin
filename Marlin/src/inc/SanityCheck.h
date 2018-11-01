@@ -1905,4 +1905,8 @@ static_assert(COUNT(sanity_arr_3) <= XYZE_N, "DEFAULT_MAX_ACCELERATION has too m
   #error "SD_FIRMWARE_UPDATE requires an ATmega2560-based (Arduino Mega) board."
 #endif
 
+#if ENABLED(BACKLASH_COMPENSATION) && IS_CORE
+  #error "BACKLASH_COMPENSATION is incompatible with CORE kinematics."
+#endif
+
 #endif // _SANITYCHECK_H_

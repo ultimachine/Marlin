@@ -352,7 +352,7 @@ void menu_configuration() {
     MENU_ITEM_EDIT(bool, MSG_RUNOUT_SENSOR_ENABLE, &runout.enabled);
   #endif
 
-  #if DISABLED(SLIM_LCD_MENUS)
+  #if DISABLED(SLIM_LCD_MENUS) && DISABLED(LULZBOT_HIDE_PREHEAT_CHOICES)
     // Preheat configurations
     MENU_ITEM(submenu, MSG_PREHEAT_1_SETTINGS, menu_preheat_material1_settings);
     MENU_ITEM(submenu, MSG_PREHEAT_2_SETTINGS, menu_preheat_material2_settings);

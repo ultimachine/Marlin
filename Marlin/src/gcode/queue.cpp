@@ -737,6 +737,7 @@ inline void get_serial_commands() {
       const int16_t n = card.get();
       char sd_char = (char)n;
       card_eof = card.eof();
+      LULZBOT_SDCARD_CHECK_BYTE(n)
       if (card_eof || n == -1
           || sd_char == '\n' || sd_char == '\r'
           || ((sd_char == '#' || sd_char == ':') && !sd_comment_mode
@@ -783,6 +784,8 @@ inline void get_serial_commands() {
 
         command_queue[cmd_queue_index_w][sd_count] = '\0'; // terminate string
         sd_count = 0; // clear sd line buffer
+
+        LULZBOT_SDCARD_COMMAND_DONE(command_queue[cmd_queue_index_w])
 
         _commit_command(false);
       }

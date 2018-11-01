@@ -89,8 +89,10 @@ void lcd_goto_previous_menu() {
   if (screen_history_depth > 0) {
     --screen_history_depth;
     lcd_goto_screen(
-      screen_history[screen_history_depth].menu_function,
-      screen_history[screen_history_depth].encoder_position
+      screen_history[screen_history_depth].menu_function
+      #if !defined(LULZBOT_RESET_SELECTION_TO_FIRST_ON_MENU_BACK)
+      ,screen_history[screen_history_depth].encoder_position
+      #endif
     );
   }
   else
@@ -350,7 +352,7 @@ void lcd_completion_feedback(const bool good/*=true*/) {
 #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
 
   void lcd_babystep_zoffset() {
-    if (use_click()) { return lcd_goto_previous_menu_no_defer(); }
+    if (use_click()) { LULZBOT_SAVE_ZOFFSET_TO_EEPROM; return lcd_goto_previous_menu_no_defer(); }
     defer_return_to_status = true;
     #if ENABLED(BABYSTEP_HOTEND_Z_OFFSET)
       const bool do_probe = (active_extruder == 0);
@@ -386,10 +388,10 @@ void lcd_completion_feedback(const bool good/*=true*/) {
     if (lcdDrawUpdate) {
       #if ENABLED(BABYSTEP_HOTEND_Z_OFFSET)
         if (!do_probe)
-          lcd_implementation_drawedit(PSTR(MSG_IDEX_Z_OFFSET), ftostr43sign(hotend_offset[Z_AXIS][active_extruder]));
+          lcd_implementation_drawedit(PSTR(MSG_IDEX_Z_OFFSET), LULZBOT_PRECISION_ZOFFSET(hotend_offset[Z_AXIS][active_extruder]));
         else
       #endif
-          lcd_implementation_drawedit(PSTR(MSG_ZPROBE_ZOFFSET), ftostr43sign(zprobe_zoffset));
+          lcd_implementation_drawedit(PSTR(MSG_ZPROBE_ZOFFSET), LULZBOT_PRECISION_ZOFFSET(zprobe_zoffset));
 
       #if ENABLED(BABYSTEP_ZPROBE_GFX_OVERLAY)
         if (do_probe) _lcd_zoffset_overlay_gfx(zprobe_zoffset);

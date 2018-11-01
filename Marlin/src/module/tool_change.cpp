@@ -95,14 +95,26 @@
 
 #endif // DO_SWITCH_EXTRUDER
 
-#if ENABLED(SWITCHING_NOZZLE)
+#if ENABLED(LULZBOT_SWITCHING_NOZZLE_OPPOSING_SERVOS)
+  void lower_nozzle(const uint8_t e) {
+    constexpr int16_t angles[2] = SWITCHING_NOZZLE_SERVO_ANGLES;
+    planner.synchronize();
+    MOVE_SERVO(e, angles[0]);
+  }
 
+  void raise_nozzle(const uint8_t e) {
+    constexpr int16_t angles[2] = SWITCHING_NOZZLE_SERVO_ANGLES;
+    planner.synchronize();
+    MOVE_SERVO(e, angles[1]);
+  }
+#endif
+
+#if ENABLED(SWITCHING_NOZZLE)
   void move_nozzle_servo(const uint8_t e) {
     planner.synchronize();
     MOVE_SERVO(SWITCHING_NOZZLE_SERVO_NR, servo_angles[SWITCHING_NOZZLE_SERVO_NR][e]);
     safe_delay(500);
   }
-
 #endif // SWITCHING_NOZZLE
 
 #if ENABLED(PARKING_EXTRUDER)
@@ -501,6 +513,9 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
       feedrate_mm_s = fr_mm_s > 0.0 ? fr_mm_s : XY_PROBE_FEEDRATE_MM_S;
 
       if (tmp_extruder != active_extruder) {
+        #if defined(LULZBOT_NO_MOVE_ON_TOOLHEAD_CHANGE)
+          no_move = true;
+        #endif
 
         #if ENABLED(DUAL_X_CARRIAGE)
 
@@ -546,12 +561,17 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
             switching_toolhead_tool_change(tmp_extruder, fr_mm_s, no_move);
           #else
             const float zdiff = hotend_offset[Z_AXIS][tmp_extruder] - hotend_offset[Z_AXIS][active_extruder];
-            #if ENABLED(SWITCHING_NOZZLE)
+            #if ENABLED(SWITCHING_NOZZLE) && DISABLED(LULZBOT_SWITCHING_NOZZLE_NO_Z_LIFT)
               // Always raise by a configured distance to avoid workpiece
               current_position[Z_AXIS] += MAX(-zdiff, 0.0) + toolchange_settings.z_raise;
               planner.buffer_line(current_position, planner.settings.max_feedrate_mm_s[Z_AXIS], active_extruder);
               move_nozzle_servo(tmp_extruder);
             #endif
+
+            #if ENABLED(LULZBOT_SWITCHING_NOZZLE_OPPOSING_SERVOS)
+              raise_nozzle(active_extruder);
+            #endif
+
           #endif
 
           #if ENABLED(DEBUG_LEVELING_FEATURE)
@@ -585,7 +605,7 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
 
         // Raise, move, and lower again
         if (safe_to_move && !no_move && IsRunning()) {
-          #if DISABLED(SWITCHING_NOZZLE)
+          #if DISABLED(SWITCHING_NOZZLE) && DISABLED(LULZBOT_SWITCHING_NOZZLE_NO_Z_LIFT)
             // Do a small lift to avoid the workpiece in the move back (below)
             current_position[Z_AXIS] += toolchange_settings.z_raise;
             planner.buffer_line(current_position, planner.settings.max_feedrate_mm_s[Z_AXIS], active_extruder);
@@ -611,6 +631,10 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
             // Move back down. (Including when the new tool is higher.)
             do_blocking_move_to_z(destination[Z_AXIS], planner.settings.max_feedrate_mm_s[Z_AXIS]);
           }
+        #endif
+
+        #if ENABLED(LULZBOT_SWITCHING_NOZZLE_OPPOSING_SERVOS)
+          lower_nozzle(active_extruder);
         #endif
       } // (tmp_extruder != active_extruder)
 

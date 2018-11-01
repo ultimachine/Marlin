@@ -896,6 +896,10 @@ void setup() {
     fanmux_init();
   #endif
 
+  #if defined(LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP)
+    LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP
+  #endif
+
   lcd_init();
   lcd_reset_status();
 
@@ -978,6 +982,9 @@ void loop() {
         wait_for_heatup = false;
         #if ENABLED(POWER_LOSS_RECOVERY)
           card.removeJobRecoveryFile();
+        #endif
+        #if defined(LULZBOT_AFTER_ABORT_PRINT_ACTION)
+          LULZBOT_AFTER_ABORT_PRINT_ACTION
         #endif
       }
     #endif // SDSUPPORT

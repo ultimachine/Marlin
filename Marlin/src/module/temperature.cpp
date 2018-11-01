@@ -797,6 +797,10 @@ void Temperature::manage_heater() {
 
   HOTEND_LOOP() {
 
+    #if defined(LULZBOT_MIN_TEMP_WORKAROUND)
+      LULZBOT_MIN_TEMP_WORKAROUND
+    #endif
+
     #if HEATER_IDLE_HANDLER
       if (!heater_idle_timeout_exceeded[e] && heater_idle_timeout_ms[e] && ELAPSED(ms, heater_idle_timeout_ms[e]))
         heater_idle_timeout_exceeded[e] = true;
@@ -1155,21 +1159,28 @@ void Temperature::init() {
   #if HAS_FAN0
     SET_OUTPUT(FAN_PIN);
     #if ENABLED(FAST_PWM_FAN)
-      setPwmFrequency(FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+      setPwmFrequency(FAN_PIN, LULZBOT_FAST_PWM_SCALE); // No prescaling. Pwm frequency = F_CPU/256/8
     #endif
   #endif
 
   #if HAS_FAN1
     SET_OUTPUT(FAN1_PIN);
     #if ENABLED(FAST_PWM_FAN)
-      setPwmFrequency(FAN1_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+      setPwmFrequency(FAN1_PIN, LULZBOT_FAST_PWM_SCALE); // No prescaling. Pwm frequency = F_CPU/256/8
     #endif
   #endif
 
   #if HAS_FAN2
     SET_OUTPUT(FAN2_PIN);
     #if ENABLED(FAST_PWM_FAN)
-      setPwmFrequency(FAN2_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+      setPwmFrequency(FAN2_PIN, LULZBOT_FAST_PWM_SCALE); // No prescaling. Pwm frequency = F_CPU/256/8
+    #endif
+  #endif
+
+  #if defined(LULZBOT_FAST_PWM_CONTROLLER_FAN_WORKAROUND) && HAS_CONTROLLER_FAN
+    SET_OUTPUT(CONTROLLER_FAN_PIN);
+    #if ENABLED(FAST_PWM_FAN)
+      setPwmFrequency(CONTROLLER_FAN_PIN, LULZBOT_FAST_PWM_SCALE); // No prescaling. Pwm frequency = F_CPU/256/8
     #endif
   #endif
 
@@ -2420,9 +2431,9 @@ void Temperature::isr() {
     void Temperature::set_heating_message(const uint8_t e) {
       const bool heating = isHeatingHotend(e);
       #if HOTENDS > 1
-        lcd_status_printf_P(0, heating ? PSTR("E%i " MSG_HEATING) : PSTR("E%i " MSG_COOLING), int(e + 1));
+        lcd_status_printf_P(0, heating ? PSTR(LULZBOT_EXTRUDER_STR " %i " MSG_HEATING) : PSTR(LULZBOT_EXTRUDER_STR " %i " MSG_COOLING), int(e + 1));
       #else
-        lcd_setstatusPGM(heating ? PSTR("E " MSG_HEATING) : PSTR("E " MSG_COOLING));
+        lcd_setstatusPGM(heating ? PSTR(LULZBOT_EXTRUDER_STR " " MSG_HEATING) : PSTR(LULZBOT_EXTRUDER_STR " " MSG_COOLING));
       #endif
     }
   #endif

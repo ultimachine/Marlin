@@ -81,10 +81,42 @@ void menu_change_filament();
 void menu_info();
 void menu_led();
 
+#if ENABLED(LULZBOT_ABOUT_FIRMWARE_MENU)
+  void menu_info_stats();
+  void lcd_custom_bootscreen();
+
+  /**
+   *
+   * Extra menu item to show LulzBot firmware version
+   *
+   */
+  void menu_show_bootscreen() {
+    if (lcd_clicked) { defer_return_to_status = false; return lcd_goto_previous_menu(); }
+    lcd_custom_bootscreen();
+  }
+
+  /**
+   *
+   * Extra menu item to show printer and firmware version
+   *
+   */
+  void menu_about_printer() {
+    START_MENU();
+    MENU_BACK(MSG_MAIN);
+    MENU_ITEM(submenu, _UxGT("Firmware Version"), menu_show_bootscreen);
+
+    #if ENABLED(PRINTCOUNTER)
+      MENU_ITEM(submenu, MSG_INFO_STATS_MENU, menu_info_stats);          // Printer Statistics >
+    #endif
+    END_MENU();
+  }
+#endif
+
 void menu_main() {
   START_MENU();
   MENU_BACK(MSG_WATCH);
 
+  #if !defined(LULZBOT_SD_MENU_ON_BOTTOM)
   #if ENABLED(SDSUPPORT)
     if (card.cardOK) {
       if (card.isFileOpen()) {
@@ -108,6 +140,7 @@ void menu_main() {
       #endif
     }
   #endif // SDSUPPORT
+  #endif
 
   const bool busy = printer_busy();
   if (busy)
@@ -134,6 +167,14 @@ void menu_main() {
     #endif
   #endif
 
+  #if ENABLED(LULZBOT_ABOUT_FIRMWARE_MENU)
+      #if ENABLED(PRINTCOUNTER)
+      MENU_ITEM(submenu, MSG_INFO_MENU, menu_about_printer);
+      #else
+      MENU_ITEM(submenu, MSG_INFO_MENU, menu_show_bootscreen);
+      #endif
+  #endif
+
   #if ENABLED(LCD_INFO_MENU)
     MENU_ITEM(submenu, MSG_INFO_MENU, menu_info);
   #endif
@@ -158,6 +199,32 @@ void menu_main() {
   #if ENABLED(SDSUPPORT) && ENABLED(MENU_ADDAUTOSTART)
     if (!busy)
       MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
+  #endif
+
+  #if defined(LULZBOT_SD_MENU_ON_BOTTOM)
+  #if ENABLED(SDSUPPORT)
+    if (card.cardOK) {
+      if (card.isFileOpen()) {
+        if (card.sdprinting)
+          MENU_ITEM(function, MSG_PAUSE_PRINT, lcd_sdcard_pause);
+        else
+          MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_resume);
+        MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_stop);
+      }
+      else {
+        MENU_ITEM(submenu, MSG_CARD_MENU, menu_sdcard);
+        #if !PIN_EXISTS(SD_DETECT)
+          MENU_ITEM(gcode, MSG_CHANGE_SDCARD, PSTR("M21"));  // SD-card changed by user
+        #endif
+      }
+    }
+    else {
+      MENU_ITEM(submenu, MSG_NO_CARD, menu_sdcard);
+      #if !PIN_EXISTS(SD_DETECT)
+        MENU_ITEM(gcode, MSG_INIT_SDCARD, PSTR("M21")); // Manually initialize the SD-card via user interface
+      #endif
+    }
+  #endif // SDSUPPORT
   #endif
 
   END_MENU();
