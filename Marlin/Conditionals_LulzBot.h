@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".26" // Change this with each update
+#define LULZBOT_FW_VERSION ".27" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -148,7 +148,6 @@
 #define LULZBOT_ADVANCED_OK
 #define LULZBOT_TX_BUFFER_SIZE 32
 #define LULZBOT_BUFSIZE 5
-#define LULZBOT_HOST_KEEPALIVE_FEATURE_DISABLED
 #define LULZBOT_CLARIFY_ERROR_MESSAGES
 #define LULZBOT_PRINTJOB_TIMER_AUTOSTART_DISABLED
 
