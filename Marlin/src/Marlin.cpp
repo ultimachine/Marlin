@@ -896,8 +896,8 @@ void setup() {
     fanmux_init();
   #endif
 
-  #if defined(LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP)
-    LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP
+  #if defined(LULZBOT_STARTUP)
+    LULZBOT_STARTUP
   #endif
 
   lcd_init();

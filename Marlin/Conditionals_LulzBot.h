@@ -51,7 +51,7 @@
  *
  */
 
-#define LULZBOT_FW_VERSION ".1" // Change this with each update
+#define LULZBOT_FW_VERSION ".2" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -265,6 +265,10 @@
 // never clears that message. The following causes
 // Marlin to print a new message when the axis are homed
 #define LULZBOT_HOMING_MESSAGE_WORKAROUND
+
+#define LULZBOT_STARTUP \
+    LULZBOT_ENABLE_Z_MOTOR_ON_STARTUP \
+    LULZBOT_ENABLE_PROBE_PINS(false)
 
 /************************* EXPERIMENTAL FEATURES ******************************/
 
@@ -1429,7 +1433,7 @@
     #define LULZBOT_NUM_RUNOUT_SENSORS 2
     #define LULZBOT_FILAMENT_RUNOUT_SCRIPT "M117 Filament ran out\nM25\n"
 
-    #define LULZBOT_RUNOUT_DISTANCE_MM 25
+    #define LULZBOT_RUNOUT_DISTANCE_MM 4
     #define LULZBOT_FILAMENT_MOTION_SENSOR
 
     #define LULZBOT_FILAMENT_RUNOUT_SENSOR_DEBUG

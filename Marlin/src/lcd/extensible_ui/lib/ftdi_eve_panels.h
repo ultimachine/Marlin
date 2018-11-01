@@ -227,7 +227,7 @@
       const uint16_t Hcycle               =   952;
       const uint8_t Pclkpol               =     1;
       const uint8_t Swizzle               =     0;
-      const uint8_t CSpread               =     1;
+      const uint8_t CSpread               =     0;
       const uint8_t Pclk                  =     3;
 
       const bool Use_Crystal              = false; // 0 = use internal oscillator, 1 = module has a crystal populated
