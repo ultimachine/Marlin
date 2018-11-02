@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".27" // Change this with each update
+#define LULZBOT_FW_VERSION ".28" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1479,14 +1479,8 @@
         #define LULZBOT_WIPE_SEQUENCE_GCODE \
             "M109 R170\n"                         /* Wait for wipe temp */ \
             "M117 Rewiping nozzle\n"              /* Status message */ \
-            "G12 P0 S4 T0\n"                      /* Wipe nozzle while hot */ \
-            "M104 S160\n"                         /* Drop to probe temp during wipe */ \
-            "M106 S255\n"                         /* Turn on fan to aid with cooling */ \
-            "G4 S5\n"                             /* Wait for temperature to drop */ \
-            "G12 P0 S4 T0\n"                      /* Wipe nozzle while cooling */ \
-            "G4 S5\n"                             /* Wait for temperature to drop */ \
-            "G12 P0 S4 T0\n"                      /* Wipe nozzle while cooling */ \
-            "M107\n"                              /* Turn off fan */
+            "G12 P0 S12 T0\n"                     /* Wipe nozzle */ \
+            "M104 S160\n"                         /* Drop to probe temp */ \
     #else
         #define LULZBOT_WIPE_SEQUENCE_GCODE \
             "M117 Rewiping nozzle\n"              /* Status message */ \
