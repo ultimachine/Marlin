@@ -1764,7 +1764,7 @@ void ValueAdjusters::widgets_t::button(uint8_t tag, const char *label) {
     #else
        .font(Theme::font_medium)
     #endif
-    .button(BTN_POS(5,_line), BTN_SIZE(9,1), label);
+    .button(BTN_POS(5,_line), BTN_SIZE(9,1), progmem_str(label));
   }
 
   _line++;
@@ -2725,19 +2725,19 @@ struct sound_info_t {
 };
 
 const sound_info_t sound_list[] = {
-  {"Silence",      FTDI::silence},
-  {"Pips",         FTDI::pips},
-  {"Twinkle",      FTDI::twinkle},
-  {"Chimes",       FTDI::chimes},
-  {"Fanfare",      FTDI::fanfare},
-  {"Sad Trombone", FTDI::sad_trombone},
-  {"Beeping",      FTDI::beeping},
-  {"Alarm",        FTDI::alarm},
-  {"Warble",       FTDI::warble},
-  {"Carousel",     FTDI::carousel},
-  {"Percussion",   FTDI::drumkit},
-  {"Bach Joy",     FTDI::js_bach_joy},
-  {"Bach Toccata", FTDI::js_bach_toccata}
+  {PSTR("Silence"),      FTDI::silence},
+  {PSTR("Twinkle"),      FTDI::twinkle},
+  {PSTR("Chimes"),       FTDI::chimes},
+  {PSTR("Fanfare"),      FTDI::fanfare},
+  {PSTR("Sad Trombone"), FTDI::sad_trombone},
+  {PSTR("Big Band"),     FTDI::big_band},
+  {PSTR("Beeping"),      FTDI::beeping},
+  {PSTR("Alarm"),        FTDI::alarm},
+  {PSTR("Warble"),       FTDI::warble},
+  {PSTR("Carousel"),     FTDI::carousel},
+  {PSTR("Beats"),        FTDI::beats},
+  {PSTR("Bach Joy"),     FTDI::js_bach_joy},
+  {PSTR("Bach Toccata"), FTDI::js_bach_toccata}
 };
 
 const char* InterfaceSoundsScreen::getSoundSelection(event_t event) {

@@ -30,7 +30,7 @@
 
 #include "ui_builder.h"
 
-CommandProcessor::btn_style_func_t  *CommandProcessor::_btn_style_callback = nullptr;
+CommandProcessor::btn_style_func_t  *CommandProcessor::_btn_style_callback = CommandProcessor::default_button_style_func;
 bool CommandProcessor::is_tracking = false;
 
 #endif // EXTENSIBLE_UI

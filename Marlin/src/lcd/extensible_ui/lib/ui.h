@@ -40,6 +40,10 @@
     #define pgm_read_dword_far pgm_read_dword
     #endif
 
+    #ifndef pgm_read_ptr_far
+    #define pgm_read_ptr_far pgm_read_ptr
+    #endif
+
     // Load up compatibility routines
     #define EXTENSIBLE_UI
     #define _CAT(a, ...) a ## __VA_ARGS__
@@ -58,6 +62,11 @@
     #define SERIAL_ECHOLNPAIR(str, val) {Serial.print(F(str)); Serial.println(value);}
 
     #define safe_delay delay
+
+    namespace UI {
+      static inline uint32_t safe_millis() {return millis();};
+      static inline void     yield()       {};
+    };
 #endif
 
 #endif // _UI_CONFIG_H_

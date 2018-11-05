@@ -210,8 +210,8 @@ namespace FTDI {
     {ORGAN,        NOTE_G3,  9},
     {ORGAN,        NOTE_A3S, 9},
     {ORGAN,        NOTE_C4S, 9},
-    {ORGAN,        NOTE_E4,  70},
-    {ORGAN,        NOTE_D4,  70},
+    {ORGAN,        NOTE_E4,  9},
+    {ORGAN,        NOTE_D4,  20},
     {SILENCE,      REST,     30},
 
     {ORGAN,        NOTE_C4S, 4},
@@ -338,6 +338,7 @@ namespace FTDI {
     {ORGAN,        NOTE_A4S, 2},
     {ORGAN,        NOTE_C5,  2},
     {ORGAN,        NOTE_E5,  2},
+    {SILENCE,      END_SONG, 0}
   };
 
   const PROGMEM SoundPlayer::sound_t js_bach_joy[] = {
@@ -391,8 +392,31 @@ namespace FTDI {
     {PIANO,        NOTE_G3,  8},
     {SILENCE,      END_SONG, 0}
   };
+  
+  const PROGMEM SoundPlayer::sound_t big_band[] = {
+    {XYLOPHONE,    NOTE_F4,  3},
+    {XYLOPHONE,    NOTE_G4,  3},
+    {XYLOPHONE,    NOTE_F4,  3},
+    {XYLOPHONE,    NOTE_D4,  3},
+    {XYLOPHONE,    NOTE_A3S, 3},
+    {SILENCE, REST,     3},
+    
+    {TRUMPET,    NOTE_F4,  3},
+    {TRUMPET,    NOTE_G4,  3},
+    {TRUMPET,    NOTE_F4,  3},
+    {TRUMPET,    NOTE_D4,  3},
+    {TRUMPET,    NOTE_A3S, 3},
+    {SILENCE, REST,     3},
+    
+    {TUBA,    NOTE_A2S, 6},
+    {TUBA,    NOTE_A2S, 6},
+    {TUBA,    NOTE_A2S, 4},
+    {TUBA,    NOTE_A2S, 6},
+    {TUBA,    NOTE_A2S, 6},
+    {SILENCE, END_SONG, 0}
+  };
 
-  const PROGMEM SoundPlayer::sound_t drumkit[] = {
+  const PROGMEM SoundPlayer::sound_t beats[] = {
     {SILENCE,      REST,     8},
     {NOTCH,        NOTE_C4,  8},
     {KICKDRUM,     NOTE_C4,  8},
@@ -428,11 +452,6 @@ namespace FTDI {
 
   const PROGMEM SoundPlayer::sound_t carousel[] = {
     {CAROUSEL,     NOTE_C4,  64},
-    {SILENCE,      END_SONG, 0}
-  };
-
-  const PROGMEM SoundPlayer::sound_t pips[] = {
-    {SHORT_PIPS_3, NOTE_C4,  16},
     {SILENCE,      END_SONG, 0}
   };
 

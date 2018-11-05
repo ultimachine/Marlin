@@ -116,6 +116,13 @@ namespace FTDI {
 
 class CommandProcessor : public CLCD::CommandFifo {
   private:
+    static bool default_button_style_func(uint8_t tag, uint8_t &style, uint16_t &options, bool post) {
+      if(tag != 0 && get_pressed_tag() == tag) {
+        options = FTDI::OPT_FLAT;
+      }
+      return false;
+    }
+    
     typedef bool btn_style_func_t(uint8_t tag, uint8_t &style, uint16_t &options, bool post);
 
     static btn_style_func_t  *_btn_style_callback;
@@ -172,7 +179,10 @@ class CommandProcessor : public CLCD::CommandFifo {
       return *this;
     }
 
-    inline CommandProcessor& set_button_style_callback(const btn_style_func_t *func) {_btn_style_callback = func; return *this;}
+    inline CommandProcessor& set_button_style_callback(const btn_style_func_t *func) {
+      _btn_style_callback = func ? func : default_button_style_func;
+      return *this;
+    }
 
     inline CommandProcessor& tag      (uint8_t  tag)              {_tag = tag; cmd(FTDI::TAG(tag)); return *this;}
 

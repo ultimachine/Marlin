@@ -22,6 +22,8 @@
 #ifndef _UI_FRAMEWORK_H_
 #define _UI_FRAMEWORK_H_
 
+#include "ui.h"
+
 typedef enum {
   BACKGROUND  = 1,
   FOREGROUND  = 2,
