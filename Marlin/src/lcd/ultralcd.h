@@ -279,7 +279,7 @@
     typedef void (*screenFunc_t)();
     typedef void (*menuAction_t)();
     extern screenFunc_t currentScreen;
-    void lcd_goto_screen(screenFunc_t screen, const uint32_t encoder=0);
+    void lcd_goto_screen(const screenFunc_t screen, const uint32_t encoder=0);
 
     extern bool lcd_clicked, defer_return_to_status;
 
@@ -320,8 +320,6 @@
     #if ENABLED(AUTO_BED_LEVELING_UBL)
       void lcd_mesh_edit_setup(const float &initial);
       float lcd_mesh_edit();
-      void lcd_z_offset_edit_setup(const float &initial);
-      float lcd_z_offset_edit();
     #endif
 
     #if ENABLED(SCROLL_LONG_FILENAMES)
@@ -408,15 +406,42 @@
 #endif
 
 #if ENABLED(REPRAPWORLD_KEYPAD)
+  #define REPRAPWORLD_BTN_OFFSET          0 // Bit offset into buttons for shift register values
+
+  #define BLEN_REPRAPWORLD_KEYPAD_F3      0
+  #define BLEN_REPRAPWORLD_KEYPAD_F2      1
+  #define BLEN_REPRAPWORLD_KEYPAD_F1      2
+  #define BLEN_REPRAPWORLD_KEYPAD_DOWN    3
+  #define BLEN_REPRAPWORLD_KEYPAD_RIGHT   4
+  #define BLEN_REPRAPWORLD_KEYPAD_MIDDLE  5
+  #define BLEN_REPRAPWORLD_KEYPAD_UP      6
+  #define BLEN_REPRAPWORLD_KEYPAD_LEFT    7
+
+  #define EN_REPRAPWORLD_KEYPAD_F1        (_BV(REPRAPWORLD_BTN_OFFSET + BLEN_REPRAPWORLD_KEYPAD_F1))
+  #define EN_REPRAPWORLD_KEYPAD_F2        (_BV(REPRAPWORLD_BTN_OFFSET + BLEN_REPRAPWORLD_KEYPAD_F2))
+  #define EN_REPRAPWORLD_KEYPAD_F3        (_BV(REPRAPWORLD_BTN_OFFSET + BLEN_REPRAPWORLD_KEYPAD_F3))
+  #define EN_REPRAPWORLD_KEYPAD_DOWN      (_BV(REPRAPWORLD_BTN_OFFSET + BLEN_REPRAPWORLD_KEYPAD_DOWN))
+  #define EN_REPRAPWORLD_KEYPAD_RIGHT     (_BV(REPRAPWORLD_BTN_OFFSET + BLEN_REPRAPWORLD_KEYPAD_RIGHT))
+  #define EN_REPRAPWORLD_KEYPAD_MIDDLE    (_BV(REPRAPWORLD_BTN_OFFSET + BLEN_REPRAPWORLD_KEYPAD_MIDDLE))
+  #define EN_REPRAPWORLD_KEYPAD_UP        (_BV(REPRAPWORLD_BTN_OFFSET + BLEN_REPRAPWORLD_KEYPAD_UP))
+  #define EN_REPRAPWORLD_KEYPAD_LEFT      (_BV(REPRAPWORLD_BTN_OFFSET + BLEN_REPRAPWORLD_KEYPAD_LEFT))
+
+  #define RRK(B) (buttons_reprapworld_keypad & (B))
+
   #ifdef EN_C
-    #define LCD_CLICKED ((buttons & EN_C) || REPRAPWORLD_KEYPAD_MOVE_MENU)
+    #define LCD_CLICKED() ((buttons & EN_C) || RRK(EN_REPRAPWORLD_KEYPAD_MIDDLE))
   #else
-    #define LCD_CLICKED REPRAPWORLD_KEYPAD_MOVE_MENU
+    #define LCD_CLICKED() RRK(EN_REPRAPWORLD_KEYPAD_MIDDLE)
   #endif
-#elif defined(EN_C)
-  #define LCD_CLICKED (buttons & EN_C)
-#else
-  #define LCD_CLICKED false
+
+#endif // REPRAPWORLD_KEYPAD
+
+#ifndef LCD_CLICKED
+  #ifdef EN_C
+    #define LCD_CLICKED() (buttons & EN_C)
+  #else
+    #define LCD_CLICKED() false
+  #endif
 #endif
 
 extern uint8_t lcd_status_update_delay;
