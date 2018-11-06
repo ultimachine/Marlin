@@ -51,7 +51,7 @@
  *
  */
 
-#define LULZBOT_FW_VERSION ".2" // Change this with each update
+#define LULZBOT_FW_VERSION ".3" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1618,7 +1618,7 @@
 
 #elif defined(LULZBOT_Juniper_TAZ5)
     #define LULZBOT_AFTER_ABORT_PRINT_ACTION GcodeSuite::process_subcommands_now_P(PSTR("G0 X170 Y290 F3000\nM117 Print aborted."));
-    #define USE_EXECUTE_COMMANDS_IMMEDIATE
+    #define USE_EXECUTE_COMMANDS_IMMEDIATE 1
 
 #elif defined(LULZBOT_IS_TAZ)
     #define LULZBOT_AFTER_ABORT_PRINT_ACTION GcodeSuite::process_subcommands_now_P(PSTR("G91\nG0 Z15 F600\nG90\nG0 X170 Y290 F3000\nM117 Print aborted."));
