@@ -510,11 +510,7 @@ inline void invalid_extruder_error(const uint8_t e) {
  * previous tool out of the way and the new tool into place.
  */
 void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool no_move/*=false*/) {
-  #if EXTRUDERS < 2
-
-    return invalid_extruder_error(tmp_extruder);
-
-  #elif ENABLED(MIXING_EXTRUDER) && MIXING_VIRTUAL_TOOLS > 1
+  #if ENABLED(MIXING_EXTRUDER) && MIXING_VIRTUAL_TOOLS > 1
 
       if (tmp_extruder >= MIXING_VIRTUAL_TOOLS)
         return invalid_extruder_error(tmp_extruder);
@@ -522,6 +518,11 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
       mixer.T(uint_fast8_t(tmp_extruder));
       UNUSED(fr_mm_s);
       UNUSED(no_move);
+
+  #elif EXTRUDERS < 2
+
+    if (tmp_extruder) invalid_extruder_error(tmp_extruder);
+    return;
 
   #else
 
@@ -550,7 +551,7 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
       #endif
     }
 
-    #if ENABLED(ULTIPANEL)
+    #if HAS_LCD_MENU
       lcd_return_to_status();
     #endif
 

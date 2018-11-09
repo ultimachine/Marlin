@@ -51,7 +51,7 @@
  *
  */
 
-#define LULZBOT_FW_VERSION ".4" // Change this with each update
+#define LULZBOT_FW_VERSION ".5" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -277,6 +277,7 @@
 
     //#define LULZBOT_JUNCTION_DEVIATION
     //#define LULZBOT_S_CURVE_ACCELERATION
+    #define LULZBOT_GCODE_MACROS
 #endif
 
 #if defined(LULZBOT_USE_STATUS_LED)
