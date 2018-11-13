@@ -43,7 +43,7 @@
     #if ENABLED(PARK_HEAD_ON_PAUSE)
       enqueue_and_echo_commands_P(PSTR("M125"));
     #endif
-    lcd_reset_status();
+    ui.reset_status();
   }
 
   void lcd_sdcard_resume() {
@@ -53,14 +53,14 @@
       card.startFileprint();
       print_job_timer.start();
     #endif
-    lcd_reset_status();
+    ui.reset_status();
   }
 
   void lcd_sdcard_stop() {
     wait_for_heatup = wait_for_user = false;
     card.abort_sd_printing = true;
-    lcd_setstatusPGM(PSTR(MSG_PRINT_ABORTED), -1);
-    lcd_return_to_status();
+    ui.setstatusPGM(PSTR(MSG_PRINT_ABORTED), -1);
+    ui.return_to_status();
   }
 
   #if ENABLED(MENU_ADDAUTOSTART)
@@ -91,7 +91,7 @@ void menu_led();
    *
    */
   void menu_show_bootscreen() {
-    if (lcd_clicked) { defer_return_to_status = false; return lcd_goto_previous_menu(); }
+    if (ui.lcd_clicked) { ui.goto_previous_screen_no_defer(); }
     lcd_custom_bootscreen();
   }
 

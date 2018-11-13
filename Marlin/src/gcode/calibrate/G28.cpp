@@ -406,7 +406,7 @@ void GcodeSuite::G28(const bool always_home_all) {
   #endif // DUAL_X_CARRIAGE
 
   #if ENABLED(ULTRA_LCD) && defined(LULZBOT_HOMING_MESSAGE_WORKAROUND)
-    lcd_reset_status();
+    ui.reset_status();
   #endif
 
   #if defined(LULZBOT_BACKOFF_AFTER_HOME)
@@ -435,7 +435,7 @@ void GcodeSuite::G28(const bool always_home_all) {
     tool_change(old_tool_index, 0, NO_FETCH);
   #endif
 
-  lcd_refresh();
+  ui.refresh();
 
   report_current_position();
   #if ENABLED(NANODLP_Z_SYNC)

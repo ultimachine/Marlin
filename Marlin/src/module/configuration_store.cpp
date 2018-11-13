@@ -201,9 +201,9 @@ typedef struct SettingsDataStruct {
   //
   // ULTIPANEL
   //
-  int16_t lcd_preheat_hotend_temp[2],                   // M145 S0 H
-          lcd_preheat_bed_temp[2];                      // M145 S0 B
-  uint8_t lcd_preheat_fan_speed[2];                     // M145 S0 F
+  int16_t ui_preheat_hotend_temp[2],                    // M145 S0 H
+          ui_preheat_bed_temp[2];                       // M145 S0 B
+  uint8_t ui_preheat_fan_speed[2];                      // M145 S0 F
 
   //
   // PIDTEMP
@@ -684,15 +684,19 @@ void MarlinSettings::postprocess() {
     {
       _FIELD_TEST(lcd_preheat_hotend_temp);
 
-      #if !HAS_LCD_MENU
-        constexpr int16_t lcd_preheat_hotend_temp[2] = { PREHEAT_1_TEMP_HOTEND, PREHEAT_2_TEMP_HOTEND },
-                          lcd_preheat_bed_temp[2] = { PREHEAT_1_TEMP_BED, PREHEAT_2_TEMP_BED };
-        constexpr uint8_t lcd_preheat_fan_speed[2] = { PREHEAT_1_FAN_SPEED, PREHEAT_2_FAN_SPEED };
+      #if HAS_LCD_MENU
+        const int16_t (&ui_preheat_hotend_temp)[2]  = ui.preheat_hotend_temp,
+                      (&ui_preheat_bed_temp)[2]     = ui.preheat_bed_temp;
+        const uint8_t (&ui_preheat_fan_speed)[2]    = ui.preheat_fan_speed;
+      #else
+        constexpr int16_t ui_preheat_hotend_temp[2] = { PREHEAT_1_TEMP_HOTEND, PREHEAT_2_TEMP_HOTEND },
+                          ui_preheat_bed_temp[2]    = { PREHEAT_1_TEMP_BED, PREHEAT_2_TEMP_BED };
+        constexpr uint8_t ui_preheat_fan_speed[2]   = { PREHEAT_1_FAN_SPEED, PREHEAT_2_FAN_SPEED };
       #endif
 
-      EEPROM_WRITE(lcd_preheat_hotend_temp);
-      EEPROM_WRITE(lcd_preheat_bed_temp);
-      EEPROM_WRITE(lcd_preheat_fan_speed);
+      EEPROM_WRITE(ui_preheat_hotend_temp);
+      EEPROM_WRITE(ui_preheat_bed_temp);
+      EEPROM_WRITE(ui_preheat_fan_speed);
     }
 
     //
@@ -721,6 +725,7 @@ void MarlinSettings::postprocess() {
     //
     {
       _FIELD_TEST(bedPID);
+
       #if DISABLED(PIDTEMPBED)
         const PID_t bed_pid = { DUMMY_PID_VALUE, DUMMY_PID_VALUE, DUMMY_PID_VALUE };
         EEPROM_WRITE(bed_pid);
@@ -735,9 +740,13 @@ void MarlinSettings::postprocess() {
     {
       _FIELD_TEST(lcd_contrast);
 
-      #if !HAS_LCD_CONTRAST
-        const int16_t lcd_contrast = 32;
-      #endif
+      const int16_t lcd_contrast =
+        #if HAS_LCD_CONTRAST
+          ui.contrast
+        #else
+          32
+        #endif
+      ;
       EEPROM_WRITE(lcd_contrast);
     }
 
@@ -1310,15 +1319,19 @@ void MarlinSettings::postprocess() {
       // LCD Preheat settings
       //
       {
-        _FIELD_TEST(lcd_preheat_hotend_temp);
+        _FIELD_TEST(ui_preheat_hotend_temp);
 
-        #if !HAS_LCD_MENU
-          int16_t lcd_preheat_hotend_temp[2], lcd_preheat_bed_temp[2];
-          uint8_t lcd_preheat_fan_speed[2];
+        #if HAS_LCD_MENU
+          int16_t (&ui_preheat_hotend_temp)[2]  = ui.preheat_hotend_temp,
+                  (&ui_preheat_bed_temp)[2]     = ui.preheat_bed_temp;
+          uint8_t (&ui_preheat_fan_speed)[2]    = ui.preheat_fan_speed;
+        #else
+          int16_t ui_preheat_hotend_temp[2], ui_preheat_bed_temp[2];
+          uint8_t ui_preheat_fan_speed[2];
         #endif
-        EEPROM_READ(lcd_preheat_hotend_temp); // 2 floats
-        EEPROM_READ(lcd_preheat_bed_temp);    // 2 floats
-        EEPROM_READ(lcd_preheat_fan_speed);   // 2 floats
+        EEPROM_READ(ui_preheat_hotend_temp); // 2 floats
+        EEPROM_READ(ui_preheat_bed_temp);    // 2 floats
+        EEPROM_READ(ui_preheat_fan_speed);   // 2 floats
       }
 
       //
@@ -1372,10 +1385,12 @@ void MarlinSettings::postprocess() {
       //
       {
         _FIELD_TEST(lcd_contrast);
-        #if !HAS_LCD_CONTRAST
-          int16_t lcd_contrast;
-        #endif
+
+        int16_t lcd_contrast;
         EEPROM_READ(lcd_contrast);
+        #if HAS_LCD_CONTRAST
+          ui.set_contrast(lcd_contrast);
+        #endif
       }
 
       //
@@ -2034,12 +2049,12 @@ void MarlinSettings::reset(PORTARG_SOLO) {
   #endif
 
   #if HAS_LCD_MENU
-    lcd_preheat_hotend_temp[0] = PREHEAT_1_TEMP_HOTEND;
-    lcd_preheat_hotend_temp[1] = PREHEAT_2_TEMP_HOTEND;
-    lcd_preheat_bed_temp[0] = PREHEAT_1_TEMP_BED;
-    lcd_preheat_bed_temp[1] = PREHEAT_2_TEMP_BED;
-    lcd_preheat_fan_speed[0] = PREHEAT_1_FAN_SPEED;
-    lcd_preheat_fan_speed[1] = PREHEAT_2_FAN_SPEED;
+    ui.preheat_hotend_temp[0] = PREHEAT_1_TEMP_HOTEND;
+    ui.preheat_hotend_temp[1] = PREHEAT_2_TEMP_HOTEND;
+    ui.preheat_bed_temp[0] = PREHEAT_1_TEMP_BED;
+    ui.preheat_bed_temp[1] = PREHEAT_2_TEMP_BED;
+    ui.preheat_fan_speed[0] = PREHEAT_1_FAN_SPEED;
+    ui.preheat_fan_speed[1] = PREHEAT_2_FAN_SPEED;
   #endif
 
   #if ENABLED(PIDTEMP)
@@ -2063,7 +2078,7 @@ void MarlinSettings::reset(PORTARG_SOLO) {
   #endif
 
   #if HAS_LCD_CONTRAST
-    lcd_contrast = DEFAULT_LCD_CONTRAST;
+    ui.set_contrast(DEFAULT_LCD_CONTRAST);
   #endif
 
   #if ENABLED(FWRETRACT)
@@ -2567,12 +2582,12 @@ void MarlinSettings::reset(PORTARG_SOLO) {
         CONFIG_ECHO_START;
         SERIAL_ECHOLNPGM_P(port, "Material heatup parameters:");
       }
-      for (uint8_t i = 0; i < COUNT(lcd_preheat_hotend_temp); i++) {
+      for (uint8_t i = 0; i < COUNT(ui.preheat_hotend_temp); i++) {
         CONFIG_ECHO_START;
         SERIAL_ECHOPAIR_P(port, "  M145 S", (int)i);
-        SERIAL_ECHOPAIR_P(port, " H", TEMP_UNIT(lcd_preheat_hotend_temp[i]));
-        SERIAL_ECHOPAIR_P(port, " B", TEMP_UNIT(lcd_preheat_bed_temp[i]));
-        SERIAL_ECHOLNPAIR_P(port, " F", int(lcd_preheat_fan_speed[i]));
+        SERIAL_ECHOPAIR_P(port, " H", TEMP_UNIT(ui.preheat_hotend_temp[i]));
+        SERIAL_ECHOPAIR_P(port, " B", TEMP_UNIT(ui.preheat_bed_temp[i]));
+        SERIAL_ECHOLNPAIR_P(port, " F", int(ui.preheat_fan_speed[i]));
       }
 
     #endif
@@ -2631,7 +2646,7 @@ void MarlinSettings::reset(PORTARG_SOLO) {
         SERIAL_ECHOLNPGM_P(port, "LCD Contrast:");
       }
       CONFIG_ECHO_START;
-      SERIAL_ECHOLNPAIR_P(port, "  M250 C", lcd_contrast);
+      SERIAL_ECHOLNPAIR_P(port, "  M250 C", ui.contrast);
     #endif
 
     #if ENABLED(FWRETRACT)

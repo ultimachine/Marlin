@@ -1628,3 +1628,27 @@
 #else
   #define Z_STEPPER_COUNT 1
 #endif
+
+// Get LCD character width/height, which may be overridden by pins, configs, etc.
+#ifndef LCD_WIDTH
+  #if ENABLED(LIGHTWEIGHT_UI)
+    #define LCD_WIDTH 16
+  #elif HAS_GRAPHICAL_LCD
+    #define LCD_WIDTH 22
+  #elif ENABLED(ULTIPANEL)
+    #define LCD_WIDTH 20
+  #elif HAS_SPI_LCD
+    #define LCD_WIDTH 16
+  #endif
+#endif
+#ifndef LCD_HEIGHT
+  #if ENABLED(LIGHTWEIGHT_UI)
+    #define LCD_HEIGHT 4
+  #elif HAS_GRAPHICAL_LCD
+    #define LCD_HEIGHT 5
+  #elif ENABLED(ULTIPANEL)
+    #define LCD_HEIGHT 4
+  #elif HAS_SPI_LCD
+    #define LCD_HEIGHT 2
+  #endif
+#endif
