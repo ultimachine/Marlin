@@ -1604,7 +1604,7 @@
 //#define BLINKM
 
 // Support for PCA9632 PWM LED driver
-//#define PCA9632
+#define PCA9632
 
 /**
  * RGB LED / LED Strip Control
