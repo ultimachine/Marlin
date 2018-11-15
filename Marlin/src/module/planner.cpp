@@ -172,6 +172,11 @@ float Planner::previous_speed[NUM_AXIS],
   volatile uint32_t Planner::block_buffer_runtime_us = 0;
 #endif
 
+#if ENABLED(FAN_TEMP_SAFE_CHANGE) && FAN_COUNT > 0
+    int curFanSpeeds[FAN_COUNT];
+    millis_t nextFanSpeedUpdate = 0;
+#endif
+
 /**
  * Class and Instance Methods
  */
@@ -420,7 +425,36 @@ void Planner::check_axes_activity() {
                 tail_fan_speed[FAN_COUNT];
 
   #if FAN_COUNT > 0
-    for (uint8_t i = 0; i < FAN_COUNT; i++) tail_fan_speed[i] = fanSpeeds[i];
+      #if ENABLED(FAN_TEMP_SAFE_CHANGE)
+        boolean shouldChangeFanSpeed = true;
+
+        if (millis() >= nextFanSpeedUpdate) {
+            nextFanSpeedUpdate = millis() + FAN_TEMP_SAFE_CHANGE_SPEED_FREQ;
+
+            for (int8_t cur_extruder = 0; cur_extruder < EXTRUDERS; ++cur_extruder) {
+                int currentHeat = thermalManager.degHotend(cur_extruder);
+                int targetHeat = thermalManager.degTargetHotend(cur_extruder);
+
+                shouldChangeFanSpeed &= (targetHeat == 0 || abs(targetHeat - currentHeat) <= FAN_TEMP_SAFE_CHANGE_DEGREE_VARIATION);
+            }
+        } else {
+            shouldChangeFanSpeed = false;
+        }
+
+        for (uint8_t i = 0; i < FAN_COUNT; i++) {
+            if (shouldChangeFanSpeed) {
+                if (curFanSpeeds[i] > fanSpeeds[i]) {
+                    curFanSpeeds[i] = max(0, curFanSpeeds[i] - FAN_TEMP_SAFE_CHANGE_SPEED_JUMPS);
+                } else if (curFanSpeeds[i] < fanSpeeds[i]) {
+                    curFanSpeeds[i] = min(fanSpeeds[i], curFanSpeeds[i] + FAN_TEMP_SAFE_CHANGE_SPEED_JUMPS);
+                }
+            }
+
+            tail_fan_speed[i] = curFanSpeeds[i];
+        }
+    #else
+      for (uint8_t i = 0; i < FAN_COUNT; i++) tail_fan_speed[i] = fanSpeeds[i];
+    #endif
   #endif
 
   #if ENABLED(BARICUDA)

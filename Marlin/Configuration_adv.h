@@ -225,6 +225,15 @@
 #define EXTRUDER_AUTO_FAN_TEMPERATURE 23
 #define EXTRUDER_AUTO_FAN_SPEED   255  // == full speed
 
+// Uncomment if you want the the fans speed to change gradually to save the temp in a given range
+#define FAN_TEMP_SAFE_CHANGE
+ // Amount of degrees of variation (both up and down)
+#define FAN_TEMP_SAFE_CHANGE_DEGREE_VARIATION 5
+ // Amount to increase / decrease between checks
+#define FAN_TEMP_SAFE_CHANGE_SPEED_JUMPS 10
+ // Time between fan speed changes (millis)
+#define FAN_TEMP_SAFE_CHANGE_SPEED_FREQ 1000
+
 /**
  * Part-Cooling Fan Multiplexer
  *
