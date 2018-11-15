@@ -38,8 +38,8 @@ void GcodeSuite::M44() {
   if (pin_number < 0) return;
 
   pinMode(pin_number, OUTPUT);
-  digitalWrite(pin_number, pin_status);
-  //analogWrite(pin_number, pin_status);
+  //digitalWrite(pin_number, pin_status);
+  analogWrite(pin_number, pin_status);
 }
 
 /**
