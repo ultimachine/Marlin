@@ -495,9 +495,14 @@ int Temperature::getHeaterPower(int heater) {
       const uint8_t bit = pgm_read_byte(&fanBit[f]);
       if (pin >= 0 && !TEST(fanDone, bit)) {
         uint8_t newFanSpeed = TEST(fanState, bit) ? EXTRUDER_AUTO_FAN_SPEED : 0;
-        // this idiom allows both digital and PWM fan outputs (see M42 handling).
-        digitalWrite(pin, newFanSpeed);
-        analogWrite(pin, newFanSpeed);
+
+        if(f < FANS_AS_AUTOFAN_COUNT)
+          fanSpeeds[f] = newFanSpeed;
+        else {
+          digitalWrite(pin, newFanSpeed);
+          analogWrite(pin, newFanSpeed);
+        }
+
         SBI(fanDone, bit);
       }
     }

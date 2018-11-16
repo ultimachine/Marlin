@@ -225,6 +225,8 @@
 #define EXTRUDER_AUTO_FAN_TEMPERATURE 23
 #define EXTRUDER_AUTO_FAN_SPEED   255  // == full speed
 
+#define FANS_AS_AUTOFAN_COUNT 1
+
 // Uncomment if you want the the fans speed to change gradually to save the temp in a given range
 #define FAN_TEMP_SAFE_CHANGE
  // Amount of degrees of variation (both up and down)
