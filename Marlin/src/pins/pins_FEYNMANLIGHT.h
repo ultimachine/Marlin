@@ -88,7 +88,7 @@
 //#define CONTROLLERFAN_PIN  -1 //Marlin1
 #define CONTROLLER_FAN_PIN -1 //Marlin2.0
 
-#define FAN_PIN             -1 //15 //PA15 S_FAN_12V //"You cannot set E0_AUTO_FAN_PIN equal to FAN_PIN."
+#define FAN_PIN             23 //15 //PA15 S_FAN_12V //"You cannot set E0_AUTO_FAN_PIN equal to FAN_PIN."
 #define FAN2_PIN            -1
 
 #define HEATER_0_PIN        40 //PB8 FCOM4_TX (Dummy Assignment)

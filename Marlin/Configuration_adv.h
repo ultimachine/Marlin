@@ -213,7 +213,7 @@
  * the fan will turn on when any selected extruder is above the threshold.
  */
 #if MB(FEYNMANLIGHT)
-#define E0_AUTO_FAN_PIN 23 //PA23 LED_FAN_24V (FeynmanLight)
+#define E0_AUTO_FAN_PIN 31 //PA23 LED_FAN_24V (FeynmanLight)
 #else
 #define E0_AUTO_FAN_PIN -1
 #endif
