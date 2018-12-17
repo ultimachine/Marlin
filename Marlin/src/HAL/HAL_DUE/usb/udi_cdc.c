@@ -1068,12 +1068,16 @@ int udi_cdc_multi_putc(uint8_t port, int value)
 
 	b_databit_9 = (9 == udi_cdc_line_coding[port].bDataBits);
 
+	int count=0; //Counter for TX timeout to prevent USB from blocking indefinitely.
 udi_cdc_putc_process_one_byte:
 	// Check available space
 	if (!udi_cdc_multi_is_tx_ready(port)) {
 		if (!udi_cdc_data_running) {
 			return false;
 		}
+		count++;
+		if (count>10000)
+			return false;
 		goto udi_cdc_putc_process_one_byte;
 	}
 
@@ -1113,12 +1117,16 @@ iram_size_t __attribute__((optimize("O0"))) udi_cdc_multi_write_buf(uint8_t port
 		size *=2;
 	}
 
+	int count=0; //Counter for TX timeout to prevent USB from blocking indefinitely.
 udi_cdc_write_buf_loop_wait:
 	// Check available space
 	if (!udi_cdc_multi_is_tx_ready(port)) {
 		if (!udi_cdc_data_running) {
 			return size;
 		}
+		count++;
+		if (count>10000)
+			return size;
 		goto udi_cdc_write_buf_loop_wait;
 	}
 
