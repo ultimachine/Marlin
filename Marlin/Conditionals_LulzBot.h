@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".28" // Change this with each update
+#define LULZBOT_FW_VERSION ".29" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1473,19 +1473,11 @@
         #define LULZBOT_Z_PROBE_LOW_POINT   -4 // Limit on pushing into the bed
     #endif
 
-    #define LULZBOT_ENHANCED_WIPE
-
-    #if defined(LULZBOT_ENHANCED_WIPE)
-        #define LULZBOT_WIPE_SEQUENCE_GCODE \
-            "M109 R170\n"                         /* Wait for wipe temp */ \
-            "M117 Rewiping nozzle\n"              /* Status message */ \
-            "G12 P0 S12 T0\n"                     /* Wipe nozzle */ \
-            "M104 S160\n"                         /* Drop to probe temp */ \
-    #else
-        #define LULZBOT_WIPE_SEQUENCE_GCODE \
-            "M117 Rewiping nozzle\n"              /* Status message */ \
-            "G12 P0 S12 T0\n"                     /* Wipe nozzle */
-    #endif
+    #define LULZBOT_WIPE_SEQUENCE_GCODE \
+        "M109 R170\n"                         /* Wait for wipe temp */ \
+        "M117 Rewiping nozzle\n"              /* Status message */ \
+        "G12 P0 S12 T0\n"                     /* Wipe nozzle */ \
+        "M104 S160\n"                         /* Drop to probe temp */
 
     #if defined(LULZBOT_USE_Z_BELT)
         #define LULZBOT_REWIPE_RECOVER_GCODE \
