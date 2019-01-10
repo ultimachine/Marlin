@@ -13,7 +13,7 @@
  * got disabled.
  */
 
-#define LULZBOT_FW_VERSION ".33" // Change this with each update
+#define LULZBOT_FW_VERSION ".34" // Change this with each update
 
 #if ( \
     !defined(LULZBOT_Gladiola_Mini) && \
@@ -1617,9 +1617,9 @@
         #endif
     #else
         #if defined(LULZBOT_Z_MIN_PROBE_ENDSTOP_INVERTING)
-            #define LULZBOT_TEST_PROBE_PIN !READ(Z_MIN_PROBE)
+            #define LULZBOT_TEST_PROBE_PIN !READ(Z_MIN_PROBE_PIN)
         #else
-            #define LULZBOT_TEST_PROBE_PIN  READ(Z_MIN_PROBE)
+            #define LULZBOT_TEST_PROBE_PIN  READ(Z_MIN_PROBE_PIN)
         #endif
     #endif
 
