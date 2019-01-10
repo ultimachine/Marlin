@@ -12431,6 +12431,8 @@ void process_parsed_command(
 
       #if ENABLED(ULTRA_LCD) && ENABLED(LCD_SET_PROGRESS_MANUALLY)
         case 73: gcode_M73(); break;                              // M73: Set Print Progress %
+      #else
+        case 73: break;
       #endif
       case 75: gcode_M75(); break;                                // M75: Start Print Job Timer
       case 76: gcode_M76(); break;                                // M76: Pause Print Job Timer
