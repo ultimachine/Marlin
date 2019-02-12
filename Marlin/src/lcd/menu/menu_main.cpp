@@ -113,8 +113,8 @@ void menu_led();
 #endif
 
 void menu_main() {
-  START_MENU();
-  MENU_BACK(MSG_WATCH);
+  //START_MENU();
+  //MENU_BACK(MSG_WATCH);
 
   #if !defined(LULZBOT_SD_MENU_ON_BOTTOM)
   #if ENABLED(SDSUPPORT)

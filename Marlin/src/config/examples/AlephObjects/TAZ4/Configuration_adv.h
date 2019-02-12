@@ -722,7 +722,7 @@
    *    INT              --> SD_DETECT_PIN
    *    SS               --> SDSS
    */
-  //#define USB_FLASH_DRIVE_SUPPORT
+  #define USB_FLASH_DRIVE_SUPPORT
   #if ENABLED(USB_FLASH_DRIVE_SUPPORT)
     #define USB_CS_PIN         SDSS
     #define USB_INTR_PIN       SD_DETECT_PIN

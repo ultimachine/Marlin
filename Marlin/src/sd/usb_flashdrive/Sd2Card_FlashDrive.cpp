@@ -31,6 +31,10 @@
 
 #include "Sd2Card_FlashDrive.h"
 
+#include "../../lcd/ultralcd.h"
+#define LCD_STATUS(M) ui.setstatusPGM(PSTR(M))
+//#define LCD_STATUS(M) LCD_MESSAGEPGM(_UxGT(M))
+
 USB usb;
 BulkOnly bulk(&usb);
 
@@ -46,23 +50,26 @@ void Sd2Card::idle() {
 
   switch (state) {
     case USB_HOST_DELAY_INIT:
-      next_retry = millis() + 10000;
+      next_retry = millis() + 1000; //10000
       state = USB_HOST_WAITING;
       break;
     case USB_HOST_WAITING:
       if (ELAPSED(millis(), next_retry)) {
-        next_retry = millis() + 10000;
+        next_retry = millis() + 1000; //10000
         state = USB_HOST_UNINITIALIZED;
       }
       break;
     case USB_HOST_UNINITIALIZED:
       SERIAL_ECHOLNPGM("Starting USB host");
+      LCD_STATUS("Starting USB host");
       if (!usb.start()) {
         SERIAL_ECHOLNPGM("USB host failed to start. Will retry in 10 seconds.");
+        LCD_STATUS("USB host failed");
         state = USB_HOST_DELAY_INIT;
       }
       else {
         SERIAL_ECHOLNPGM("USB host initialized");
+        LCD_STATUS("USB host initialized");
         state = USB_HOST_INITIALIZED;
       }
       break;
@@ -75,12 +82,14 @@ void Sd2Card::idle() {
         // the user pulled the flash drive. Make sure the bulk storage driver releases the address
         #ifdef USB_DEBUG
           SERIAL_ECHOLNPGM("USB drive removed");
+          LCD_STATUS("USB drive removed");
         #endif
         //bulk.Release();
       }
       if (lastUsbTaskState != USB_STATE_RUNNING && newUsbTaskState == USB_STATE_RUNNING) {
         #ifdef USB_DEBUG
           SERIAL_ECHOLNPGM("USB drive inserted");
+          LCD_STATUS("USB drive inserted");
         #endif
       }
       break;

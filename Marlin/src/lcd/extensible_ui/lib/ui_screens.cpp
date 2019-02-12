@@ -3647,7 +3647,7 @@ namespace UI {
   }
 
   void onMediaInserted() {
-    StatusScreen::setStatusMessage(F(MSG_SD_INSERTED));
+    //StatusScreen::setStatusMessage(F(MSG_SD_INSERTED));
     sound.play(media_inserted, PLAY_ASYNCHRONOUS);
   }
 
