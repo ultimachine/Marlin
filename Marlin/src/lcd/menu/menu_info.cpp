@@ -25,6 +25,9 @@
 //
 
 #include "../../inc/MarlinConfigPre.h"
+#include "../../inc/MarlinConfig.h"
+
+#define BOARD_NAME "Archim2-"
 
 #if HAS_LCD_MENU && ENABLED(LCD_INFO_MENU) || ENABLED(LULZBOT_ABOUT_FIRMWARE_MENU)
 

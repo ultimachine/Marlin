@@ -140,6 +140,7 @@
     #define LULZBOT_CUSTOM_MACHINE_NAME "LulzBot TAZ 6"
     #define LULZBOT_LCD_MACHINE_NAME "TAZ 6"
     #define LULZBOT_IS_TAZ
+    #define LULZBOT_USE_ARCHIM2
     #define LULZBOT_TAZ_BED
     #define LULZBOT_USE_LCD_DISPLAY
     #define LULZBOT_USE_AUTOLEVELING
@@ -184,7 +185,8 @@
     #define LULZBOT_TAZ_BED
     #define LULZBOT_TWO_PIECE_BED
     #define LULZBOT_USE_ARCHIM2
-    #define LULZBOT_USE_TOUCH_UI
+    #define LULZBOT_USE_LCD_DISPLAY
+    //#define LULZBOT_USE_TOUCH_UI
     #define LULZBOT_USE_AUTOLEVELING
     #define LULZBOT_SENSORLESS_HOMING
     #define LULZBOT_USE_NORMALLY_CLOSED_ENDSTOPS
@@ -309,6 +311,8 @@
     #define LULZBOT_CONTROLLER_FAN_PIN            FAN1_PIN
     #define LULZBOT_SERIAL_PORT                   -1
     #define LULZBOT_SPI_SPEED                     SPI_SIXTEENTH_SPEED
+    #define LULZBOT_Z_MIN_PROBE_PIN               30
+    //#define LULZBOT_Z_MIN_PROBE_PIN               Z_MAX_PIN
 
 #elif defined(LULZBOT_USE_EINSY_RETRO)
     // Experimental Mini retrofitted with EinsyRambo from UltiMachine
@@ -1380,7 +1384,7 @@
 #if defined(LULZBOT_USE_MAX_ENDSTOPS)
     #define LULZBOT_USE_XMAX_PLUG
     #define LULZBOT_USE_YMAX_PLUG
-    #define LULZBOT_USE_ZMAX_PLUG
+    //#define LULZBOT_USE_ZMAX_PLUG
 #endif
 
 #define LULZBOT_ENDSTOPS_ALWAYS_ON_DEFAULT
