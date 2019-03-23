@@ -644,8 +644,8 @@ void MarlinUI::update() {
         card.initsd();
         if (old_sd_status == 2)
           card.beginautostart();  // Initial boot
-        else
-          setstatusPGM(PSTR(MSG_SD_INSERTED));
+        //else
+          //setstatusPGM(PSTR(MSG_SD_INSERTED));
       }
       else {
         card.release();

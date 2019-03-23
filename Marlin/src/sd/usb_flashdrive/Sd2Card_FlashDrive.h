@@ -30,7 +30,7 @@
  *    1 - basic debugging and bounds checking
  *    2 - print each block access
  */
-//#define USB_DEBUG 1
+#define USB_DEBUG 1
 
 
 #include "../SdFatConfig.h"

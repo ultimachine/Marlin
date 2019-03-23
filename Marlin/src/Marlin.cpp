@@ -811,7 +811,7 @@ void setup() {
 
   endstops.init();          // Init endstops and pullups
 
-  stepper.init();           // Init stepper. This enables interrupts!
+  //stepper.init();           // Init stepper. This enables interrupts!
 
   #if HAS_SERVOS
     servo_init();
@@ -907,7 +907,7 @@ void setup() {
   ui.reset_status();
 
   #if ENABLED(SHOW_BOOTSCREEN)
-    ui.show_bootscreen();
+    //ui.show_bootscreen();
   #endif
 
   #if ENABLED(MIXING_EXTRUDER)
