@@ -1151,7 +1151,7 @@
  */
 #if HAS_TRINAMIC
 
-  #define R_SENSE           0.10  // R_sense resistor for SilentStepStick2130
+  #define R_SENSE           0.05  // R_sense resistor for SilentStepStick2130
   #define HOLD_MULTIPLIER    0.5  // Scales down the holding current from run current
   #define INTERPOLATE       true  // Interpolate X/Y/Z_MICROSTEPS to 256
 

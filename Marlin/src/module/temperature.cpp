@@ -948,6 +948,9 @@ float Temperature::analog2temp(const int raw, const uint8_t e) {
 
   switch (e) {
     case 0:
+      #if ENABLED(HEATER_0_USES_MAX31856)
+        return MAX31856_CONVERSION_FORMULA(raw);
+      #endif
       #if ENABLED(HEATER_0_USES_MAX6675)
         return raw * 0.25;
       #elif ENABLED(HEATER_0_USES_AD595)
