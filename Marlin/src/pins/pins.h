@@ -359,8 +359,8 @@
   #include "pins_ULTRATRONICS_PRO.h"  // SAM3X8E                                    env:DUE env:DUE_debug
 #elif MB(ARCHIM2)
   #include "pins_ARCHIM2.h"           // SAM3X8E                                    env:DUE env:DUE_debug
-#elif MB(ARCHIM_MAJOR)
-  #include "pins_ARCHIM_MAJOR.h"      // SAM3X8E                                    env:DUE env:DUE_debug
+#elif MB(ARCHIMAJOR)
+  #include "pins_ARCHIMAJOR.h"      // SAM3X8E                                    env:DUE env:DUE_debug
 #elif MB(ALLIGATOR)
   #include "pins_ALLIGATOR_R2.h"      // SAM3X8E                                    env:DUE env:DUE_debug
 

@@ -207,7 +207,7 @@
 #define BOARD_RURAMPS4D_13     1551   // RuRAMPS4Duo v1.3 (Power outputs: Hotend0, Hotend1, Hotend2, Fan0, Fan1, Bed)
 #define BOARD_ULTRATRONICS_PRO 1560   // ReprapWorld Ultratronics Pro V1.0
 #define BOARD_ARCHIM2          1590   // UltiMachine Archim2 (with TMC2130 drivers)
-#define BOARD_ARCHIM_MAJOR     1591   // UltiMachine Archim2 (with TMC2130 drivers)
+#define BOARD_ARCHIMAJOR       1591   // UltiMachine Archimajor (with TMC5160 drivers)
 #define BOARD_ALLIGATOR        1602   // Alligator Board R2
 
 //

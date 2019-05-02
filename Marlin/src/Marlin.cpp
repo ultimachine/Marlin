@@ -659,7 +659,7 @@ void stop() {
 }
 
 void init_board_archimajor() {
-  #if MB(ARCHIM_MAJOR)
+  #if MB(ARCHIMAJOR)
     //Initialize MAX31856+ Thermocouple Chipselect pins.
     pinMode(TC_nCS1,OUTPUT);
     pinMode(TC_nCS2,OUTPUT);
