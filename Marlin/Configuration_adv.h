@@ -1246,7 +1246,7 @@
    * and increased if the measurement is lower then INCREASE_CURRENT_THRS.
    * Current will never be increased over the configured values nor reduced below 50%.
    */
-  #define ADAPTIVE_CURRENT
+  //#define ADAPTIVE_CURRENT
 
   #if ENABLED(ADAPTIVE_CURRENT)
     #define REDUCE_CURRENT_THRS     3
@@ -1308,7 +1308,7 @@
    * It is advised to set X/Y/Z_HOME_BUMP_MM to 0.
    * M914 X/Y/Z to live tune the setting
    */
-  #define SENSORLESS_HOMING // TMC2130 and TMC2660 only
+  //#define SENSORLESS_HOMING // TMC2130 and TMC2660 only
 
   #if ENABLED(SENSORLESS_HOMING)
     #define X_HOMING_SENSITIVITY  8
@@ -1332,7 +1332,7 @@
    * Use M915 Snn to specify the current.
    * Use M925 Znn to add extra Z height to Z_MAX_POS.
    */
-  #define TMC_Z_CALIBRATION
+  //#define TMC_Z_CALIBRATION
   #if ENABLED(TMC_Z_CALIBRATION)
     #define CALIBRATION_CURRENT 250
     #define CALIBRATION_EXTRA_HEIGHT 10
