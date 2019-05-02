@@ -941,6 +941,9 @@ void test_tmc_connection() {
   #if HAS_DRIVER(TMC2130)
     bool get_stealthChop(TMC2130Stepper &st) { return st.en_pwm_mode(); }
   #endif
+  #if HAS_DRIVER(TMC5160)
+    bool get_stealthChop(TMC5160Stepper &st) { return st.en_pwm_mode(); }
+  #endif
   #if HAS_DRIVER(TMC2208)
     bool get_stealthChop(TMC2208Stepper &st) { return !st.en_spreadCycle(); }
   #endif
