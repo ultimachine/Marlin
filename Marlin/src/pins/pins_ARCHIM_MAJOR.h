@@ -259,8 +259,8 @@
 
     
 // Buttons on AUX-2
-    #define BTN_EN1        40   
-		//PC8
+    #define BTN_EN1        60
+		// D60 PA3_TIOB1
     #define BTN_EN2        13   
 		// D13 PB27_TIOB0
     #define BTN_ENC        16   
