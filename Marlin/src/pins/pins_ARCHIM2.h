@@ -35,6 +35,9 @@
  * Further information on the UltiMachine website...
  *   https://github.com/ultimachine/Archim/wiki
  */
+ 
+ 
+#define TMC_USE_SW_SPI 
 
 #ifndef __SAM3X8E__
   #error "Oops! Select 'Archim' in 'Tools > Board.'"
