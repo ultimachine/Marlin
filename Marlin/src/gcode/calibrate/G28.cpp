@@ -238,14 +238,14 @@ void GcodeSuite::G28(const bool always_home_all) {
   #endif
 
   #if ENABLED(IMPROVE_HOMING_RELIABILITY)
-    slow_homing_t slow_homing{0};
-    slow_homing.acceleration.x = planner.settings.max_acceleration_mm_per_s2[X_AXIS];
-    slow_homing.acceleration.y = planner.settings.max_acceleration_mm_per_s2[Y_AXIS];
+    motion_params_t saved_planner{0};
+    saved_planner.acceleration.x = planner.settings.max_acceleration_mm_per_s2[X_AXIS];
+    saved_planner.acceleration.y = planner.settings.max_acceleration_mm_per_s2[Y_AXIS];
     planner.settings.max_acceleration_mm_per_s2[X_AXIS] = 100;
     planner.settings.max_acceleration_mm_per_s2[Y_AXIS] = 100;
     #if HAS_CLASSIC_JERK
-      slow_homing.jerk.x = planner.max_jerk[X_AXIS];
-      slow_homing.jerk.y = planner.max_jerk[Y_AXIS];
+      saved_planner.jerk.x = planner.max_jerk[X_AXIS];
+      saved_planner.jerk.y = planner.max_jerk[Y_AXIS];
       planner.max_jerk[X_AXIS] = 0;
       planner.max_jerk[Y_AXIS] = 0;
     #endif
@@ -458,11 +458,11 @@ void GcodeSuite::G28(const bool always_home_all) {
   #endif
 
   #if ENABLED(IMPROVE_HOMING_RELIABILITY)
-    planner.settings.max_acceleration_mm_per_s2[X_AXIS] = slow_homing.acceleration.x;
-    planner.settings.max_acceleration_mm_per_s2[Y_AXIS] = slow_homing.acceleration.y;
+    planner.settings.max_acceleration_mm_per_s2[X_AXIS] = saved_planner.acceleration.x;
+    planner.settings.max_acceleration_mm_per_s2[Y_AXIS] = saved_planner.acceleration.y;
     #if HAS_CLASSIC_JERK
-      planner.max_jerk[X_AXIS] = slow_homing.jerk.x;
-      planner.max_jerk[Y_AXIS] = slow_homing.jerk.y;
+      planner.max_jerk[X_AXIS] = saved_planner.jerk.x;
+      planner.max_jerk[Y_AXIS] = saved_planner.jerk.y;
     #endif
 
     // steps per sq second need to be updated to agree with the units per sq second (as they are what is used in the planner)

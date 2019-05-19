@@ -548,9 +548,7 @@ void Endstops::update() {
       #if ENABLED(IMPROVE_HOMING_RELIABILITY)
         && ELAPSED(ms, sg_guard_period)
       #endif
-      ) {
-      SET_BIT_TO(live_state, X_MIN, stepperX.test_stall_status());
-    }
+    ) SET_BIT_TO(live_state, X_MIN, stepperX.test_stall_status());
   #endif
 
   #if HAS_X_MAX
@@ -569,9 +567,7 @@ void Endstops::update() {
       #if ENABLED(IMPROVE_HOMING_RELIABILITY)
         && ELAPSED(ms, sg_guard_period)
       #endif
-      ) {
-      SET_BIT_TO(live_state, X_MAX, stepperX.test_stall_status());
-    }
+    ) SET_BIT_TO(live_state, X_MAX, stepperX.test_stall_status());
   #endif
 
   #if HAS_Y_MIN
@@ -590,9 +586,7 @@ void Endstops::update() {
       #if ENABLED(IMPROVE_HOMING_RELIABILITY)
         && ELAPSED(ms, sg_guard_period)
       #endif
-      ) {
-      SET_BIT_TO(live_state, Y_MIN, stepperY.test_stall_status());
-    }
+    ) SET_BIT_TO(live_state, Y_MIN, stepperY.test_stall_status());
   #endif
 
   #if HAS_Y_MAX
@@ -611,9 +605,7 @@ void Endstops::update() {
       #if ENABLED(IMPROVE_HOMING_RELIABILITY)
         && ELAPSED(ms, sg_guard_period)
       #endif
-      ) {
-      SET_BIT_TO(live_state, Y_MAX, stepperY.test_stall_status());
-    }
+    ) SET_BIT_TO(live_state, Y_MAX, stepperY.test_stall_status());
   #endif
 
   #if HAS_Z_MIN
@@ -641,9 +633,7 @@ void Endstops::update() {
       #if ENABLED(IMPROVE_HOMING_RELIABILITY)
         && ELAPSED(ms, sg_guard_period)
       #endif
-      ) {
-      SET_BIT_TO(live_state, Z_MIN, stepperZ.test_stall_status());
-    }
+    ) SET_BIT_TO(live_state, Z_MIN, stepperZ.test_stall_status());
   #endif
 
   // When closing the gap check the enabled probe
@@ -676,9 +666,7 @@ void Endstops::update() {
       #if ENABLED(IMPROVE_HOMING_RELIABILITY)
         && ELAPSED(ms, sg_guard_period)
       #endif
-      ) {
-      SET_BIT_TO(live_state, Z_MAX, stepperZ.test_stall_status());
-    }
+    ) SET_BIT_TO(live_state, Z_MAX, stepperZ.test_stall_status());
   #endif
 
   #if ENDSTOP_NOISE_THRESHOLD
@@ -842,24 +830,21 @@ void Endstops::update() {
     #if X_SPI_SENSORLESS
       #if X_HOME_DIR == -1
         SET_BIT_TO(live_state, X_MIN, false);
-      #endif
-      #if X_HOME_DIR == 1
+      #elif X_HOME_DIR == 1
         SET_BIT_TO(live_state, X_MAX, false);
       #endif
     #endif
     #if Y_SPI_SENSORLESS
       #if Y_HOME_DIR == -1
         SET_BIT_TO(live_state, Y_MIN, false);
-      #endif
-      #if Y_HOME_DIR == 1
+      #elif Y_HOME_DIR == 1
         SET_BIT_TO(live_state, Y_MAX, false);
       #endif
     #endif
     #if Z_SPI_SENSORLESS // Needs hardware testing
       #if Z_HOME_DIR == -1
         SET_BIT_TO(live_state, Z_MIN, false);
-      #endif
-      #if Z_HOME_DIR == 1
+      #elif Z_HOME_DIR == 1
         SET_BIT_TO(live_state, Z_MAX, false);
       #endif
     #endif
@@ -871,14 +856,13 @@ void Endstops::update() {
   bool Endstops::monitor_flag = false;
 
   /**
-   * monitors endstops & Z probe for changes
+   * Monitor Endstops and Z Probe for changes
    *
    * If a change is detected then the LED is toggled and
-   * a message is sent out the serial port
+   * a message is sent out the serial port.
    *
    * Yes, we could miss a rapid back & forth change but
    * that won't matter because this is all manual.
-   *
    */
   void Endstops::monitor() {
 

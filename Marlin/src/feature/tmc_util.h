@@ -277,23 +277,22 @@ void test_tmc_connection(const bool test_x, const bool test_y, const bool test_z
 #endif
 
 /**
- * TMC2130 specific sensorless homing using stallGuard2.
+ * TMC2130-specific sensorless homing using stallGuard2.
  * stallGuard2 only works when in spreadCycle mode.
- * spreadCycle and stealthChop are mutually exclusive.
+ * spreadCycle and stealthChop are mutually-exclusive.
  *
  * Defined here because of limitations with templates and headers.
  */
 #if USE_SENSORLESS
+
   // Track enabled status of stealthChop and only re-enable where applicable
-  struct sensorless_t {
-    bool x, y, z, x2, y2, z2, z3;
-  };
+  struct sensorless_t { bool x, y, z, x2, y2, z2, z3; };
 
   #if ENABLED(IMPROVE_HOMING_RELIABILITY)
     extern millis_t sg_guard_period;
     constexpr uint16_t default_sg_guard_duration = 400;
 
-    struct slow_homing_t {
+    struct motion_params_t {
       struct { uint32_t x, y; } acceleration;
       #if HAS_CLASSIC_JERK
         struct { float x, y; } jerk;
@@ -308,22 +307,22 @@ void test_tmc_connection(const bool test_x, const bool test_y, const bool test_z
   void tmc_disable_stallguard(TMC2660Stepper, const bool);
 
   #if ENABLED(SPI_ENDSTOPS)
+
     template<class TMC, char AXIS_LETTER, char DRIVER_ID>
     bool TMCMarlin<TMC, AXIS_LETTER, DRIVER_ID>::test_stall_status() {
       uint16_t sg_result = 0;
 
       this->switchCSpin(LOW);
 
-      if (this->TMC_SW_SPI != NULL) {
+      if (this->TMC_SW_SPI != nullptr) {
         this->TMC_SW_SPI->transfer(TMC2130_n::DRV_STATUS_t::address);
         this->TMC_SW_SPI->transfer16(0);
         // We only care about the last 10 bits
         sg_result = this->TMC_SW_SPI->transfer(0);
         sg_result <<= 8;
         sg_result |= this->TMC_SW_SPI->transfer(0);
-        sg_result &= 0x3FF;
-
-      } else {
+      }
+      else {
         SPI.beginTransaction(SPISettings(16000000/8, MSBFIRST, SPI_MODE3));
         // Read DRV_STATUS
         SPI.transfer(TMC2130_n::DRV_STATUS_t::address);
@@ -332,16 +331,16 @@ void test_tmc_connection(const bool test_x, const bool test_y, const bool test_z
         sg_result = SPI.transfer(0);
         sg_result <<= 8;
         sg_result |= SPI.transfer(0);
-        sg_result &= 0x3FF;
         SPI.endTransaction();
       }
       this->switchCSpin(HIGH);
 
-      if (sg_result == 0) return true;
-      else return false;
+      return (sg_result & 0x3FF) == 0;
     }
-  #endif
-#endif
+
+  #endif // SPI_ENDSTOPS
+
+#endif // USE_SENSORLESS
 
 #if TMC_HAS_SPI
   void tmc_init_cs_pins();
