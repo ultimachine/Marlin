@@ -39,7 +39,8 @@
 #ifndef __SAM3X8E__
   #error "Oops! Select 'Archim' in 'Tools > Board.'"
 #elif DISABLED(TMC_USE_SW_SPI)
-  #error "Archim2 requires Software SPI. Enable TMC_USE_SW_SPI in Configuration_adv.h."
+  //#error "Archim2 requires Software SPI. Enable TMC_USE_SW_SPI in Configuration_adv.h."
+	#define TMC_USE_SW_SPI
 #endif
 
 #define BOARD_NAME "Archim 2.0"
@@ -129,19 +130,23 @@
   #define Z_CS_PIN         45   // PC18 Z_nCS
 #endif
 
-#define E0_STEP_PIN       107   // PB10 E1-STEP -AddOns *
-#define E0_DIR_PIN         96   // PC10 E1-DIR -AddOns *
-#define E0_ENABLE_PIN     105   // PB22 E1-EN -AddOns *
-#ifndef E0_CS_PIN
-  #define E0_CS_PIN       104   // PC20 E1_nCS -AddOns *
+#define E1_STEP_PIN       107   // PB10 E1-STEP -AddOns *  (DUAL)
+#define E1_DIR_PIN         96   // PC10 E1-DIR -AddOns * (DUAL)
+#define E1_ENABLE_PIN     105   // PB22 E1-EN -AddOns * (DUAL)
+#ifndef E1_CS_PIN
+  #define E1_CS_PIN       104   // PC20 E1_nCS -AddOns * (DUAL)
 #endif
 
-#define E1_STEP_PIN        22   // PB26 E2_STEP *
-#define E1_DIR_PIN         97   // PB24 E2_DIR -AddOns *
-#define E1_ENABLE_PIN      18   // PA11 E2-EN
-#ifndef E1_CS_PIN
-  #define E1_CS_PIN        19   // PA10 E2_nCS
+#define E2_STEP_PIN        22   // PB26 E2_STEP * (DUAL)
+#define E2_DIR_PIN         97   // PB24 E2_DIR -AddOns * (DUAL)
+#define E2_ENABLE_PIN      18   // PA11 E2-EN (DUAL)
+#ifndef E2_CS_PIN
+  #define E2_CS_PIN        19   // PA10 E2_nCS (DUAL)
 #endif
+
+#define E0_STEP_PIN        100   // Unused Pin on J20 (DUAL)
+#define E0_DIR_PIN         99   //  Unused Pin on J20 (DUAL)
+#define E0_ENABLE_PIN      101   // Unused Pin on J20 (DUAL)
 
 //
 // Software SPI pins for TMC2130 stepper drivers.
