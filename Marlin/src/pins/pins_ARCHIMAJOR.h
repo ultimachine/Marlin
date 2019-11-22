@@ -239,15 +239,17 @@
 
 #if ENABLED(ULTRA_LCD)
   #if ENABLED(NEWPANEL)
-    #define BEEPER_PIN     23   
+
+#ifdef ARCHIMAJOR_REV_01B //First version
+    #define BEEPER_PIN     23
 		// D24 PA15_CTS1
-    #define LCD_PINS_RS    17   
-		// D17 PA12_RXD1
-    #define LCD_PINS_ENABLE 24  
+    #define LCD_PINS_RS    17
+            // D17 PA12_RXD1
+    #define LCD_PINS_ENABLE 24
 		// D23 PA14_RTS1
     #define LCD_PINS_D4    69   
 		// D69 PA0_CANTX0
-    #define LCD_PINS_D5   106   
+    #define LCD_PINS_D5   106
 		// PC27
     #define LCD_PINS_D6    68   
 		// D68 PA1_CANRX0
@@ -263,9 +265,32 @@
 		// D60 PA3_TIOB1
     #define BTN_EN2        13   
 		// D13 PB27_TIOB0
-    #define BTN_ENC        16   
+    #define BTN_ENC        16
 		// D16 PA13_TXD1 
-// the click
+
+#else // Archimajor 0.2b
+    #define BEEPER_PIN     20
+    #define LCD_PINS_RS    21
+    #define LCD_PINS_ENABLE 93
+    #define LCD_PINS_D4    69   
+		// D69 PA0_CANTX0
+    #define LCD_PINS_D5    77
+    #define LCD_PINS_D6    68   
+		// D68 PA1_CANRX0
+    #define LCD_PINS_D7    34   
+		// D34 PC2_PWML0
+
+    #define SD_DETECT_PIN   2   
+		// D2  PB25_TIOA0
+
+    
+// Buttons on AUX-2
+    #define BTN_EN1        60
+		// D60 PA3_TIOB1
+    #define BTN_EN2        13   
+		// D13 PB27_TIOB0
+    #define BTN_ENC        109
+#endif // Archimajor REV
   #endif  
 // NEWPANEL
 #endif 
