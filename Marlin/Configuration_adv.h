@@ -1532,7 +1532,7 @@
   #define MM_PER_ARC_SEGMENT   .2 // (mm) Length (or minimum length) of each arc segment
   //#define MIN_ARC_SEGMENTS     24 // Minimum number of segments in a complete circle
   #define ARC_SEGMENTS_PER_SEC 160 // Use feedrate to choose segment length (with MM_PER_ARC_SEGMENT as the minimum)
-  #define N_ARC_CORRECTION     25 // Number of interpolated segments between corrections
+  #define N_ARC_CORRECTION     50 // Number of interpolated segments between corrections
   //#define ARC_P_CIRCLES         // Enable the 'P' parameter to specify complete circles
   //#define CNC_WORKSPACE_PLANES  // Allow G2/G3 to operate in XY, ZX, or YZ planes
 #endif
