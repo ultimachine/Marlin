@@ -41,6 +41,57 @@
 //===========================================================================
 
 //
+// Custom Thermistor 1000 parameters
+//
+#if TEMP_SENSOR_0 == 1000
+  #define HOTEND0_PULLUP_RESISTOR_OHMS 4700    // Pullup resistor
+  #define HOTEND0_RESISTANCE_25C_OHMS  100000  // Resistance at 25C
+  #define HOTEND0_BETA                 3950    // Beta value
+#endif
+
+#if TEMP_SENSOR_1 == 1000
+  #define HOTEND1_PULLUP_RESISTOR_OHMS 4700    // Pullup resistor
+  #define HOTEND1_RESISTANCE_25C_OHMS  100000  // Resistance at 25C
+  #define HOTEND1_BETA                 3950    // Beta value
+#endif
+
+#if TEMP_SENSOR_2 == 1000
+  #define HOTEND2_PULLUP_RESISTOR_OHMS 4700    // Pullup resistor
+  #define HOTEND2_RESISTANCE_25C_OHMS  100000  // Resistance at 25C
+  #define HOTEND2_BETA                 3950    // Beta value
+#endif
+
+#if TEMP_SENSOR_3 == 1000
+  #define HOTEND3_PULLUP_RESISTOR_OHMS 4700    // Pullup resistor
+  #define HOTEND3_RESISTANCE_25C_OHMS  100000  // Resistance at 25C
+  #define HOTEND3_BETA                 3950    // Beta value
+#endif
+
+#if TEMP_SENSOR_4 == 1000
+  #define HOTEND4_PULLUP_RESISTOR_OHMS 4700    // Pullup resistor
+  #define HOTEND4_RESISTANCE_25C_OHMS  100000  // Resistance at 25C
+  #define HOTEND4_BETA                 3950    // Beta value
+#endif
+
+#if TEMP_SENSOR_5 == 1000
+  #define HOTEND5_PULLUP_RESISTOR_OHMS 4700    // Pullup resistor
+  #define HOTEND5_RESISTANCE_25C_OHMS  100000  // Resistance at 25C
+  #define HOTEND5_BETA                 3950    // Beta value
+#endif
+
+#if TEMP_SENSOR_BED == 1000
+  #define BED_PULLUP_RESISTOR_OHMS     4700    // Pullup resistor
+  #define BED_RESISTANCE_25C_OHMS      100000  // Resistance at 25C
+  #define BED_BETA                     3950    // Beta value
+#endif
+
+#if TEMP_SENSOR_CHAMBER == 1000
+  #define CHAMBER_PULLUP_RESISTOR_OHMS 4700    // Pullup resistor
+  #define CHAMBER_RESISTANCE_25C_OHMS  100000  // Resistance at 25C
+  #define CHAMBER_BETA                 3950    // Beta value
+#endif
+
+//									
 // Hephestos 2 24V heated bed upgrade kit.
 // https://store.bq.com/en/heated-bed-kit-hephestos2
 //
@@ -75,7 +126,7 @@
  * THERMAL_PROTECTION_HYSTERESIS and/or THERMAL_PROTECTION_PERIOD
  */
 #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-  #define THERMAL_PROTECTION_PERIOD 40        // Seconds
+  #define THERMAL_PROTECTION_PERIOD 120        // Seconds
   #define THERMAL_PROTECTION_HYSTERESIS 4     // Degrees Celsius
 
   /**
@@ -90,7 +141,7 @@
    * and/or decrease WATCH_TEMP_INCREASE. WATCH_TEMP_INCREASE should not be set
    * below 2.
    */
-  #define WATCH_TEMP_PERIOD 20                // Seconds
+  #define WATCH_TEMP_PERIOD 60                // Seconds
   #define WATCH_TEMP_INCREASE 2               // Degrees Celsius
 #endif
 
@@ -174,7 +225,7 @@
 // then extrude some filament every couple of SECONDS.
 //#define EXTRUDER_RUNOUT_PREVENT
 #if ENABLED(EXTRUDER_RUNOUT_PREVENT)
-  #define EXTRUDER_RUNOUT_MINTEMP 191
+  #define EXTRUDER_RUNOUT_MINTEMP 190
   #define EXTRUDER_RUNOUT_SECONDS 30
   #define EXTRUDER_RUNOUT_SPEED 1500  // mm/m
   #define EXTRUDER_RUNOUT_EXTRUDE 5   // mm
@@ -237,8 +288,8 @@
  * Multiple extruders can be assigned to the same pin in which case
  * the fan will turn on when any selected extruder is above the threshold.
  */
-#define E0_AUTO_FAN_PIN -1
-#define E1_AUTO_FAN_PIN -1
+#define E0_AUTO_FAN_PIN 5
+#define E1_AUTO_FAN_PIN 5
 #define E2_AUTO_FAN_PIN -1
 #define E3_AUTO_FAN_PIN -1
 #define E4_AUTO_FAN_PIN -1
@@ -320,12 +371,12 @@
   #endif
 #endif
 
-//#define Y_DUAL_STEPPER_DRIVERS
+#define Y_DUAL_STEPPER_DRIVERS
 #if ENABLED(Y_DUAL_STEPPER_DRIVERS)
   #define INVERT_Y2_VS_Y_DIR true   // Set 'true' if Y motors should rotate in opposite directions
-  //#define Y_DUAL_ENDSTOPS
+  #define Y_DUAL_ENDSTOPS
   #if ENABLED(Y_DUAL_ENDSTOPS)
-    #define Y2_USE_ENDSTOP _YMAX_
+    #define Y2_USE_ENDSTOP _YMIN_
     #define Y_DUAL_ENDSTOPS_ADJUSTMENT  0
   #endif
 #endif
