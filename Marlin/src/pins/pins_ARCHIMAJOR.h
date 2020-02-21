@@ -182,10 +182,10 @@
 #define E1_ENABLE_PIN       -1
 #define E1_CS_PIN           M_nCS5
 
-#define E2_STEP_PIN         STEP6
-#define E2_DIR_PIN          DIR6
-#define E2_ENABLE_PIN       -1
-#define E2_CS_PIN           M_nCS6
+#define Y2_STEP_PIN         STEP6
+#define Y2_DIR_PIN          DIR6
+#define Y2_ENABLE_PIN       -1
+#define Y2_CS_PIN           M_nCS6
 
 #define E3_STEP_PIN         STEP7
 #define E3_DIR_PIN          DIR7

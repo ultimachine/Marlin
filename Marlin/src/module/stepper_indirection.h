@@ -241,7 +241,7 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
 #endif
 
 // Y2 Stepper
-#if HAS_Y2_ENABLE
+#if 1 //HAS_Y2_ENABLE
   #if AXIS_DRIVER_TYPE(Y2, L6470)
     extern L6470 stepperY2;
     #define Y2_ENABLE_INIT NOOP

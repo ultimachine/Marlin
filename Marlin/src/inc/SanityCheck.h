@@ -372,7 +372,7 @@
 #elif ENABLED(X_DUAL_STEPPER_DRIVERS) && !(HAS_X2_ENABLE && HAS_X2_STEP && HAS_X2_DIR)
   #error "X_DUAL_STEPPER_DRIVERS requires X2 pins (and an extra E plug)."
 #elif ENABLED(Y_DUAL_STEPPER_DRIVERS) && !(HAS_Y2_ENABLE && HAS_Y2_STEP && HAS_Y2_DIR)
-  #error "Y_DUAL_STEPPER_DRIVERS requires Y2 pins (and an extra E plug)."
+  //#error "Y_DUAL_STEPPER_DRIVERS requires Y2 pins (and an extra E plug)."
 #elif ENABLED(Z_DUAL_STEPPER_DRIVERS)
   #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
     #error "Please select either Z_TRIPLE_STEPPER_DRIVERS or Z_DUAL_STEPPER_DRIVERS, not both."
