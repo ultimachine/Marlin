@@ -1,7 +1,7 @@
 /**
  * Marlin 3D Printer Firmware
  *
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  * SAMD51 HAL developed by Giuliano Zaro (AKA GMagician)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -59,6 +59,16 @@
 #else
   #define GET_TEMP_5_ADC()          -1
 #endif
+#if HAS_TEMP_ADC_6
+  #define GET_TEMP_6_ADC()          PIN_TO_ADC(TEMP_6_PIN)
+#else
+  #define GET_TEMP_6_ADC()          -1
+#endif
+#if HAS_TEMP_ADC_7
+  #define GET_TEMP_7_ADC()          PIN_TO_ADC(TEMP_7_PIN)
+#else
+  #define GET_TEMP_7_ADC()          -1
+#endif
 #if HAS_TEMP_PROBE
   #define GET_PROBE_ADC()           PIN_TO_ADC(TEMP_PROBE_PIN)
 #else
@@ -85,13 +95,15 @@
   #define GET_BUTTONS_ADC()         -1
 #endif
 
-#define IS_ADC_REQUIRED(n)      (GET_TEMP_0_ADC() == n || GET_TEMP_1_ADC() == n || GET_TEMP_2_ADC() == n      \
-                                 || GET_TEMP_3_ADC() == n || GET_TEMP_4_ADC() == n || GET_TEMP_5_ADC() == n   \
-                                 || GET_PROBE_ADC() == n                                                      \
-                                 || GET_BED_ADC() == n                                                        \
-                                 || GET_CHAMBER_ADC() == n                                                    \
-                                 || GET_FILAMENT_WIDTH_ADC() == n                                             \
-                                 || GET_BUTTONS_ADC() == n)
+#define IS_ADC_REQUIRED(n) ( \
+     GET_TEMP_0_ADC() == n || GET_TEMP_1_ADC() == n || GET_TEMP_2_ADC() == n || GET_TEMP_3_ADC() == n \
+  || GET_TEMP_4_ADC() == n || GET_TEMP_5_ADC() == n || GET_TEMP_6_ADC() == n || GET_TEMP_7_ADC() == n \
+  || GET_PROBE_ADC() == n          \
+  || GET_BED_ADC() == n            \
+  || GET_CHAMBER_ADC() == n        \
+  || GET_FILAMENT_WIDTH_ADC() == n \
+  || GET_BUTTONS_ADC() == n        \
+)
 
 #define ADC0_IS_REQUIRED    IS_ADC_REQUIRED(0)
 #define ADC1_IS_REQUIRED    IS_ADC_REQUIRED(1)
@@ -151,6 +163,12 @@ uint16_t HAL_adc_result;
     #if GET_TEMP_5_ADC() == 0
       TEMP_5_PIN,
     #endif
+    #if GET_TEMP_6_ADC() == 0
+      TEMP_6_PIN,
+    #endif
+    #if GET_TEMP_7_ADC() == 0
+      TEMP_7_PIN,
+    #endif
     #if GET_PROBE_ADC() == 0
       TEMP_PROBE_PIN,
     #endif
@@ -184,6 +202,12 @@ uint16_t HAL_adc_result;
     #endif
     #if GET_TEMP_5_ADC() == 1
       TEMP_5_PIN,
+    #endif
+    #if GET_TEMP_6_ADC() == 1
+      TEMP_6_PIN,
+    #endif
+    #if GET_TEMP_7_ADC() == 1
+      TEMP_7_PIN,
     #endif
     #if GET_PROBE_ADC() == 1
       TEMP_PROBE_PIN,
@@ -227,6 +251,12 @@ uint16_t HAL_adc_result;
       #if GET_TEMP_5_ADC() == 0
         { PIN_TO_INPUTCTRL(TEMP_5_PIN) },
       #endif
+      #if GET_TEMP_6_ADC() == 0
+        { PIN_TO_INPUTCTRL(TEMP_6_PIN) },
+      #endif
+      #if GET_TEMP_7_ADC() == 0
+        { PIN_TO_INPUTCTRL(TEMP_7_PIN) },
+      #endif
       #if GET_PROBE_ADC() == 0
         { PIN_TO_INPUTCTRL(TEMP_PROBE_PIN) },
       #endif
@@ -269,6 +299,12 @@ uint16_t HAL_adc_result;
       #endif
       #if GET_TEMP_5_ADC() == 1
         { PIN_TO_INPUTCTRL(TEMP_5_PIN) },
+      #endif
+      #if GET_TEMP_6_ADC() == 1
+        { PIN_TO_INPUTCTRL(TEMP_6_PIN) },
+      #endif
+      #if GET_TEMP_7_ADC() == 1
+        { PIN_TO_INPUTCTRL(TEMP_7_PIN) },
       #endif
       #if GET_PROBE_ADC() == 1
         { PIN_TO_INPUTCTRL(TEMP_PROBE_PIN) },
@@ -391,7 +427,6 @@ void HAL_init() {
     dma_init();
   #endif
   #if ENABLED(SDSUPPORT)
-    // SD_DETECT_PIN may be removed if NO_SD_HOST_DRIVE is not defined in Configuration_adv.h
     #if SD_CONNECTION_IS(ONBOARD) && PIN_EXISTS(SD_DETECT)
       SET_INPUT_PULLUP(SD_DETECT_PIN);
     #endif
@@ -460,14 +495,14 @@ void HAL_adc_init() {
       // Preloaded data (fixed for all ADC instances hence not loaded by DMA)
       adc->REFCTRL.bit.REFSEL = ADC_REFCTRL_REFSEL_AREFA_Val;               // VRefA pin
       SYNC(adc->SYNCBUSY.bit.REFCTRL);
-      adc->CTRLB.bit.RESSEL = ADC_CTRLB_RESSEL_12BIT_Val;
+      adc->CTRLB.bit.RESSEL = ADC_CTRLB_RESSEL_10BIT_Val;                   // ... ADC_CTRLB_RESSEL_16BIT_Val
       SYNC(adc->SYNCBUSY.bit.CTRLB);
       adc->SAMPCTRL.bit.SAMPLEN = (6 - 1);                                  // Sampling clocks
-      adc->AVGCTRL.reg = ADC_AVGCTRL_SAMPLENUM_16 | ADC_AVGCTRL_ADJRES(4);  // 16 Accumulated conversions and shift 4 to get oversampled 12 bits result
-      SYNC(adc->SYNCBUSY.bit.AVGCTRL);
+      //adc->AVGCTRL.reg = ADC_AVGCTRL_SAMPLENUM_16 | ADC_AVGCTRL_ADJRES(4);  // 16 Accumulated conversions and shift 4 to get oversampled 12 bits result
+      //SYNC(adc->SYNCBUSY.bit.AVGCTRL);
+
       // Registers loaded by DMA
       adc->DSEQCTRL.bit.INPUTCTRL = true;
-
       adc->DSEQCTRL.bit.AUTOSTART = true;                                   // Start conversion after DMA sequence
 
       adc->CTRLA.bit.ENABLE = true;                                         // Enable ADC
