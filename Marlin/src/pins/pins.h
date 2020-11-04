@@ -455,6 +455,8 @@
   #include "sam/pins_ARCHIM1.h"                 // SAM3X8E                                env:DUE env:DUE_debug
 #elif MB(ARCHIM2)
   #include "sam/pins_ARCHIM2.h"                 // SAM3X8E                                env:DUE env:DUE_debug
+#elif MB(FEYNMANLIGHT)
+   #include "sam/pins_FEYNMANLIGHT.h"           // SAMG55J19                              env:?SAMG55?
 #elif MB(ALLIGATOR)
   #include "sam/pins_ALLIGATOR_R2.h"            // SAM3X8E                                env:DUE env:DUE_debug
 #elif MB(ADSK)

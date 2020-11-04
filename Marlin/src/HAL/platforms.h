@@ -25,6 +25,8 @@
 
 #ifdef __AVR__
   #define HAL_PATH(PATH, NAME) XSTR(PATH/AVR/NAME)
+#elif defined(__SAMG55J19__)
+  #define HAL_PATH(PATH, NAME) XSTR(PATH/SAMG55/NAME)
 #elif defined(ARDUINO_ARCH_SAM)
   #define HAL_PATH(PATH, NAME) XSTR(PATH/DUE/NAME)
 #elif defined(__MK20DX256__)
