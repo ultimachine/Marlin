@@ -37,6 +37,9 @@
 /**
   utility functions
 */
+// Due has 12 PWMs assigned to logical pins 2-13.
+// 6, 7, 8 & 9 come from the PWM controller. The others come from the timers.
+#define PWM_PIN(P)              WITHIN(P, 2, 13)
 
 #ifndef MASK
   #define MASK(PIN)  (1 << PIN)
@@ -82,6 +85,9 @@
 
 /// set pin as input with pullup mode
 #define _PULLUP(IO, v)  { pinMode(IO, (v!=LOW ? INPUT_PULLUP : INPUT)); }
+
+// Set pin as PWM
+#define SET_PWM               SET_OUTPUT
 
 /// check if pin is an input
 #define _GET_INPUT(IO)

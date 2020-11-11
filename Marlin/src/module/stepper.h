@@ -469,6 +469,18 @@ class Stepper {
           FORCE_INLINE static void set_z4_lock(const bool state) { locked_Z4_motor = state; }
         #endif
       #endif
+
+      static inline void set_all_z_lock(const bool lock, const int8_t except=-1) {
+        set_z_lock(lock ^ (except == 0));
+        set_z2_lock(lock ^ (except == 1));
+        #if NUM_Z_STEPPER_DRIVERS >= 3
+          set_z3_lock(lock ^ (except == 2));
+          #if NUM_Z_STEPPER_DRIVERS >= 4
+            set_z4_lock(lock ^ (except == 3));
+          #endif
+        #endif
+      }
+
     #endif
 
     #if ENABLED(BABYSTEPPING)

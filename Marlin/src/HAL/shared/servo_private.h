@@ -46,7 +46,7 @@
 #ifdef __AVR__
   #include "../AVR/ServoTimers.h"
 #elif defined(ARDUINO_ARCH_SAM)
-  #include "../DUE/ServoTimers.h"
+  #include "../SAMG55/ServoTimers.h"
 #elif defined(__SAMD51__)
   #include "../SAMD51/ServoTimers.h"
 #else

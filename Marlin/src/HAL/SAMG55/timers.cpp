@@ -1,7 +1,7 @@
 /**
  * Marlin 3D Printer Firmware
  *
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  * Copyright (c) 2016 Bob Cousins bobcousins42@googlemail.com
  * Copyright (c) 2015-2016 Nico Tonnhofer wurstnase.reprap@gmail.com
  *
@@ -28,80 +28,36 @@
 
 #ifdef ARDUINO_ARCH_SAM
 
-// --------------------------------------------------------------------------
+// ------------------------
 // Includes
-// --------------------------------------------------------------------------
-
+// ------------------------
+#include "../../inc/MarlinConfig.h"
 #include "HAL.h"
 
-#include "HAL_timers_Due.h"
+#include "timers.h"
 
-// --------------------------------------------------------------------------
-// Externals
-// --------------------------------------------------------------------------
-
-// --------------------------------------------------------------------------
+// ------------------------
 // Local defines
-// --------------------------------------------------------------------------
+// ------------------------
 
-#ifdef __SAM3X8E__
 #define NUM_HARDWARE_TIMERS 9
-#endif
 
-#ifdef __SAMG55J19__
-#define NUM_HARDWARE_TIMERS 6
-
-#include "tc.h"
-
-#define TC_Start tc_start
-#define TC_Stop tc_stop
-#define TC_Configure tc_init
-#define TC_SetRA tc_write_ra
-#define TC_SetRC tc_write_rc
-#define TC_ReadCV tc_read_cv
-#define TC_GetStatus tc_get_status
-#define TC_SetRB tc_write_rb
-#endif
-
-#define PRESCALER 2
-// --------------------------------------------------------------------------
-// Types
-// --------------------------------------------------------------------------
-
-
-// --------------------------------------------------------------------------
-// Public Variables
-// --------------------------------------------------------------------------
-
-// --------------------------------------------------------------------------
+// ------------------------
 // Private Variables
-// --------------------------------------------------------------------------
+// ------------------------
 
 const tTimerConfig TimerConfig [NUM_HARDWARE_TIMERS] = {
-  { TC0, 0, TC0_IRQn, 0},  // 0 - [servo timer5]
-  { TC0, 1, TC1_IRQn, 0},  // 1
-  { TC0, 2, TC2_IRQn, 0},  // 2
-  { TC1, 0, TC3_IRQn, 2},  // 3 - stepper
+  { TC0, 0, TC0_IRQn,  3}, // 0 - [servo timer5]
+  { TC0, 1, TC1_IRQn,  0}, // 1
+  { TC0, 2, TC2_IRQn,  2}, // 2 - stepper
+  { TC1, 0, TC3_IRQn,  0}, // 3 - stepper for BOARD_ARCHIM1
   { TC1, 1, TC4_IRQn, 15}, // 4 - temperature
-  { TC1, 2, TC5_IRQn, 0},  // 5 - [servo timer3]
-#ifdef TC2
-  { TC2, 0, TC6_IRQn, 0},  // 6
-  { TC2, 1, TC7_IRQn, 0},  // 7
-  { TC2, 2, TC8_IRQn, 0},  // 8
-#endif
+  { TC1, 2, TC5_IRQn,  3}, // 5 - [servo timer3]
 };
 
-// --------------------------------------------------------------------------
-// Function prototypes
-// --------------------------------------------------------------------------
-
-// --------------------------------------------------------------------------
-// Private functions
-// --------------------------------------------------------------------------
-
-// --------------------------------------------------------------------------
+// ------------------------
 // Public functions
-// --------------------------------------------------------------------------
+// ------------------------
 
 /*
   Timer_clock1: Prescaler 2 -> 42MHz
@@ -127,20 +83,20 @@ void HAL_timer_start(const uint8_t timer_num, const uint32_t frequency) {
   tc->TC_CHANNEL[channel].TC_IDR = TC_IDR_CPCS;
 
   // Stop timer, just in case, to be able to reconfigure it
-  TC_Stop(tc, channel);
+  //TC_Stop(tc, channel);
 
   pmc_set_writeprotect(false);
   pmc_enable_periph_clk((uint32_t)irq);
   NVIC_SetPriority(irq, TimerConfig [timer_num].priority);
 
   // wave mode, reset counter on match with RC,
-  TC_Configure(tc, channel, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK1);
+  //TC_Configure(tc, channel, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK1);
 
   // Set compare value
-  TC_SetRC(tc, channel, VARIANT_MCK / 2 / frequency);
+  //TC_SetRC(tc, channel, VARIANT_MCK / 2 / frequency);
 
   // And start timer
-  TC_Start(tc, channel);
+  //TC_Start(tc, channel);
 
   // enable interrupt on RC compare
   tc->TC_CHANNEL[channel].TC_IER = TC_IER_CPCS;

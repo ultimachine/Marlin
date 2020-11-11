@@ -38,7 +38,7 @@
 #include "../shared/HAL_SPI.h"
 #include "fastio_Due.h"
 #include "watchdog_Due.h"
-#include "HAL_timers_Due.h"
+#include "timers.h"
 
 //
 // Defines

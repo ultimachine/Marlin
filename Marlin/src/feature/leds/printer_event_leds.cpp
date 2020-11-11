@@ -39,9 +39,12 @@ PrinterEventLEDs printerEventLEDs;
 #if HAS_TEMP_HOTEND || HAS_HEATED_BED
 
   uint8_t PrinterEventLEDs::old_intensity = 0;
-
+long map(long x, long in_min, long in_max, long out_min, long out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
   inline uint8_t pel_intensity(const float &start, const float &current, const float &target) {
-    return (uint8_t)map(constrain(current, start, target), start, target, 0.f, 255.f);
+    return (uint8_t)map((long)constrain(current, start, target), start, target, 0, 255);
   }
 
   inline void pel_set_rgb(const uint8_t r, const uint8_t g, const uint8_t b) {

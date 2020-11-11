@@ -458,8 +458,10 @@ private:
     static void G33();
   #endif
 
-  #if ENABLED(Z_STEPPER_AUTO_ALIGN)
+  #if EITHER(Z_MULTI_ENDSTOPS, Z_STEPPER_AUTO_ALIGN)
     static void G34();
+  #endif
+  #if ENABLED(Z_STEPPER_AUTO_ALIGN)
     static void M422();
   #endif
 

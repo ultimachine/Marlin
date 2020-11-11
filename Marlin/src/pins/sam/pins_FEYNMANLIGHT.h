@@ -13,6 +13,8 @@
 #define TMC2130_USES_HW_SPI
 //#define TMC2130_USES_SW_ENABLE
 
+#define X_MIN_PIN -1
+#define Y_MIN_PIN -1
 #undef X_MS1_PIN
 #undef X_MS2_PIN
 #undef Y_MS1_PIN
@@ -27,16 +29,16 @@
 #define CAB_LED_PIN         28
 #define SERVO0_PIN        	 1 //PA1 SERVO_OUT (Pump Servo J24)
 
-#define X_STEP_PIN          43 //PB11 S2_STEP
-#define X_DIR_PIN           42 //PB10 S2_DIR
-#define X_ENABLE_PIN         5 //PA5 STEP_EN
-#define X_MIN_PIN           33 //PB1  ENDSTOP2 (X Endstop J15)
-#define X_MAX_PIN           27 //PA27 ENDSTOP1 (Z2 Endstop J13)
-#define X_TMC2130_CS        30 //PA30 S2_nCS
-#define X_CS_PIN            30 //PA30 S2_nCS
+#define Z3_STEP_PIN          43 //PB11 S2_STEP
+#define Z3_DIR_PIN           42 //PB10 S2_DIR
+#define Z3_ENABLE_PIN         5 //PA5 STEP_EN
+#define Z3_MIN_PIN           33 //PB1  ENDSTOP2 (X Endstop J15)
+#define Z2_MIN_PIN           27 //PA27 ENDSTOP1 (Z2 Endstop J13)
+#define Z3_TMC2130_CS        30 //PA30 S2_nCS
+#define Z3_CS_PIN            30 //PA30 S2_nCS
 
-#define Y_STEP_PIN          -1 
-#define Y_DIR_PIN           -1 
+#define Y_STEP_PIN          -1
+#define Y_DIR_PIN           -1
 #define Y_ENABLE_PIN        -1
 #define Y_MIN_PIN           -1
 #define Y_MAX_PIN           -1
@@ -88,7 +90,7 @@
 //#define CONTROLLERFAN_PIN  -1 //Marlin1
 #define CONTROLLER_FAN_PIN -1 //Marlin2.0
 
-#define FAN_PIN             -1 //15 //PA15 S_FAN_12V //"You cannot set E0_AUTO_FAN_PIN equal to FAN_PIN."
+#define FAN_PIN             23 //PA15 S_FAN_12V //"You cannot set E0_AUTO_FAN_PIN equal to FAN_PIN."
 #define FAN2_PIN            -1
 
 #define HEATER_0_PIN        40 //PB8 FCOM4_TX (Dummy Assignment)
@@ -98,10 +100,10 @@
 
 
 
-#define TEMP_0_PIN          18 //PA18 RESIN_THERM (Vat Thermistor J11)
-#define TEMP_1_PIN          20 //PA20 AIR_THERM (Internal Air Temp J16)
-#define TEMP_BED_PIN        32 //PB0 ARRAY_THERM (H2O Temp J14)
-#define TEMP_2_PIN          19 //PA19 RES_B_THERM (LED Array Temp Internal/J18)
+#define TEMP_0_PIN          20 //PA20 AIR_THERM (Internal Air Temp J16)
+#define TEMP_1_PIN          32 //PB0 ARRAY_THERN (PI4 Temp J14)
+#define TEMP_BED_PIN        19 //PA19 RES_B_THERM (LED Array Temp Internal/J18)
+#define TEMP_2_PIN          18 //PA18 RESIN_THERM (Resin Vat Temp J11)
 
 #ifdef Z_PROBE_SLED
   #define SLED_PIN         -1
@@ -117,10 +119,10 @@
     #define LCD_PINS_D5     -1
     #define LCD_PINS_D6     -1
     #define LCD_PINS_D7     -1
-    
+
     #define SDCARDDETECT    -1
     #define SDSS            -1
-    
+
     //buttons are directly attached using AUX-2
     #define BTN_EN1         -1
     #define BTN_EN2         -1
