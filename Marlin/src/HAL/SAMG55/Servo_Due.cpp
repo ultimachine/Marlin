@@ -48,6 +48,17 @@
 #include "../shared/servo.h"
 #include "../shared/servo_private.h"
 
+#include "tc.h"
+
+#define TC_Start tc_start
+#define TC_Stop tc_stop
+#define TC_Configure tc_init
+#define TC_SetRA tc_write_ra
+#define TC_SetRC tc_write_rc
+#define TC_ReadCV tc_read_cv
+#define TC_GetStatus tc_get_status
+#define TC_SetRB tc_write_rb
+
 static volatile int8_t Channel[_Nbr_16timers];              // counter for the servo being pulsed for each timer (or -1 if refresh interval)
 
 // ------------------------

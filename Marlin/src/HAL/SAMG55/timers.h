@@ -32,6 +32,17 @@
 // Defines
 // ------------------------
 
+#include "tc.h"
+
+#define TC_Start tc_start
+#define TC_Stop tc_stop
+#define TC_Configure tc_init
+#define TC_SetRA tc_write_ra
+#define TC_SetRC tc_write_rc
+#define TC_ReadCV tc_read_cv
+#define TC_GetStatus tc_get_status
+#define TC_SetRB tc_write_rb
+
 #define FORCE_INLINE __attribute__((always_inline)) inline
 
 typedef uint32_t hal_timer_t;
@@ -40,11 +51,11 @@ typedef uint32_t hal_timer_t;
 #define HAL_TIMER_RATE         ((F_CPU) / 2)    // frequency of timers peripherals
 
 #ifndef STEP_TIMER_NUM
-#define STEP_TIMER_NUM 2  // index of timer to use for stepper
+#define STEP_TIMER_NUM 3  // index of timer to use for stepper
 #endif
 #define TEMP_TIMER_NUM 4  // index of timer to use for temperature
 #define PULSE_TIMER_NUM STEP_TIMER_NUM
-#define TONE_TIMER_NUM 6  // index of timer to use for beeper tones
+///#define TONE_TIMER_NUM 6  // index of timer to use for beeper tones
 
 #define TEMP_TIMER_FREQUENCY   1000 // temperature interrupt frequency
 
@@ -64,10 +75,10 @@ typedef uint32_t hal_timer_t;
 #define DISABLE_TEMPERATURE_INTERRUPT() HAL_timer_disable_interrupt(TEMP_TIMER_NUM)
 
 #ifndef HAL_STEP_TIMER_ISR
-  #define HAL_STEP_TIMER_ISR() void TC2_Handler()
+  #define HAL_STEP_TIMER_ISR() void TC3_Handler()
 #endif
 #define HAL_TEMP_TIMER_ISR()  void TC4_Handler()
-#define HAL_TONE_TIMER_ISR()  void TC6_Handler()
+///#define HAL_TONE_TIMER_ISR()  void TC6_Handler()
 
 // ------------------------
 // Types

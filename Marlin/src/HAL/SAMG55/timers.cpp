@@ -49,8 +49,8 @@
 const tTimerConfig TimerConfig [NUM_HARDWARE_TIMERS] = {
   { TC0, 0, TC0_IRQn,  3}, // 0 - [servo timer5]
   { TC0, 1, TC1_IRQn,  0}, // 1
-  { TC0, 2, TC2_IRQn,  2}, // 2 - stepper
-  { TC1, 0, TC3_IRQn,  0}, // 3 - stepper for BOARD_ARCHIM1
+  { TC0, 2, TC2_IRQn,  2}, // 2
+  { TC1, 0, TC3_IRQn,  0}, // 3 - stepper for FEYNMAN
   { TC1, 1, TC4_IRQn, 15}, // 4 - temperature
   { TC1, 2, TC5_IRQn,  3}, // 5 - [servo timer3]
 };
@@ -83,20 +83,20 @@ void HAL_timer_start(const uint8_t timer_num, const uint32_t frequency) {
   tc->TC_CHANNEL[channel].TC_IDR = TC_IDR_CPCS;
 
   // Stop timer, just in case, to be able to reconfigure it
-  //TC_Stop(tc, channel);
+  TC_Stop(tc, channel);
 
   pmc_set_writeprotect(false);
   pmc_enable_periph_clk((uint32_t)irq);
   NVIC_SetPriority(irq, TimerConfig [timer_num].priority);
 
   // wave mode, reset counter on match with RC,
-  //TC_Configure(tc, channel, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK1);
+  TC_Configure(tc, channel, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK1);
 
   // Set compare value
-  //TC_SetRC(tc, channel, VARIANT_MCK / 2 / frequency);
+  TC_SetRC(tc, channel, VARIANT_MCK / 2 / frequency);
 
   // And start timer
-  //TC_Start(tc, channel);
+  TC_Start(tc, channel);
 
   // enable interrupt on RC compare
   tc->TC_CHANNEL[channel].TC_IER = TC_IER_CPCS;
