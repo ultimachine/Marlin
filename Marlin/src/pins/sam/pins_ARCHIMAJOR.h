@@ -167,35 +167,35 @@
 #define Y_ENABLE_PIN       -1
 #define Y_CS_PIN           M_nCS2
 
-#define Z_STEP_PIN         STEP3
-#define Z_DIR_PIN          DIR3
-#define Z_ENABLE_PIN       -1
-#define Z_CS_PIN           M_nCS3
+#define Y2_STEP_PIN         STEP3
+#define Y2_DIR_PIN          DIR3
+#define Y2_ENABLE_PIN       -1
+#define Y2_CS_PIN           M_nCS3
 
-#define E0_STEP_PIN         STEP4
-#define E0_DIR_PIN          DIR4
+#define Z_STEP_PIN          STEP4
+#define Z_DIR_PIN           DIR4
+#define Z_ENABLE_PIN        -1
+#define Z_CS_PIN            M_nCS4
+
+#define Z2_STEP_PIN         STEP5
+#define Z2_DIR_PIN          DIR5
+#define Z2_ENABLE_PIN       -1
+#define Z2_CS_PIN           M_nCS5
+
+#define E0_STEP_PIN         STEP6
+#define E0_DIR_PIN          DIR6
 #define E0_ENABLE_PIN       -1
-#define E0_CS_PIN           M_nCS4
+#define E0_CS_PIN           M_nCS6
 
-#define E1_STEP_PIN         STEP5
-#define E1_DIR_PIN          DIR5
+#define E1_STEP_PIN         STEP7
+#define E1_DIR_PIN          DIR7
 #define E1_ENABLE_PIN       -1
-#define E1_CS_PIN           M_nCS5
+#define E1_CS_PIN           M_nCS7
 
-#define E2_STEP_PIN         STEP6
-#define E2_DIR_PIN          DIR6
+#define E2_STEP_PIN         STEP8
+#define E2_DIR_PIN          DIR8
 #define E2_ENABLE_PIN       -1
-#define E2_CS_PIN           M_nCS6
-
-#define E3_STEP_PIN         STEP7
-#define E3_DIR_PIN          DIR7
-#define E3_ENABLE_PIN       -1
-#define E3_CS_PIN           M_nCS7
-
-#define E4_STEP_PIN         STEP8
-#define E4_DIR_PIN          DIR8
-#define E4_ENABLE_PIN       -1
-#define E4_CS_PIN           M_nCS8
+#define E2_CS_PIN           M_nCS8
 
 
 // Temperature Sensors
