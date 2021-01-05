@@ -356,6 +356,7 @@
  *
  * Temperature sensors available:
  *
+ *   -56 : thermocouple with MAX31856+ (only for sensors 0-2,BED,CHAMBER)
  *    -5 : PT100 / PT1000 with MAX31865 (only for sensors 0-1)
  *    -3 : thermocouple with MAX31855 (only for sensors 0-1)
  *    -2 : thermocouple with MAX6675 (only for sensors 0-1)

@@ -128,6 +128,9 @@ int8_t GcodeSuite::get_target_e_stepper_from_command() {
   return -1;
 }
 
+void max31856_init();
+void max31856_check();
+
 /**
  * Set XYZE destination and feedrate from the current GCode command
  *
@@ -627,6 +630,9 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
       #if ENABLED(DIRECT_PIN_CONTROL)
         case 226: M226(); break;                                  // M226: Wait until a pin reaches a state
       #endif
+
+      case 277: max31856_init(); break;
+      case 278: max31856_check(); break;
 
       #if HAS_SERVOS
         case 280: M280(); break;                                  // M280: Set servo position absolute

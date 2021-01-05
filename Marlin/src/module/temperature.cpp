@@ -114,6 +114,20 @@
 #if HAS_SERVOS
   #include "./servo.h"
 #endif
+
+#if HAS_MAX31856
+  //Thermocouple MAX31856+
+  #include <Adafruit_MAX31856.h>
+
+  Adafruit_MAX31856 maxthermo[] = { \
+    Adafruit_MAX31856(TC_nCS1), \
+    Adafruit_MAX31856(TC_nCS2), \
+    Adafruit_MAX31856(TC_nCS3), \
+    Adafruit_MAX31856(TC_nCS4), \
+    Adafruit_MAX31856(TC_nCS5), \
+  };
+#endif
+
 #if HOTEND_USES_THERMISTOR
   #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
     static const temp_entry_t* heater_ttbl_map[2] = { HEATER_0_TEMPTABLE, HEATER_1_TEMPTABLE };
@@ -1458,6 +1472,8 @@ void Temperature::manage_heater() {
       case 0:
         #if ENABLED(HEATER_0_USER_THERMISTOR)
           return user_thermistor_to_deg_c(CTI_HOTEND_0, raw);
+        #elif ENABLED(HEATER_0_USES_MAX31856)
+          return maxthermo[e].readThermocoupleTemperature(false);
         #elif ENABLED(HEATER_0_USES_MAX6675)
           return (
             #if ENABLED(MAX6675_IS_MAX31865)
@@ -1478,6 +1494,8 @@ void Temperature::manage_heater() {
           return user_thermistor_to_deg_c(CTI_HOTEND_1, raw);
         #elif ENABLED(HEATER_1_USES_MAX6675)
           return raw * 0.25;
+        #elif ENABLED(HEATER_1_USES_MAX31856)
+          return maxthermo[e].readThermocoupleTemperature(false);
         #elif ENABLED(HEATER_1_USES_AD595)
           return TEMP_AD595(raw);
         #elif ENABLED(HEATER_1_USES_AD8495)
@@ -1488,6 +1506,8 @@ void Temperature::manage_heater() {
       case 2:
         #if ENABLED(HEATER_2_USER_THERMISTOR)
           return user_thermistor_to_deg_c(CTI_HOTEND_2, raw);
+        #elif ENABLED(HEATER_2_USES_MAX31856)
+          return maxthermo[e].readThermocoupleTemperature(false);
         #elif ENABLED(HEATER_2_USES_AD595)
           return TEMP_AD595(raw);
         #elif ENABLED(HEATER_2_USES_AD8495)
@@ -1498,6 +1518,8 @@ void Temperature::manage_heater() {
       case 3:
         #if ENABLED(HEATER_3_USER_THERMISTOR)
           return user_thermistor_to_deg_c(CTI_HOTEND_3, raw);
+        #elif ENABLED(HEATER_3_USES_MAX31856)
+          return maxthermo[e].readThermocoupleTemperature(false);
         #elif ENABLED(HEATER_3_USES_AD595)
           return TEMP_AD595(raw);
         #elif ENABLED(HEATER_3_USES_AD8495)
@@ -1566,6 +1588,8 @@ void Temperature::manage_heater() {
       return user_thermistor_to_deg_c(CTI_BED, raw);
     #elif ENABLED(HEATER_BED_USES_THERMISTOR)
       SCAN_THERMISTOR_TABLE(BED_TEMPTABLE, BED_TEMPTABLE_LEN);
+    #elif ENABLED(HEATER_BED_USES_MAX31856)
+      return maxthermo[3].readThermocoupleTemperature(false);
     #elif ENABLED(HEATER_BED_USES_AD595)
       return TEMP_AD595(raw);
     #elif ENABLED(HEATER_BED_USES_AD8495)
@@ -1585,6 +1609,8 @@ void Temperature::manage_heater() {
       return user_thermistor_to_deg_c(CTI_CHAMBER, raw);
     #elif ENABLED(HEATER_CHAMBER_USES_THERMISTOR)
       SCAN_THERMISTOR_TABLE(CHAMBER_TEMPTABLE, CHAMBER_TEMPTABLE_LEN);
+    #elif ENABLED(HEATER_CHAMBER_USES_MAX31856)
+      return maxthermo[4].readThermocoupleTemperature(false);
     #elif ENABLED(HEATER_CHAMBER_USES_AD595)
       return TEMP_AD595(raw);
     #elif ENABLED(HEATER_CHAMBER_USES_AD8495)
@@ -1677,6 +1703,74 @@ void Temperature::updateTemperaturesFromRawValues() {
 #else
   #define INIT_CHAMBER_AUTO_FAN_PIN(P) SET_OUTPUT(P)
 #endif
+
+void max31856_init() {
+  //Init MAX31856
+  SERIAL_ECHO_START();
+  SERIAL_ECHOLNPGM("max31856_init()");
+
+  for(int i = 0; i < 5; i++) {
+    SERIAL_ECHO_START();
+    SERIAL_ECHOPAIR("TC", i);
+    SERIAL_ECHOPGM(": ");
+
+    maxthermo[i].begin();
+    maxthermo[i].setThermocoupleType(MAX31856_TCTYPE_K);
+
+    SERIAL_ECHOPGM(" Thermocouple type: ");
+    switch (maxthermo[i].getThermocoupleType() ) {
+      case MAX31856_TCTYPE_B: SERIAL_ECHOLNPGM("B Type"); break;
+      case MAX31856_TCTYPE_E: SERIAL_ECHOLNPGM("E Type"); break;
+      case MAX31856_TCTYPE_J: SERIAL_ECHOLNPGM("J Type"); break;
+      case MAX31856_TCTYPE_K: SERIAL_ECHOLNPGM("K Type"); break;
+      case MAX31856_TCTYPE_N: SERIAL_ECHOLNPGM("N Type"); break;
+      case MAX31856_TCTYPE_R: SERIAL_ECHOLNPGM("R Type"); break;
+      case MAX31856_TCTYPE_S: SERIAL_ECHOLNPGM("S Type"); break;
+      case MAX31856_TCTYPE_T: SERIAL_ECHOLNPGM("T Type"); break;
+      case MAX31856_VMODE_G8: SERIAL_ECHOLNPGM("Voltage x8 Gain mode"); break;
+      case MAX31856_VMODE_G32: SERIAL_ECHOLNPGM("Voltage x8 Gain mode"); break;
+      default: SERIAL_ECHOLNPGM("Unknown"); break;
+    }
+    //SerialUSB.println();
+    SERIAL_EOL();
+  }
+}
+
+void max31856_check() {
+  for(int i = 0; i < 5; i++) {
+    SERIAL_ECHO_START();
+    SERIAL_ECHOPAIR("TC", i);
+    SERIAL_ECHOPGM(": ");
+
+    SERIAL_ECHOPGM(" Cold Junction Temp: ");
+    SERIAL_ECHO(maxthermo[i].readCJTemperature(false));
+    //delay(200);
+
+    SERIAL_ECHOPGM(" - Thermocouple Temp: ");
+    SERIAL_ECHO(maxthermo[i].readThermocoupleTemperature(false));
+
+    // Check and print any faults
+    uint8_t fault = maxthermo[i].readFault();
+    if (fault) {
+      if (fault & MAX31856_FAULT_CJRANGE) SERIAL_ECHOPGM(" - Cold Junction Range Fault - ");
+      if (fault & MAX31856_FAULT_TCRANGE) SERIAL_ECHOPGM(" - Thermocouple Range Fault - ");
+      if (fault & MAX31856_FAULT_CJHIGH)  SERIAL_ECHOPGM(" - Cold Junction High Fault - ");
+      if (fault & MAX31856_FAULT_CJLOW)   SERIAL_ECHOPGM(" - Cold Junction Low Fault - ");
+      if (fault & MAX31856_FAULT_TCHIGH)  SERIAL_ECHOPGM(" - Thermocouple High Fault - ");
+      if (fault & MAX31856_FAULT_TCLOW)   SERIAL_ECHOPGM(" - Thermocouple Low Fault - ");
+      if (fault & MAX31856_FAULT_OVUV)    SERIAL_ECHOPGM(" - Over/Under Voltage Fault - ");
+      if (fault & MAX31856_FAULT_OPEN)    SERIAL_ECHOPGM(" - Thermocouple Open Fault - ");
+
+      //Clear fault status
+      //maxthermo[i].writeRegister8(MAX31856_CR0_REG, MAX31856_CR0_FAULTCLR);
+    }
+
+    SERIAL_EOL();
+  } //For each TC
+
+  SERIAL_EOL();
+  delay(2000);
+}
 
 /**
  * Initialize the temperature manager
