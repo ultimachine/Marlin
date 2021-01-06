@@ -918,48 +918,6 @@ inline void tmc_standby_setup() {
   #endif
 }
 
-void init_board_archimajor() {
-  #if MB(ARCHIMAJOR)
-    //Initialize MAX31856+ Thermocouple Chipselect pins.
-    pinMode(TC_nCS1,OUTPUT);
-    pinMode(TC_nCS2,OUTPUT);
-    pinMode(TC_nCS3,OUTPUT);
-    pinMode(TC_nCS4,OUTPUT);
-    pinMode(TC_nCS5,OUTPUT);
-    digitalWrite(TC_nCS1,HIGH);
-    digitalWrite(TC_nCS2,HIGH);
-    digitalWrite(TC_nCS3,HIGH);
-    digitalWrite(TC_nCS4,HIGH);
-    digitalWrite(TC_nCS5,HIGH);
-
-    //Initialize TMC5160 Chipselect Pins
-    pinMode(M_nCS1,OUTPUT);
-    pinMode(M_nCS2,OUTPUT);
-    pinMode(M_nCS3,OUTPUT);
-    pinMode(M_nCS4,OUTPUT);
-    pinMode(M_nCS5,OUTPUT);
-    pinMode(M_nCS6,OUTPUT);
-    pinMode(M_nCS7,OUTPUT);
-    pinMode(M_nCS8,OUTPUT);
-    digitalWrite(M_nCS1,HIGH);
-    digitalWrite(M_nCS2,HIGH);
-    digitalWrite(M_nCS3,HIGH);
-    digitalWrite(M_nCS4,HIGH);
-    digitalWrite(M_nCS5,HIGH);
-    digitalWrite(M_nCS6,HIGH);
-    digitalWrite(M_nCS7,HIGH);
-    digitalWrite(M_nCS8,HIGH);
-
-    //Initialize SPIFLASH Chipselect Pin
-    pinMode(SPIFLASH_CS,OUTPUT);
-    digitalWrite(SPIFLASH_CS,HIGH);
-
-    //Enable TMC5160 outputs.
-    pinMode(DRV_EN,OUTPUT);
-    digitalWrite(DRV_EN,LOW);
-  #endif
-}
-
 /**
  * Marlin entry-point: Set up before the program loop
  *  - Set up the kill pin, filament runout, power hold
@@ -980,8 +938,6 @@ void init_board_archimajor() {
  *    • Max7219
  */
 void setup() {
-  init_board_archimajor();
-
   tmc_standby_setup();  // TMC Low Power Standby pins must be set early or they're not usable
 
   #if ENABLED(MARLIN_DEV_MODE)

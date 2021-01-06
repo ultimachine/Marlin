@@ -270,3 +270,6 @@
 // NEWPANEL
 #endif 
 // ULTRA_LCD
+
+// Enable TMC5160 outputs.
+#define BOARD_INIT() do{ OUT_WRITE(DRV_EN, LOW); }while(0)
