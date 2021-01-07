@@ -530,9 +530,6 @@
   #define DIO108_PIN 9
   #define DIO108_WPORT PIOB
 
-  #define DIO109_PIN 5
-  #define DIO109_WPORT PIOA
-
 #else // !ARDUINO_SAM_ARCHIM
 
   #define DIO92_PIN 5
