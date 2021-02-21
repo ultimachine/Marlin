@@ -58,6 +58,7 @@ uint16_t HAL_adc_result;
     enableCycleCounter();
   }
 #endif
+TERN_(POSTMORTEM_DEBUGGING, extern void install_min_serial());
 
 // HAL initialization task
 void HAL_init() {
@@ -81,7 +82,24 @@ void HAL_init() {
 
   SetTimerInterruptPriorities();
 
-  TERN_(EMERGENCY_PARSER, USB_Hook_init());
+  #if ENABLED(EMERGENCY_PARSER) && USBD_USE_CDC
+    USB_Hook_init();
+  #endif
+
+  TERN_(POSTMORTEM_DEBUGGING, install_min_serial()); // Install the min serial handler
+
+  #if HAS_SD_HOST_DRIVE
+    MSC_SD_init();                         // Enable USB SD card access
+  #endif
+}
+
+// HAL idle task
+void HAL_idletask() {
+  #if HAS_SHARED_MEDIA
+    // Stm32duino currently doesn't have a "loop/idle" method
+    CDC_resume_receive();
+    CDC_continue_transmit();
+  #endif
 }
 
 void HAL_clear_reset_source() { __HAL_RCC_CLEAR_RESET_FLAGS(); }
