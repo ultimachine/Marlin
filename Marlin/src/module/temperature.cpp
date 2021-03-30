@@ -1779,6 +1779,7 @@ void max31856_check() {
 void Temperature::init() {
 
   TERN_(MAX6675_IS_MAX31865, max31865.begin(MAX31865_2WIRE)); // MAX31865_2WIRE, MAX31865_3WIRE, MAX31865_4WIRE
+  TERN_(HAS_MAX31856, max31856_init());
 
   #if EARLY_WATCHDOG
     // Flag that the thermalManager should be running
