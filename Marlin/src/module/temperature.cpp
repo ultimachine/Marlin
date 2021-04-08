@@ -1704,6 +1704,7 @@ void Temperature::updateTemperaturesFromRawValues() {
   #define INIT_CHAMBER_AUTO_FAN_PIN(P) SET_OUTPUT(P)
 #endif
 
+#if HAS_MAX31856
 void max31856_init() {
   //Init MAX31856
   SERIAL_ECHO_START();
@@ -1771,6 +1772,7 @@ void max31856_check() {
   SERIAL_EOL();
   delay(2000);
 }
+#endif //HAS_MAX31856
 
 /**
  * Initialize the temperature manager

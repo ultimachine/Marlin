@@ -631,8 +631,10 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         case 226: M226(); break;                                  // M226: Wait until a pin reaches a state
       #endif
 
-      case 277: max31856_init(); break;
-      case 278: max31856_check(); break;
+      #if HAS_MAX31856
+        case 277: max31856_init(); break;
+        case 278: max31856_check(); break;
+      #endif
 
       #if HAS_SERVOS
         case 280: M280(); break;                                  // M280: Set servo position absolute
